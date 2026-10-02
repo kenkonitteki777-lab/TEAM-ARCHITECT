@@ -1,0 +1,99 @@
+[
+  {
+    "name": "GM issue to adaptive organization to instruction",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "mission classification",
+      "GM signals",
+      "capability-driven party",
+      "organization rationale",
+      "member role allocation summary",
+      "command brief",
+      "admin capability affects GM",
+      "function assignment",
+      "role reason",
+      "completion condition",
+      "handoff",
+      "request text"
+    ],
+    "description": "Verifies the core GM loop turns a business issue into an organization whose recommendation and assignments use configured observed capabilities.",
+    "steps": [
+      "GMで「競合店が大型リニューアル」を開始",
+      "GM判定と推奨編成を確認",
+      "指示書を生成し各担当の担当理由を確認"
+    ],
+    "expected": "必要機能から推奨編成が算出され、各担当に担当理由・行動・完了条件・引継ぎ・依頼文が表示される。"
+  },
+  {
+    "name": "Execution event and KPI review",
+    "viewport": "desktop",
+    "covers": [
+      "execution event",
+      "event outcome",
+      "KPI target",
+      "KPI actual",
+      "result log",
+      "next action",
+      "history learning"
+    ],
+    "description": "Verifies the execution phase captures a changing situation and records measurable follow-up.",
+    "steps": [
+      "指示書でGMイベント「顧客反応変化」を選択",
+      "実行結果へ進む",
+      "KPI目標・実績・結果・学び・次の一手を入力して履歴に保存"
+    ],
+    "expected": "イベント判断とKPIを含む記録が履歴に残り、次の一手まで確認できる。"
+  },
+  {
+    "name": "Manager capability editing and privacy",
+    "viewport": "desktop",
+    "covers": [
+      "manager gate",
+      "capability editing",
+      "local persistence",
+      "member-view privacy",
+      "GM recalculation"
+    ],
+    "description": "Verifies observed capability settings remain admin-only while feeding the GM recommendation engine.",
+    "steps": [
+      "管理を開いて1604を入力",
+      "メンバーの能力を変更",
+      "GMで同じ事案を再編成する"
+    ],
+    "expected": "管理画面で能力設定を変更でき、組織画面には能力ラベルを表示せず、GMの推奨編成が変更された能力を計算に反映する。"
+  },
+  {
+    "name": "Mobile GM workflow",
+    "viewport": "mobile",
+    "covers": [
+      "mobile mission entry",
+      "mobile recommended-party grid",
+      "mobile GM event",
+      "mobile review form"
+    ],
+    "description": "Verifies the adaptive GM loop remains usable on a narrow screen.",
+    "steps": [
+      "GMで「接客品質を改善」を開始",
+      "推奨編成を確認して指示書を生成",
+      "GMイベントを選択して結果記録へ進む"
+    ],
+    "expected": "編成・イベント・結果入力がモバイルで縦方向に読みやすく操作できる。"
+  },
+  {
+    "name": "MBTI encyclopedia",
+    "viewport": "desktop",
+    "covers": [
+      "16-type encyclopedia",
+      "type detail",
+      "Habikino roster badges"
+    ],
+    "description": "Verifies the MBTI layer remains an explorable collaboration reference rather than the core decision engine.",
+    "steps": [
+      "MBTIを開く",
+      "ENTJを選択",
+      "ENFJを選択"
+    ],
+    "expected": "16タイプを閲覧でき、ENTJには前﨑店長、ENFJには八阪と宮本が表示される。"
+  }
+]
