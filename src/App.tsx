@@ -106,7 +106,7 @@ function buildFlow(kind:MissionKind,selected:number[],overrides:Record<string,Le
   const helpers=people.filter((_,x)=>selected.includes(x)&&x!==owner).sort((a,b)=>score(b,fn,people.indexOf(b),overrides)-score(a,fn,people.indexOf(a),overrides));
   const fit=meta.abilities.filter(n=>levelFor(people[owner],n,owner,overrides)==='strong').slice(0,2).map(n=>abilityNames[n-1]);
   const reason='実能力では'+(fit.length?fit.join('・'):'必要能力')+'が役割要件に合致。'+people[owner].specialty+'を活かす担当。MBTIは'+mbtiRule(people[owner]).rule+'。';
-  const reportTo=prevOwner===null?0:(prevOwner===owner?null:prevOwner);
+  const reportTo=prevOwner===null?(owner===0?null:0):(prevOwner===owner?null:prevOwner);
   const command=commandFor(people[owner],task,meta.done,fn);
   const output=fnMeta[fn].jp+'の成果物：'+meta.done;
   const handoff=nextOwner===undefined?'前﨑店長へ最終報告':nextOwner===owner?'同一担当内で自己確認後、次工程へ':people[nextOwner].name+'へ「'+meta.done+'」を共有し、次工程の開始条件を満たす';
