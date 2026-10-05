@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>店長昇進面接AIトレーナー</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07111f;color:#eef5ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:22px 18px;border-bottom:1px solid #203047;background:#0b1728;position:sticky;top:0;z-index:5}
+.wrap{max-width:1000px;margin:auto}.eyebrow{font-size:12px;letter-spacing:.18em;color:#64d8ff;font-weight:800}.title{font-size:25px;font-weight:850;margin-top:5px}
+main{padding:20px 14px 50px}.modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+button{border:0;border-radius:12px;padding:12px 16px;background:#18263a;color:#eef5ff;font-weight:750;cursor:pointer}
+button.active,.primary{background:#62ddff;color:#03111d}.grid{display:grid;grid-template-columns:1fr 280px;gap:16px}
+.card,.side{background:#0d1a2c;border:1px solid #21334c;border-radius:22px;padding:22px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}.tag{font-size:11px;background:#16283d;color:#9fb5ca;border-radius:999px;padding:6px 9px}
+h2{font-size:28px;line-height:1.35;margin:18px 0}.hint{color:#8fa5ba;font-size:13px}
+textarea{width:100%;min-height:190px;resize:vertical;background:#06101d;border:1px solid #2a405c;border-radius:16px;color:white;padding:15px;font-size:16px;line-height:1.7;outline:none}
+textarea:focus{border-color:#62ddff}.actions{display:flex;gap:9px;margin-top:12px}.actions button:first-child{flex:1}
+.eval{margin-top:16px;padding:17px;background:#07111f;border:1px solid #21334c;border-radius:18px}.score{font-size:44px;font-weight:900}.score small{font-size:13px;color:#8095aa}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}.metric{background:#102036;border-radius:12px;padding:10px;font-size:12px}.metric b{display:block;font-size:17px;margin-top:4px}
+.follow{margin-top:15px}.follow button{display:block;width:100%;text-align:left;margin-top:7px;background:#2b2513;color:#ffe6a3;border:1px solid #55431c}
+.side h3{margin-top:0}.axis{padding:9px 0;border-bottom:1px solid #1c2c41;color:#c1d0df}.note{font-size:12px;color:#7f96ad;line-height:1.7;margin-top:15px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}h2{font-size:24px}.card,.side{padding:17px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="eyebrow">INTERVIEW TRAINER</div><div class="title">店長昇進面接AIトレーナー</div></div></header>
+<main class="wrap">
+<div class="modes">
+<button data-mode="武山部長" class="active">武山部長</button>
+<button data-mode="社長">社長</button>
+<button data-mode="ランダム">ランダム</button>
+</div>
+<div class="grid">
+<section class="card">
+<div id="tags" class="tags"></div>
+<h2 id="question"></h2>
+<p class="hint">まず結論。次に理由。最後に自分の経験・具体策まで。</p>
+<textarea id="answer" placeholder="あなたの答えを入力してください"></textarea>
+<div class="actions"><button id="evaluate" class="primary">回答を評価</button><button id="next">次へ</button></div>
+<div id="evaluation"></div>
+</section>
+<aside class="side">
+<h3>面接の軸</h3>
+<div class="axis">利益を残す</div>
+<div class="axis">現場を見る</div>
+<div class="axis">最終判断と責任</div>
+<div class="axis">挑戦を成果にする</div>
+<div class="axis">人を動かす</div>
+<p class="note">この版はまず「一人で何度でも練習できる」ことを優先。回答履歴とAIによる動的追撃は次段階で追加します。</p>
+</aside>
+</div>
+</main>
+<script>
+const qs=[
+{mode:['武山部長','社長','ランダム'],q:'なぜ店長になりたいのですか？',tags:['志望動機','経験'],f:['なぜ店長でないとできない？','南宮崎から何を変えた？','羽曳野で何の判断が遅れた？']},
+{mode:['武山部長','社長','ランダム'],q:'どんな店長になりたいですか？',tags:['店長像','利益','人材'],f:['利益と人ならどちらを優先？','一番店とは？','どうやってスタッフを動かす？']},
+{mode:['武山部長','ランダム'],q:'あなたの弱みは何ですか？',tags:['自己認識','人材'],f:['それで失敗した経験は？','実際に方針を変えた例は？']},
+{mode:['武山部長','社長','ランダム'],q:'羽曳野で利益が取れなかった原因は？',tags:['羽曳野','利益','失敗'],f:['なぜ早く利益に切り替えられなかった？','今なら何を変える？','「とる時にとる、出す時に出す」とは？']},
+{mode:['社長','ランダム'],q:'入金が取れる店長と取れない店長の違いは？',tags:['利益','経営'],f:['胆力とは具体的に？','数字のどこを見る？']},
+{mode:['武山部長','社長','ランダム'],q:'新規事業をやるなら何をしますか？',tags:['新規事業','遊休地'],f:['一番やりたいのは？','なぜマルハンがシニア事業を？','いくら儲かる？','採算が合わなければ？']},
+{mode:['社長','ランダム'],q:'シニア・ウェルネス事業を具体的に説明してください。',tags:['シニア','採算'],f:['1,500人をどう集める？','初期投資はいくら？','5年で回収できる根拠は？']},
+{mode:['武山部長','社長','ランダム'],q:'MIRACLE WORLDに改善点があるとすれば？',tags:['MIRACLE WORLD','新規事業'],f:['具体的な新コンテンツは？','どう飽きさせない？','最初に見る数字は？']},
+{mode:['武山部長','社長','ランダム'],q:'マルハンイズムの中で一番大事なのは？',tags:['イズム','経営理念'],f:['なぜ経営理念が一番？','店長としてどう現場に落とす？']},
+{mode:['武山部長','ランダム'],q:'あなた自身が特にこだわっているイズムは？',tags:['イズム','提供価値'],f:['どう実現する？','利益との両立は？']},
+{mode:['武山部長','社長','ランダム'],q:'西日本カンパニーの課題は？',tags:['挑戦','人材'],f:['どう変える？','なぜ起きている？']}
+];
+let mode='武山部長',idx=0,lastScore=0;
+const $=id=>document.getElementById(id);
+function pool(){const p=qs.filter(x=>x.mode.includes(mode));return mode==='ランダム'?p:p}
+function render(){const p=pool();const q=p[idx%p.length];$('question').textContent=q.q;$('tags').innerHTML=q.tags.map(t=>'<span class="tag">'+t+'</span>').join('');$('answer').value='';$('evaluation').innerHTML=''}
+function evaluate(){
+ const s=$('answer').value.trim();if(!s)return;
+ const vals=[s.length>=20?20:10,/具体|数字|経験|例えば|約/.test(s)?20:10,s.length>=70?20:12,/私|自分|南宮崎|羽曳野|現場/.test(s)?20:10,/利益|結果|責任|判断|採算|数字/.test(s)?20:10];
+ const total=vals.reduce((a,b)=>a+b,0);lastScore=total;
+ const labels=['結論','具体性','論理','経験','利益・責任'];
+ const q=pool()[idx%pool().length];
+ $('evaluation').innerHTML='<div class="eval"><div class="score">'+total+'<small> / 100</small></div><div class="metrics">'+vals.map((v,i)=>'<div class="metric">'+labels[i]+'<b>'+v+'/20</b></div>').join('')+'</div><p class="hint">'+(total>=80?'かなり強い。次は追撃に耐える。':total>=60?'方向はいい。具体性か経験をもう一段。':'薄い。結論→理由→自分の経験まで落とす。')+'</p><div class="follow">'+q.f.map(f=>'<button onclick="follow(this)" data-q="'+f.replaceAll('"','&quot;')+'">追撃：'+f+'</button>').join('')+'</div></div>';
+}
+function follow(el){$('evaluation').insertAdjacentHTML('beforeend','<div class="eval"><div class="eyebrow">追撃質問</div><h3>'+el.dataset.q+'</h3><p class="hint">ここからは短く。社長モードなら「結論→理由→具体策」。</p></div>')}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;idx=0;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));render()});
+$('evaluate').onclick=evaluate;$('next').onclick=()=>{idx++;render()};render();
+</script>
+</body>
+</html>
