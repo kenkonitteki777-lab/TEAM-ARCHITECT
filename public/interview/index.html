@@ -1,54 +1,73 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>店長昇進面接トレーナー</title><style>
-*{box-sizing:border-box}body{margin:0;background:#07111f;color:#edf5ff;font-family:system-ui,sans-serif}header{padding:18px;border-bottom:1px solid #24364e;background:#0b1728;position:sticky;top:0;z-index:5}.w{max-width:1050px;margin:auto}.ey{font-size:11px;letter-spacing:.18em;color:#67dcff;font-weight:800}.t{font-size:24px;font-weight:900}.s{font-size:12px;color:#8ea5bb}main{padding:16px 12px 50px}.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}button{border:1px solid #293e58;border-radius:11px;padding:10px 14px;background:#142238;color:#eef6ff;font-weight:800;cursor:pointer}.active,.primary{background:#67dcff;color:#03111b;border-color:#67dcff}.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:13px}.p{background:#0c192b;border:1px solid #21344d;border-radius:19px;padding:18px}.chips{display:flex;gap:6px}.chip{font-size:11px;background:#16283e;padding:5px 8px;border-radius:99px;color:#a9bfd2}.q{font-size:27px;line-height:1.45;margin:15px 0 8px}.hint{font-size:12px;color:#8ea5bb;line-height:1.7}textarea{width:100%;min-height:205px;background:#06101c;border:1px solid #2a425e;border-radius:14px;color:#fff;padding:14px;font-size:16px;line-height:1.75}textarea:focus{outline:none;border-color:#67dcff}.actions{display:flex;gap:8px;margin-top:9px}.actions button:first-child{flex:1}.box{margin-top:13px;padding:15px;background:#07111e;border:1px solid #223750;border-radius:15px}.score{font-size:45px;font-weight:950}.score span{font-size:12px;color:#8096aa}.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:9px}.metric{background:#102138;border-radius:9px;padding:7px;font-size:10px}.metric b{display:block;font-size:16px}.ok{color:#70e1a4}.mid{color:#ffd66d}.low{color:#ff9090}.follow button{display:block;width:100%;text-align:left;margin:6px 0;background:#302815;color:#ffe3a0}.model{white-space:pre-wrap;background:#0d2035;border-radius:10px;padding:11px;line-height:1.7;margin-top:8px}.axis{padding:9px 0;border-bottom:1px solid #1c2d43}.stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1c2d43}.hist{padding:8px 0;border-bottom:1px solid #1c2d43;font-size:11px}.small{color:#8298ad;font-size:11px}@media(max-width:760px){.layout{grid-template-columns:1fr}.side{order:-1}.metrics{grid-template-columns:repeat(3,1fr)}.q{font-size:23px}} .answer-tabs{display:flex;gap:8px;margin-top:12px}.answer-tabs button{flex:1}.model{white-space:pre-wrap} </style></head><body>
-<header><div class="w"><div class="ey">MANAGER PROMOTION INTERVIEW</div><div class="t">店長昇進面接トレーナー</div><div class="s">マルハン西日本カンパニー｜実戦練習版</div></div></header>
-<main class="w"><div class="bar"><button class="active" data-mode="武山部長">武山部長</button><button data-mode="社長">社長</button><button data-mode="ランダム">ランダム</button><button id="weak">弱点集中</button><button id="reset">履歴削除</button></div><div class="layout"><section class="p"><div id="chips" class="chips"></div><div class="s" id="count"></div><div class="q" id="q"></div><div class="hint">結論→理由→具体策・経験。社長モードは特に短く、聞かれたことに答える。</div><div class="actions"><button class="primary" id="show">解答を見る</button><button id="next">次の質問</button></div><div id="out"></div></section><aside class="p side"><h3>評価軸</h3><div class="axis">結論</div><div class="axis">具体性</div><div class="axis">論理</div><div class="axis">自分の経験</div><div class="axis">イズム・利益</div><div class="axis">簡潔さ</div><div class="stat"><span>回答数</span><b id="n">0</b></div><div class="stat"><span>平均</span><b id="avg">—</b></div><div class="stat"><span>最大</span><b id="max">—</b></div><h3>直近</h3><div id="hist"></div><p class="hint">今回の想定問答の原点・羽曳野・南宮崎・利益・人材・イズム・新規事業を中心に収録。</p></aside></div></main>
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>店長昇進面接トレーナー</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07111f;color:#edf5ff;font-family:system-ui,-apple-system,sans-serif}.w{max-width:1080px;margin:auto}
+header{padding:18px;border-bottom:1px solid #24364e;background:#0b1728;position:sticky;top:0;z-index:5}.ey{font-size:11px;letter-spacing:.18em;color:#67dcff;font-weight:800}.t{font-size:24px;font-weight:900}.s{font-size:12px;color:#8ea5bb;margin-top:4px}
+main{padding:16px 12px 60px}.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}button{border:1px solid #293e58;border-radius:11px;padding:10px 14px;background:#142238;color:#eef6ff;font-weight:800;cursor:pointer}.active,.primary{background:#67dcff;color:#03111b;border-color:#67dcff}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:13px}.p{background:#0c192b;border:1px solid #21344d;border-radius:19px;padding:18px}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:11px;background:#16283e;padding:5px 8px;border-radius:99px;color:#a9bfd2}.q{font-size:26px;line-height:1.5;margin:16px 0 10px}.hint{font-size:12px;color:#8ea5bb;line-height:1.7}.actions{display:flex;gap:8px;margin-top:18px}.actions button{flex:1}.out{margin-top:15px}.box{background:#081522;border:1px solid #28425e;border-radius:15px;padding:16px;margin-top:12px}.label{font-size:11px;font-weight:900;color:#67dcff;letter-spacing:.08em;margin-bottom:7px}.answer{font-size:15px;line-height:1.85;white-space:pre-wrap}.why{border-top:1px solid #24364e;margin-top:15px;padding-top:13px}.side h3{margin:0 0 10px}.side .item{padding:10px 0;border-bottom:1px solid #20344b;font-size:13px;line-height:1.6}.source{font-size:10px;color:#7089a1;margin-top:7px}.hidden{display:none}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.q{font-size:21px}.side{order:2}}
+</style></head>
+<body>
+<header><div class="w"><div class="ey">MARUHAN WEST JAPAN / INTERVIEW</div><div class="t">店長昇進 面接トレーナー</div><div class="s">過去試験 × あなたの回答 × 面接官別モード</div></div></header>
+<main class="w">
+<div class="bar">
+<button data-mode="all" class="active">総合</button><button data-mode="take">武山部長</button><button data-mode="pres">社長</button><button data-mode="west">西日本・経営</button>
+</div>
+<div class="bar"><button id="random">ランダム出題</button><button id="next">次の質問</button><button id="show" class="primary">解答を見る</button></div>
+<div class="layout">
+<section class="p">
+<div class="chips" id="chips"></div><div class="hint" id="count"></div>
+<div class="q" id="q"></div>
+<div class="hint">まず自分の言葉で答えてから「解答を見る」。暗記ではなく、結論→理由→経験→店長としてどうする、の順で話す。</div>
+<div id="out" class="out"></div>
+</section>
+<aside class="p side">
+<h3>このアプリの基準</h3>
+<div class="item"><b>① 過去試験</b><br>過去資料にある質問・解答例を優先。</div>
+<div class="item"><b>② あなたの回答</b><br>あなたが作ってきた回答をそのまま確認。</div>
+<div class="item"><b>③ 面接官別</b><br>武山部長／社長で見るポイントを切り替える。</div>
+<div class="item"><b>④ 西日本視点</b><br>利益・現場・人材・挑戦・シェアまで確認。</div>
+<div class="item"><b>⑤ 次の深掘り</b><br>「なぜ？」「具体的には？」「利益は？」を想定。</div>
+</aside>
+</div></main>
 <script>
 const Q=[
-["志望動機","なぜ店長になりたいのですか？","入社したときからの夢です。最終判断と結果の責任を自分で引き受けたい。遠回りこそ最大の近道。南宮崎と羽曳野の失敗を結果で返したい。","ビジョンはマルハンを日本一の企業にし、その中心で活躍すること。店長はゴールではなく通過点で、将来はエリアやカンパニーを牽引する。"],
-["店長像","どんな店長になりたいですか？","利益を残し、稼働でも対抗店に勝つ一番店を、スタッフが楽しく働き、お客様に愛される形でつくる店長。結果と人の両方を取る。","カンパニーでNo1の店長。業績も人望も1番を目指す。まず既存店で市場No1の店を作り、その後、新店を成功させられる店長になる。"],
-["責任","店長でないとできないことは？","営業のジャッジ、経費の決裁、失敗の責任は店長にしか負えない。","分析や提案はスタッフでもできるが、営業のジャッジ、経費の決裁、失敗の責任は店長にしか負えない。"],
-["強み","あなたの強みは？","課題形成から課題解決までの判断スピード。現状把握から最も効率的な解決策を導く。","判断スピードと戦略性を強みに、課題を整理して最も効果の高い施策を選び、実行する。"],
-["弱み","あなたの弱みは？","論理を優先して相手の感情を汲むのに時間がかかる。「どう思う？」と聞くことで補う。","自分の考えを優先しすぎることがある。だからこそ周囲に意見を聞き、チームで判断することを意識する。"],
-["初動","着任したら最初に何をしますか？","現場に立ち、数字と現場感覚のズレを検証。スタッフ一人ひとりと「なぜこの店で働いているか」を話す。","結果が出ていること・出ていないことを精査し、全員面談で課題を抽出する。対抗店との差別化ポイントも見つける。"],
-["人材","本物の人材とは？どう育てる？","どんな環境でも結果を出す主体的で愛社精神のある人。権限を段階的に渡し、問いかけ、環境を変えて経験させ、本人に検証させる。","自ら考え行動し、どんな困難でも諦めず結果につなげる人。会社に利益をもたらし、成長を止めず、周りを引き付ける存在。"],
-["失敗","一番辛かった経験は？","南宮崎。全力を尽くしたが結果が出ず異動。準備と判断不足を認め、目的と検証方法を決める習慣につながった。","南宮崎店の失敗。会社に多大な迷惑をかけた。同じことを繰り返さないよう全員で考えて動き、失敗から集客と定着のプロセス、利益の伸ばし方を学んだ。"],
-["羽曳野","羽曳野で利益が取れなかった原因は？","対抗店の物量と稼働にこだわり、利益に舵を切るのが遅れた。南宮崎も羽曳野も準備と判断の不足。","稼働を追うことに意識が偏り、利益とのバランスを取る判断が遅れた。"],
-["利益","「とる時にとる、出す時に出す」とは？","営業にメリハリをつける。メイン機も強気で締めてとるときはとるという姿勢を徹底する。","営業にメリハリをつけ、取るべきところでは取る。お客様に支持される価値を守りながら利益を残す。"],
-["競合","アロー・123などに勝つには？","物量では勝てない。ジャグラーへの集中、低貸の死守、独自の大海で差別化。","同じ土俵で物量勝負をするのではなく、自店が勝てる領域へ集中して差別化する。"],
-["新規事業","新規事業をやるなら？","郊外の閉店店舗跡地を使う3案（セルフストレージ、全天候型ウェルネスパーク、EV充電ハブ）。","ヘルス&ウェルネス型アミューズメント、パチンコ×eスポーツ×カジノライク体験、ゲーミング&フードパーク。"],
-["MIRACLE WORLD","MIRACLE WORLDに改善点があるとすれば？","一回の来場で終わらせずリピート・口コミへ。季節コンテンツ、SNS、なんばのホテル・飲食・観光との導線、データ検証。","施設を一回の来場で終わらせず、リピートや口コミにつなげる仕組みを作る。来場者数だけでなく再来場率や利益も見る。"],
-["イズム","マルハンイズムで一番大事なのは？","経営理念の「人生にヨロコビを」。各項目は最終的にここにつながる。","経営理念の「人生にヨロコビを」だと考える。イズムの各項目は最終的にこの理念につながっている。"],
-["組織","西日本カンパニーの課題は？","挑戦し続ける組織（対抗店への対応が後手、フローが遅い）と、共感参画型組織（社長の想いに熱く共感して動く人が少ない）。","挑戦し続ける組織は新しいことへのチャレンジが足りず後手になっている。店長が変わらない店舗はMGRもスタッフも変わらない。店長が伝道者になる。"],
-["AI","今挑戦していることは？","AIを使った分析ツールの自作。作業を効率化し、浮いた時間を現場とスタッフに使う。","AIを活用して分析や業務を効率化し、現場で使える時間を増やす。"],
-["社長","店長を任せても大丈夫ですか？","はい。どの店舗に任されても、入金を取りに行き、利益を残し、諦めない。","はい。任された店舗で結果を出すことに責任を持ち、利益を残します。"],
-["社長","今の羽曳野を任されたら黒字にできますか？","はい。強みへの集中投資と経費の最適化で黒字転換を計画する。厳しくても自分でコントロールできる部分を徹底する。","はい。数字と現場を分解し、利益への影響が大きいところから止血し、黒字にします。"],
-["社長","なぜあなたを店長にする必要がありますか？","判断スピード、戦略性、現場主義、失敗から逃げない強さ。","結果にこだわり、失敗から逃げず、判断して実行できること。"]
+{m:"take",t:"どんな店長になりたいか",q:"どんな店長になりたいですか？",mine:"利益を残し、稼働でも対抗店に勝つ一番店を、スタッフが楽しく働き、お客様に愛される形でつくる店長。結果と人の両方を取る。",model:"カンパニーでNo1の店長。業績も人望も1番を目指す。まず既存店で市場No1の店を作り、その後、新店を成功させられる店長になる。",src:"上田・武山部長WEB面接"},
+{m:"take",t:"なぜ店長になりたいか",q:"なぜ店長になりたいですか？",mine:"入社時からの夢。最終判断と責任を引き受けたい。遠回りこそ最大の近道で、責任の重い道を選ぶ。南宮崎の悔しさと羽曳野の反省を、結果で返したい。",model:"ビジョンはマルハンを日本一の企業にし、その中心で活躍すること。店長はゴールではなく通過点で、将来はエリアやカンパニーを牽引する。",src:"2025PDF・武山部長面接対策"},
+{m:"take",t:"強いマルハン",q:"強いマルハンとは何ですか？今は強いですか？",mine:"他社が何をしても上回る状態。少しずつ取り戻しているが、共感して動く人がまだ足りない。店長として、その人を増やす。",model:"他社が何をやってきても上回る状態。店舗では、店長が中心となり、CSも社員も関係なく全力で行動できる状態。現状は少しずつ強さを取り戻しつつあるが、共感して行動できる人が足りない。",src:"上田・武山部長WEB面接"},
+{m:"take",t:"西Cの問題",q:"西日本カンパニーの問題点は？イズムに絡めて答えてください。",mine:"挑戦し続ける組織。対抗店への対応が後手、フローが遅い。共感参画型組織。社長の想いに熱く共感して動く人が少ない。",model:"挑戦し続ける組織は、新しいことへのチャレンジが足りず後手になっている。「できない理由でなく、できることを考える」。共感参画型は、店長が変わらない店舗はMGRもスタッフも変わらない。店長が伝道者になる。",src:"上田・2025PDF"},
+{m:"take",t:"変わらない店長",q:"変わらない店長をどう思いますか？",mine:"変わってきたが、店舗の状況に依存して挑戦を止めている店長もいる。悔しいし、自分たちの世代が良くしていく思いが強まる。",model:"変わってきたが、今は停滞している。店舗の状況に依存して上を目指さず、下が育たない悪循環。私たち新しい世代が変える。変わらない店長には悔しい。",src:"2025PDF"},
+{m:"take",t:"10年後の業界",q:"10年後、パチンコ業界はどうなっていると思いますか？",mine:"店舗数は減り、少数の法人による寡占化が進む。マルハンも安泰ではなく、シェア拡大の努力が欠かせない。",model:"さらに縮小し、シェアの奪い合い。中小は淘汰される。ただし逆にチャンスで、シェアを広げれば、対抗店との奪い合いや、メーカーへの影響力で優位に立てる。新規事業も同時に進める。",src:"2025PDF"},
+{m:"take",t:"本物の人材",q:"本物の人材とは？",mine:"どんな環境でも諦めず、自ら考えて行動し、利益という結果につなげる人。",model:"自ら考え行動し、どんな困難でも諦めず結果につなげる人。会社に利益をもたらし、成長を止めず、周りを引き付ける存在。",src:"52期・2025PDF"},
+{m:"take",t:"一番辛かったこと",q:"これまで一番辛かったことは？",mine:"南宮崎。全力を尽くしたが結果が出ず、短期間で異動。準備と判断の不足が原因。悔しさがひよらない強さの源。",model:"南宮崎店の失敗。会社に多大な迷惑をかけた。同じことを繰り返さないよう、全員で考えて動き、結果、巻き返せた。失敗から、集客と定着のプロセス、利益の伸ばし方を学んだ。",src:"2025PDF"},
+{m:"take",t:"南宮崎の責任",q:"南宮崎が失敗した理由は？誰の責任ですか？",mine:"準備と具体策が足りなかった。責任は関わった全員で、その中で自分は果たすべき役割を果たせなかった。特定個人は名指ししない。",model:"最大の店舗のグランドオープンは、もっとインパクトのあるものにすべきだった。告知も当日の演出も足りなかった。責任は関わった全員。",src:"前田・2025PDF"},
+{m:"take",t:"現場主義",q:"現場主義とは？",mine:"理論より、自分の目で現場を見て実践すること。特定日は先頭に立ち、調整を店長と詰め、振り返りまで行う。",model:"理論や計画より現場での実践・経験を重視し、机上でなく自ら足を運ぶこと。特定日強化で必ず出勤し、調整を店長と考え、ホールオペレーションも率先して行い、振り返りまで行う。",src:"52期"},
+{m:"take",t:"KINGS NEVER DIE",q:"KINGS NEVER DIEをどう捉えていますか？",mine:"決まったことをやるだけでなく、その時のベストを考えて素早く実行する。結果が出ない施策は止めて切り替える。",model:"寝ている場合ではない。決まったことをやっていてはダメ。常にその時のベストを考え、スピーディーに実行する。",src:"前田"},
+{m:"take",t:"着任初日の朝礼",q:"店長着任初日の朝礼で何を話しますか？",mine:"店の現場を自分の目で見て、この店にしかない強みを確信する。物量で張り合わず、強みへの選択と集中で利益を残す。スタッフが楽しく働ける店にする。人の気持ちは得意ではないので、思ったことは遠慮なく言ってほしい。",model:"チームとして協力し、この店を市場でNo1にする使命がある。常に「お客様に楽しんでいただくためにはどうするべきか」を考え、行動してほしい。",src:"上田"},
+{m:"take",t:"着任後の初動",q:"着任したら最初に何をしますか？",mine:"1〜2週間は現場に立ち、数字と現場感覚のズレを検証。スタッフ一人ひとりと、なぜこの店で働くかを話す。",model:"結果が出ていること・いないことを精査し、出ていないことはやめる。新しいことを実行する。対抗店との差別化ポイントを見つける。全員面談で課題を抽出する。",src:"上田"},
+{m:"take",t:"リーダーシップ",q:"リーダーシップとは？",mine:"誰よりも早く課題を見つけ、感情に流されず効率的な解決策を示し、決定の責任を自分で取ること。同時に、独善にならずスタッフを巻き込む。",model:"自ら考え行動し、結果につなげるだけでなく、周囲を巻き込み、チームとして成果を出すこと。",src:"資料全体からの構成参考"},
+{m:"take",t:"弱み",q:"あなたの弱みは？どう克服していますか？",mine:"論理を優先して、相手の感情を汲むのに時間がかかる。だから、何かを始める・変える・連携するときは、必ず「どう思う？」と聞く。",model:"弱みを自覚した上で、周囲の意見を聞き、チームとして動く。自分だけで答えを出さず、対話によって周囲を巻き込む。",src:"自分の回答案＋資料構成参考"},
+{m:"take",t:"羽曳野の問題",q:"なぜ羽曳野で利益が取れなかったのですか？",mine:"対抗店の物量と稼働にこだわり、利益に舵を切るのが遅れた。準備と判断の不足が原因。",model:"稼働を追い過ぎ、採算の見込めない機械購買や販促を続けて消耗戦から脱却できなかった。稼働という軸にこだわり、メリハリをもって利益に舵を切るタイミングを逸した。",src:"自分の回答案"},
+{m:"take",t:"利益の考え方",q:"入金が取れる店長と取れない店長の違いは？",mine:"金額にひるまず判断する胆力と、細部の営業分析。計画を緻密に立て、暴発時のリカバリーを早く判断し、赤字機種をタイムリーに見ているかが差になる。",model:"金額にひるまず判断する胆力と、細部の営業分析。暴発時のリカバリーを早く判断し、赤字機種をタイムリーに見ているかが差になる。",src:"自分の回答案"},
+{m:"take",t:"カンパニーの課題",q:"カンパニーの良い点・悪い点は？",mine:"良い点は、現場を大事にするリーダーが増えたこと、経費管理の徹底。悪い点は、他カンパニーとの情報共有の弱さ、機械購買のメリットを生かし切れないこと。",model:"良い点は、上司が現場目線になったこと、チャンスが増えたこと、目標が明確になったこと。悪い点は、情報交換やスケールメリットを生かし切れていないこと。",src:"52期・2025PDF"},
+{m:"take",t:"新規事業",q:"マルハンの新規事業を考えるなら？",mine:"遊休資産を活用し、初期投資を抑えて小さく始め、採算を確認してから全国展開する。駐車場・遊休スペースの活用、ウェルネス、モビリティなどを考える。",model:"ヘルス&ウェルネス型アミューズメント、パチンコ×eスポーツ×カジノライク体験、ゲーミング&フードパークなど。強みは規模・資金・人財、弱みはノウハウ・実行力。",src:"2025PDF・前田"},
+{m:"west",t:"MIRACLE WORLD",q:"MIRACLE WORLDを成功させるには？",mine:"一度の来場で終わらせず、再来場や口コミにつなげる。季節コンテンツ、SNS発信、なんば周辺との連携、来場データを活用し、利益が残る集客モデルを作る。",model:"施設単体の集客だけでなく、体験価値を継続的に高め、国内客・インバウンド双方に選ばれる仕組みを作る。",src:"面接対策用の構成案"},
+{m:"pres",t:"社長・店長を任せる覚悟",q:"お前に店長を任せても大丈夫か？",mine:"はい。どの店舗を任されても、入金を取りに行き、利益を残す覚悟があります。南宮崎と羽曳野で失敗した経験があるからこそ、準備と判断に妥協しません。",model:"はい。店長は結果と責任を引き受ける仕事だと理解しています。任された以上、言い訳せず、現場を見て、必要な判断をして結果を出します。",src:"社長面接想定"},
+{m:"pres",t:"社長・なぜあなた",q:"なぜ、あなたを店長にする必要がある？",mine:"課題形成から課題解決までの判断スピード、数字から勝ち筋を見つける力、そして失敗から逃げない強さがあります。人を動かす力は課題ですが、そこも自覚して「どう思う？」と聞き、チームで結果を出します。",model:"自分で考えて動き、結果まで責任を持てる人材であることを示す。強みだけでなく弱みと向き合い、周囲を巻き込んで成果を出す。",src:"資料全体からの構成参考"},
+{m:"pres",t:"社長・羽曳野黒字",q:"羽曳野を黒字にできるのか？",mine:"はい、やります。物量で張り合うのではなく、強みへの集中投資と経費の最適化で利益を残します。取る時に取る、出す時に出すというメリハリを徹底します。",model:"厳しい環境でも、利益を残すために必要な判断をする。現状を言い訳にせず、投資と経費を見直し、黒字転換までやり切る。",src:"自分の回答案・社長面接想定"},
+{m:"pres",t:"社長・失敗",q:"南宮崎や羽曳野の失敗から何を学んだ？",mine:"気持ちだけでは勝てないことです。準備と具体策、そして利益に舵を切る判断が必要だった。だから今は、打ち手の前に目的と検証方法を決め、結果が出なければ早く変えます。",model:"失敗を他責にせず、自分の準備と判断の不足を認める。その経験を次の判断基準に変え、同じ失敗を繰り返さない。",src:"自分の回答案・2025PDF"},
+{m:"west",t:"イズム",q:"マルハンイズムで一番大事なのは？",mine:"経営理念の「人生にヨロコビを」だと考えています。各項目は最終的にここにつながる。個別の言葉を覚えるだけでなく、この判断は誰にどんなヨロコビを生むのかまで考えることが大切です。",model:"経営理念「人生にヨロコビを」を最上位の軸として、組織理念・行動指針を日々の判断に落とし込む。",src:"マルハン公式ISMを踏まえた面接整理"},
+{m:"west",t:"イズムの必要性",q:"マルハンイズムは必要ですか？",mine:"はい、必要だと思います。店や上司によってイズムの捉え方に多少のバラツキがあるからこそ必要です。イズムは覚えるものではなく、マルハンとして何を大切にするのか、判断や行動の軸を揃えるもの。店長になったら、なぜこの仕事をするのかまでスタッフと共有します。",model:"イズムを共通の判断軸として捉え、店舗ごとの解釈の違いをなくすのではなく、経営理念から日々の行動まで一貫させる。",src:"マルハン公式ISMを踏まえた面接整理"},
+{m:"west",t:"西日本で変えること",q:"西日本カンパニーを変えるなら何を変える？",mine:"挑戦し続ける組織を強くしたい。対抗店への対応や新しい打ち手が後手になる状態を、自分たちの世代から変える。できない理由ではなく、できることを考え、店長自身が先頭に立つ。",model:"新しいことへのチャレンジを止めず、できない理由ではなくできることを考える。店長が伝道者となり、周囲を動かす。",src:"上田・2025PDF"}
 ];
-
-let index=0;
-const qEl=document.getElementById("q"), out=document.getElementById("out"), count=document.getElementById("count"), chips=document.getElementById("chips");
-function render(){
- const x=Q[index];
- chips.innerHTML='<span class="chip">'+x[0]+'</span>';
- count.textContent=(index+1)+' / '+Q.length;
- qEl.textContent=x[1];
- out.innerHTML='';
-}
-document.getElementById("show").addEventListener("click",function(){
- const x=Q[index];
- out.innerHTML='<div class="box"><div class="hint"><b>模範解答</b></div><div class="model">'+x[3]+'</div><div class="hint" style="margin-top:16px"><b>私の回答例</b></div><div class="model">'+x[2]+'</div></div>';
-});
-document.getElementById("next").addEventListener("click",function(){
- index=(index+1)%Q.length;
- render();
-});
-document.querySelectorAll("[data-mode]").forEach(function(b){
- b.addEventListener("click",function(){
-   document.querySelectorAll("[data-mode]").forEach(function(z){z.classList.remove("active")});
-   b.classList.add("active");
-   index=0;
-   render();
- });
-});
-render();
+let mode="all",pool=[],idx=0;
+const $=id=>document.getElementById(id);
+function build(){pool=Q.filter(x=>mode==="all"||x.m===mode);if(!pool.length)pool=Q;idx=Math.min(idx,pool.length-1);render()}
+function render(){const x=pool[idx];$("chips").innerHTML='<span class="chip">'+(x.m==="take"?"武山部長":x.m==="pres"?"社長":x.m==="west"?"西日本・経営":"総合")+'</span><span class="chip">'+x.t+'</span>';$("count").textContent=(idx+1)+" / "+pool.length;$("q").textContent=x.q;$("out").innerHTML=""}
+$("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><div class="label">模範解答・過去試験の解答例を基にした回答の軸</div><div class="answer">'+x.model+'</div><div class="why"><div class="label">私の回答例</div><div class="answer">'+x.mine+'</div><div class="source">出典・位置づけ：'+x.src+'</div></div><div class="why"><div class="label">深掘り想定</div><div class="answer">「なぜそう考える？」「具体的には？」「利益は？」「店長なら最初に何をする？」まで続けて答える。</div></div></div>'};
+$("next").onclick=()=>{idx=(idx+1)%pool.length;render()};
+$("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-mode]").forEach(z=>z.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;idx=0;build()});
+build();
 </script></body></html>
