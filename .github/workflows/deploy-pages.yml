@@ -32,6 +32,9 @@ jobs:
       - name: Verify interview trainer
         run: npm run test:interview
 
+      - name: Typecheck and domain tests
+        run: npm run typecheck && npm test
+
       - name: Build
         run: npm run build
 
@@ -50,3 +53,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
