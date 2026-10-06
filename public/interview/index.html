@@ -1,120 +1,25 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>店長昇進面接トレーナー</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#07111f;color:#edf5ff;font-family:system-ui,-apple-system,sans-serif}.w{max-width:1080px;margin:auto}
-header{padding:18px;border-bottom:1px solid #24364e;background:#0b1728;position:sticky;top:0;z-index:5}.ey{font-size:11px;letter-spacing:.18em;color:#67dcff;font-weight:800}.t{font-size:24px;font-weight:900}.s{font-size:12px;color:#8ea5bb;margin-top:4px}
-main{padding:16px 12px 60px}.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}button{border:1px solid #293e58;border-radius:11px;padding:10px 14px;background:#142238;color:#eef6ff;font-weight:800;cursor:pointer}.active,.primary{background:#67dcff;color:#03111b;border-color:#67dcff}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:13px}.p{background:#0c192b;border:1px solid #21344d;border-radius:19px;padding:18px}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:11px;background:#16283e;padding:5px 8px;border-radius:99px;color:#a9bfd2}.q{font-size:26px;line-height:1.5;margin:16px 0 10px}.hint{font-size:12px;color:#8ea5bb;line-height:1.7}.actions{display:flex;gap:8px;margin-top:18px}.actions button{flex:1}.out{margin-top:15px}.box{background:#081522;border:1px solid #28425e;border-radius:15px;padding:16px;margin-top:12px}.label{font-size:11px;font-weight:900;color:#67dcff;letter-spacing:.08em;margin-bottom:7px}.answer{font-size:15px;line-height:1.85;white-space:pre-wrap}.why{border-top:1px solid #24364e;margin-top:15px;padding-top:13px}.side h3{margin:0 0 10px}.side .item{padding:10px 0;border-bottom:1px solid #20344b;font-size:13px;line-height:1.6}.source{font-size:10px;color:#7089a1;margin-top:7px}.hidden{display:none}.record{margin-top:14px}.record textarea{width:100%;min-height:150px;resize:vertical;background:#07111f;color:#edf5ff;border:1px solid #29435e;border-radius:13px;padding:12px;font:inherit;line-height:1.7}.mini{display:flex;gap:7px;margin-top:8px}.mini button{flex:1}.score{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}.score div{background:#102238;border-radius:10px;padding:9px;text-align:center;font-size:11px}.score b{display:block;font-size:17px;margin-top:3px}.weak{font-size:13px;line-height:1.7;color:#c9d9e8}.saved{color:#7ff0a6;font-size:11px;margin-top:7px}.status{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.status button{padding:8px 11px}.danger{border-color:#ff9c7a;color:#ffd0c1}.good{border-color:#70e3a0;color:#aaf3c8}.progress{height:7px;background:#132238;border-radius:99px;overflow:hidden;margin:7px 0 12px}.progress i{display:block;height:100%;background:#67dcff}.stickyFast{position:sticky;bottom:8px;z-index:4;background:#0c192bee;padding-top:8px}@media(max-width:760px){.score{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.q{font-size:21px}.side{order:2}}
-</style></head>
-<body>
-<header><div class="w"><div class="ey">MARUHAN WEST JAPAN / INTERVIEW</div><div class="t">店長昇進 面接トレーナー</div><div class="s">過去試験 × あなたの回答 × 面接官別モード</div></div></header>
-<main class="w">
-<div class="bar">
-<button data-mode="all" class="active">総合</button><button data-mode="take">武山部長</button><button data-mode="pres">社長</button><button data-mode="west">西日本・経営</button><button data-mode="today">本日実戦</button>
-</div>
-<div class="bar"><button id="prev">← 前の質問</button><button id="next">次の質問 →</button><button id="random">ランダム出題</button><button id="show" class="primary">解答を見る</button><button id="attack">追撃する</button><button id="review">今日の面接レビュー</button></div>
-<div class="bar"><button id="listToggle">質問一覧を開く</button><button id="weakMode">要復習だけ</button><button id="resetWeak">復習判定をリセット</button><div id="questionList" class="box hidden"></div></div>
-<div class="layout">
-<section class="p">
-<div class="chips" id="chips"></div><div class="hint" id="count"></div><div class="progress"><i id="progressBar"></i></div>
-<div class="q" id="q"></div>
-<div class="hint">まず自分の言葉で答えてから「解答を見る」。暗記ではなく、結論→理由→経験→店長としてどうする、の順で話す。</div>
-<div id="out" class="out"></div><div id="recordReview"></div><div class="record box"><div class="label">今日の実際の回答を記録</div><textarea id="actual" placeholder="今日、実際にどう答えたかを入力。話した内容をそのまま残してOK。"></textarea><div class="status"><button id="good" class="good">✓ できた</button><button id="weak" class="danger">△ 要復習</button><button id="voice">🎙 音声入力</button></div><div class="mini stickyFast"><button id="saveNext" class="primary">保存して次へ →</button><button id="save">保存だけ</button><button id="clear">消す</button></div><div class="hint">高速操作：Ctrl＋Enterで即次問。スマホは「保存して次へ」。要復習にした質問は専用モードで周回できます。</div><div id="saved" class="saved"></div></div>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#121411"><meta name="description" content="店長としての判断を鍛える、個人用の面接トレーニング。"><title>TEAM ARCHITECT — 面接コーチ</title><link rel="stylesheet" href="./style.css"></head><body>
+<div class="app">
+<aside class="rail"><a class="brand" href="./" aria-label="面接コーチのホーム"><span class="brandmark">T<span>／</span>A</span><span>TEAM<br>ARCHITECT</span></a><div class="rail-caption">INTERVIEW LAB</div><nav><button class="nav active" data-view="practice"><span>◎</span> トレーニング</button><button class="nav" data-view="insights"><span>↗</span> 弱点・履歴</button><button class="nav" data-view="library"><span>≡</span> 質問ライブラリ</button><button class="nav" data-view="facts"><span>＃</span> 要確認の数字</button></nav><div class="rail-bottom"><p>遠回りこそ<br>最大の近道。</p><button class="nav" data-view="settings">設定・バックアップ</button><small>PERSONAL TRAINING / V3</small></div></aside>
+<div class="workspace"><header class="top"><div><span class="eyebrow">MARUHAN WEST JAPAN</span><span class="top-title">店長試験 · 面接コーチ</span></div><button id="connection" class="connection" data-view="settings"><i></i>端末保存</button></header>
+<main>
+<section id="practice" class="view">
+<div class="practice-head"><div><p class="eyebrow">THINK CLEAR. ANSWER STRONG.</p><h1>判断を、言葉に。</h1></div><div class="mode-switch" role="group" aria-label="面接官"><button data-mode="take" aria-pressed="true">武山部長</button><button data-mode="pres" aria-pressed="false">社長</button></div></div>
+<div class="session-bar"><label class="select-wrap">練習 <select id="sessionType" aria-label="練習モード"><option value="rapid">高速回答</option><option value="5">5分 / 最重要5問</option><option value="10">10分 / 重要10問</option><option value="20">20分 / 弱点＋追撃</option><option value="mock">本番 / 10問＋追撃</option></select></label><button id="weakMode" aria-pressed="false">弱点を優先</button><span id="sessionProgress">制限なし</span><span class="session-clock" id="sessionClock"></span></div>
+<div class="training-grid"><div class="stage">
+<div class="question-meta"><span id="category" class="tag"></span><span id="questionNumber"></span><span id="timer" class="timer">00:00</span></div><h2 id="question"></h2><p id="modeHint" class="mode-hint"></p>
+<div id="conversation" class="conversation" hidden></div>
+<div class="answer-area"><div class="answer-label"><label for="actual">あなたの回答</label><span id="saveStatus" role="status">入力と同時に保存</span></div><textarea id="actual" placeholder="結論から。自分の言葉で答える。" maxlength="12000"></textarea><div class="editor-tools"><button id="voice" aria-pressed="false">◉ 音声入力</button><button id="saveOnly">回答を記録</button><span class="char-count" id="chars">0字</span></div></div>
+<div class="verdict"><button id="good" aria-pressed="false">✓ できた</button><button id="weak" aria-pressed="false">↺ 要復習</button><button id="diagnose">診断</button><button id="followup">追撃する</button><button id="modelToggle" aria-expanded="false">回答の核を見る</button></div>
+<div id="diagnostic" class="diagnostic" hidden></div><div id="model" class="model" hidden></div>
+<div class="fast-dock"><button id="prev" class="previous" aria-label="前の質問">←</button><button id="saveNext" class="primary">保存して次へ <span>↗</span></button><button id="skip" class="skip">スキップ</button></div><div class="keyboard">⌘ / Ctrl + Enter 次へ <span>Alt + F 追撃 · Alt + H 回答の核</span></div>
+</div><aside class="coach"><div class="coach-head"><span class="eyebrow">TRAINING SIGNAL</span><span class="live-dot"></span></div><h3>落ちる隙を、潰す。</h3><div class="stat-row"><div><b id="answered">0</b><span>回答した質問</span></div><div><b id="weakCount">0</b><span>要復習</span></div></div><div class="progress-track"><i id="progressBar"></i></div><p id="coverage" class="muted"></p><div class="coach-divider"></div><span class="eyebrow">YOUR FOCUS</span><div id="focusWeakness"></div><div class="coach-divider"></div><span class="eyebrow">INTERVIEWER LENS</span><p id="lens"></p><blockquote id="anchor"></blockquote><small>診断は改善の手がかり。<br>合格を保証する採点ではありません。</small></aside></div>
+<div id="sessionResult" class="result" hidden></div>
 </section>
-<aside class="p side">
-<h3>このアプリの基準</h3>
-<div class="item"><b>① 過去試験</b><br>過去資料にある質問・解答例を優先。</div>
-<div class="item"><b>② あなたの回答</b><br>あなたが作ってきた回答をそのまま確認。</div>
-<div class="item"><b>③ 面接官別</b><br>武山部長／社長で見るポイントを切り替える。</div>
-<div class="item"><b>④ 西日本視点</b><br>利益・現場・人材・挑戦・シェアまで確認。</div>
-<div class="item"><b>⑤ 次の深掘り</b><br>「なぜ？」「具体的には？」「利益は？」を想定。</div>
-</aside>
-</div></main>
-<script>
-const Q=[
-{m:"take",t:"どんな店長になりたいか",q:"どんな店長になりたいですか？",mine:"利益を残し、稼働でも対抗店に勝つ一番店を、スタッフが楽しく働き、お客様に愛される形でつくる店長。結果と人の両方を取る。",model:"カンパニーでNo1の店長。業績も人望も1番を目指す。まず既存店で市場No1の店を作り、その後、新店を成功させられる店長になる。",src:"上田・武山部長WEB面接"},
-{m:"take",t:"なぜ店長になりたいか",q:"なぜ店長になりたいですか？",mine:"入社時からの夢。最終判断と責任を引き受けたい。遠回りこそ最大の近道で、責任の重い道を選ぶ。南宮崎の悔しさと羽曳野の反省を、結果で返したい。",model:"ビジョンはマルハンを日本一の企業にし、その中心で活躍すること。店長はゴールではなく通過点で、将来はエリアやカンパニーを牽引する。",src:"2025PDF・武山部長面接対策"},
-{m:"take",t:"強いマルハン",q:"強いマルハンとは何ですか？今は強いですか？",mine:"他社が何をしても上回る状態。少しずつ取り戻しているが、共感して動く人がまだ足りない。店長として、その人を増やす。",model:"他社が何をやってきても上回る状態。店舗では、店長が中心となり、CSも社員も関係なく全力で行動できる状態。現状は少しずつ強さを取り戻しつつあるが、共感して行動できる人が足りない。",src:"上田・武山部長WEB面接"},
-{m:"take",t:"西Cの問題",q:"西日本カンパニーの問題点は？イズムに絡めて答えてください。",mine:"挑戦し続ける組織。対抗店への対応が後手、フローが遅い。共感参画型組織。社長の想いに熱く共感して動く人が少ない。",model:"挑戦し続ける組織は、新しいことへのチャレンジが足りず後手になっている。「できない理由でなく、できることを考える」。共感参画型は、店長が変わらない店舗はMGRもスタッフも変わらない。店長が伝道者になる。",src:"上田・2025PDF"},
-{m:"take",t:"変わらない店長",q:"変わらない店長をどう思いますか？",mine:"変わってきたが、店舗の状況に依存して挑戦を止めている店長もいる。悔しいし、自分たちの世代が良くしていく思いが強まる。",model:"変わってきたが、今は停滞している。店舗の状況に依存して上を目指さず、下が育たない悪循環。私たち新しい世代が変える。変わらない店長には悔しい。",src:"2025PDF"},
-{m:"take",t:"10年後の業界",q:"10年後、パチンコ業界はどうなっていると思いますか？",mine:"店舗数は減り、少数の法人による寡占化が進む。マルハンも安泰ではなく、シェア拡大の努力が欠かせない。",model:"さらに縮小し、シェアの奪い合い。中小は淘汰される。ただし逆にチャンスで、シェアを広げれば、対抗店との奪い合いや、メーカーへの影響力で優位に立てる。新規事業も同時に進める。",src:"2025PDF"},
-{m:"take",t:"本物の人材",q:"本物の人材とは？",mine:"どんな環境でも諦めず、自ら考えて行動し、利益という結果につなげる人。",model:"自ら考え行動し、どんな困難でも諦めず結果につなげる人。会社に利益をもたらし、成長を止めず、周りを引き付ける存在。",src:"52期・2025PDF"},
-{m:"take",t:"一番辛かったこと",q:"これまで一番辛かったことは？",mine:"南宮崎。全力を尽くしたが結果が出ず、短期間で異動。準備と判断の不足が原因。悔しさがひよらない強さの源。",model:"南宮崎店の失敗。会社に多大な迷惑をかけた。同じことを繰り返さないよう、全員で考えて動き、結果、巻き返せた。失敗から、集客と定着のプロセス、利益の伸ばし方を学んだ。",src:"2025PDF"},
-{m:"take",t:"南宮崎の責任",q:"南宮崎が失敗した理由は？誰の責任ですか？",mine:"準備と具体策が足りなかった。責任は関わった全員で、その中で自分は果たすべき役割を果たせなかった。特定個人は名指ししない。",model:"最大の店舗のグランドオープンは、もっとインパクトのあるものにすべきだった。告知も当日の演出も足りなかった。責任は関わった全員。",src:"前田・2025PDF"},
-{m:"take",t:"現場主義",q:"現場主義とは？",mine:"理論より、自分の目で現場を見て実践すること。特定日は先頭に立ち、調整を店長と詰め、振り返りまで行う。",model:"理論や計画より現場での実践・経験を重視し、机上でなく自ら足を運ぶこと。特定日強化で必ず出勤し、調整を店長と考え、ホールオペレーションも率先して行い、振り返りまで行う。",src:"52期"},
-{m:"take",t:"KINGS NEVER DIE",q:"KINGS NEVER DIEをどう捉えていますか？",mine:"決まったことをやるだけでなく、その時のベストを考えて素早く実行する。結果が出ない施策は止めて切り替える。",model:"寝ている場合ではない。決まったことをやっていてはダメ。常にその時のベストを考え、スピーディーに実行する。",src:"前田"},
-{m:"take",t:"着任初日の朝礼",q:"店長着任初日の朝礼で何を話しますか？",mine:"店の現場を自分の目で見て、この店にしかない強みを確信する。物量で張り合わず、強みへの選択と集中で利益を残す。スタッフが楽しく働ける店にする。人の気持ちは得意ではないので、思ったことは遠慮なく言ってほしい。",model:"チームとして協力し、この店を市場でNo1にする使命がある。常に「お客様に楽しんでいただくためにはどうするべきか」を考え、行動してほしい。",src:"上田"},
-{m:"take",t:"着任後の初動",q:"着任したら最初に何をしますか？",mine:"1〜2週間は現場に立ち、数字と現場感覚のズレを検証。スタッフ一人ひとりと、なぜこの店で働くかを話す。",model:"結果が出ていること・いないことを精査し、出ていないことはやめる。新しいことを実行する。対抗店との差別化ポイントを見つける。全員面談で課題を抽出する。",src:"上田"},
-{m:"take",t:"リーダーシップ",q:"リーダーシップとは？",mine:"誰よりも早く課題を見つけ、感情に流されず効率的な解決策を示し、決定の責任を自分で取ること。同時に、独善にならずスタッフを巻き込む。",model:"自ら考え行動し、結果につなげるだけでなく、周囲を巻き込み、チームとして成果を出すこと。",src:"資料全体からの構成参考"},
-{m:"take",t:"弱み",q:"あなたの弱みは？どう克服していますか？",mine:"論理を優先して、相手の感情を汲むのに時間がかかる。だから、何かを始める・変える・連携するときは、必ず「どう思う？」と聞く。",model:"弱みを自覚した上で、周囲の意見を聞き、チームとして動く。自分だけで答えを出さず、対話によって周囲を巻き込む。",src:"自分の回答案＋資料構成参考"},
-{m:"take",t:"羽曳野の問題",q:"なぜ羽曳野で利益が取れなかったのですか？",mine:"対抗店の物量と稼働にこだわり、利益に舵を切るのが遅れた。準備と判断の不足が原因。",model:"稼働を追い過ぎ、採算の見込めない機械購買や販促を続けて消耗戦から脱却できなかった。稼働という軸にこだわり、メリハリをもって利益に舵を切るタイミングを逸した。",src:"自分の回答案"},
-{m:"take",t:"利益の考え方",q:"入金が取れる店長と取れない店長の違いは？",mine:"金額にひるまず判断する胆力と、細部の営業分析。計画を緻密に立て、暴発時のリカバリーを早く判断し、赤字機種をタイムリーに見ているかが差になる。",model:"金額にひるまず判断する胆力と、細部の営業分析。暴発時のリカバリーを早く判断し、赤字機種をタイムリーに見ているかが差になる。",src:"自分の回答案"},
-{m:"take",t:"カンパニーの課題",q:"カンパニーの良い点・悪い点は？",mine:"良い点は、現場を大事にするリーダーが増えたこと、経費管理の徹底。悪い点は、他カンパニーとの情報共有の弱さ、機械購買のメリットを生かし切れないこと。",model:"良い点は、上司が現場目線になったこと、チャンスが増えたこと、目標が明確になったこと。悪い点は、情報交換やスケールメリットを生かし切れていないこと。",src:"52期・2025PDF"},
-{m:"take",t:"新規事業",q:"マルハンの新規事業を考えるなら？",mine:"遊休資産を活用し、初期投資を抑えて小さく始め、採算を確認してから全国展開する。駐車場・遊休スペースの活用、ウェルネス、モビリティなどを考える。",model:"ヘルス&ウェルネス型アミューズメント、パチンコ×eスポーツ×カジノライク体験、ゲーミング&フードパークなど。強みは規模・資金・人財、弱みはノウハウ・実行力。",src:"2025PDF・前田"},
-{m:"west",t:"MIRACLE WORLD",q:"MIRACLE WORLDを成功させるには？",mine:"一度の来場で終わらせず、再来場や口コミにつなげる。季節コンテンツ、SNS発信、なんば周辺との連携、来場データを活用し、利益が残る集客モデルを作る。",model:"施設単体の集客だけでなく、体験価値を継続的に高め、国内客・インバウンド双方に選ばれる仕組みを作る。",src:"面接対策用の構成案"},
-{m:"pres",t:"社長・店長を任せる覚悟",q:"お前に店長を任せても大丈夫か？",mine:"はい。どの店舗を任されても、入金を取りに行き、利益を残す覚悟があります。南宮崎と羽曳野で失敗した経験があるからこそ、準備と判断に妥協しません。",model:"はい。店長は結果と責任を引き受ける仕事だと理解しています。任された以上、言い訳せず、現場を見て、必要な判断をして結果を出します。",src:"社長面接想定"},
-{m:"pres",t:"社長・なぜあなた",q:"なぜ、あなたを店長にする必要がある？",mine:"課題形成から課題解決までの判断スピード、数字から勝ち筋を見つける力、そして失敗から逃げない強さがあります。人を動かす力は課題ですが、そこも自覚して「どう思う？」と聞き、チームで結果を出します。",model:"自分で考えて動き、結果まで責任を持てる人材であることを示す。強みだけでなく弱みと向き合い、周囲を巻き込んで成果を出す。",src:"資料全体からの構成参考"},
-{m:"pres",t:"社長・羽曳野黒字",q:"羽曳野を黒字にできるのか？",mine:"はい、やります。物量で張り合うのではなく、強みへの集中投資と経費の最適化で利益を残します。取る時に取る、出す時に出すというメリハリを徹底します。",model:"厳しい環境でも、利益を残すために必要な判断をする。現状を言い訳にせず、投資と経費を見直し、黒字転換までやり切る。",src:"自分の回答案・社長面接想定"},
-{m:"pres",t:"社長・失敗",q:"南宮崎や羽曳野の失敗から何を学んだ？",mine:"気持ちだけでは勝てないことです。準備と具体策、そして利益に舵を切る判断が必要だった。だから今は、打ち手の前に目的と検証方法を決め、結果が出なければ早く変えます。",model:"失敗を他責にせず、自分の準備と判断の不足を認める。その経験を次の判断基準に変え、同じ失敗を繰り返さない。",src:"自分の回答案・2025PDF"},
-{m:"west",t:"イズム",q:"マルハンイズムで一番大事なのは？",mine:"経営理念の「人生にヨロコビを」だと考えています。各項目は最終的にここにつながる。個別の言葉を覚えるだけでなく、この判断は誰にどんなヨロコビを生むのかまで考えることが大切です。",model:"経営理念「人生にヨロコビを」を最上位の軸として、組織理念・行動指針を日々の判断に落とし込む。",src:"マルハン公式ISMを踏まえた面接整理"},
-{m:"west",t:"イズムの必要性",q:"マルハンイズムは必要ですか？",mine:"はい、必要だと思います。店や上司によってイズムの捉え方に多少のバラツキがあるからこそ必要です。イズムは覚えるものではなく、マルハンとして何を大切にするのか、判断や行動の軸を揃えるもの。店長になったら、なぜこの仕事をするのかまでスタッフと共有します。",model:"イズムを共通の判断軸として捉え、店舗ごとの解釈の違いをなくすのではなく、経営理念から日々の行動まで一貫させる。",src:"マルハン公式ISMを踏まえた面接整理"},
-{m:"west",t:"西日本で変えること",q:"西日本カンパニーを変えるなら何を変える？",mine:"挑戦し続ける組織を強くしたい。対抗店への対応や新しい打ち手が後手になる状態を、自分たちの世代から変える。できない理由ではなく、できることを考え、店長自身が先頭に立つ。",model:"新しいことへのチャレンジを止めず、できない理由ではなくできることを考える。店長が伝道者となり、周囲を動かす。",src:"上田・2025PDF"},
-{m:"today",t:"前回社長面接",q:"前回の社長面接はなぜだめだったと思うか？",mine:"未記録",model:"他人や環境のせいにせず、自分の準備・判断・伝え方の不足として整理する。失敗を次の行動に変えたことまで話す。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"行動変化",q:"どう行動を変えたか？",mine:"未記録",model:"失敗を反省するだけで終わらせず、準備、現場確認、利益判断、周囲との対話など、具体的な行動に変えたことを示す。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"前崎店長",q:"前崎店長になって変わったことはあるか？",mine:"未記録",model:"現在の店舗運営で、自分の判断や行動がどう変化したかを具体例で答える。特に利益への向き合い方、細部の精査、現場での行動変化を整理する。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"利益への行動",q:"利益がとれないことに対してなにか行動しているか？",mine:"細かい機種の無駄玉など、徹底的に精査し、利益を残すために全力を尽くしております。今期は少しでも赤字額を減らすため細かい部分まで確認して利益を残してまいります。",model:"利益が取れないことを数字だけで見るのではなく、細かい機種の無駄玉などまで徹底的に精査する。取る時に取る、出す時に出すというメリハリを持ち、赤字を減らして利益を残す。",src:"自分の回答案・本日実戦"},
-{m:"today",t:"稼働率目標",q:"稼働率の目標はあるか？",mine:"未記録",model:"本日回答の具体的な数値は未記録。数値を補完せず、目標値、その根拠、達成するための施策までセットで答える。",src:"本日実戦質問。数値は補完しない"},
-{m:"today",t:"稼働向上施策",q:"稼働を高めていくためにやっている施策はあるか？",mine:"未記録",model:"施策名だけでなく、誰を対象に、何を変え、どの数字で効果を検証するかまで答える。競合の物量を追うだけではなく、自店の強み・差別化につなげる。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"自店着地",q:"自店の着地は？予算に対して",mine:"未記録",model:"本日回答の実績・予算差は未記録。数値は補完せず、着地見込み→予算差→要因→残り期間で何をするか、の順で答える。",src:"本日実戦質問。数値は補完しない"},
-{m:"today",t:"大阪3エリア予算",q:"大阪３エリアの予算は？",mine:"未記録",model:"本日回答の数値は未記録。数値は補完せず、正確な予算を自分で把握しておく。",src:"本日実戦質問。数値は補完しない"},
-{m:"today",t:"ブロック予算",q:"ブロック予算は？",mine:"未記録",model:"本日回答の数値は未記録。店長候補として、自店だけでなくブロック全体の予算感まで把握する。",src:"本日実戦質問。数値は補完しない"},
-{m:"today",t:"カンパニー予算",q:"カンパニー予算は？",mine:"未記録",model:"本日回答の数値は未記録。カンパニーの経営数字を自分事として捉え、店舗→ブロック→カンパニーのつながりで理解する。",src:"本日実戦質問。数値は補完しない"},
-{m:"today",t:"営業施策",q:"直近一年で最も効果をあげた営業施策は？",mine:"未記録",model:"施策名だけでなく、課題→打ち手→結果→なぜ効いたか、まで話す。可能なら効果を数字で示す。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"尊敬する上司",q:"尊敬する上司は？",mine:"未記録",model:"名前だけで終わらせず、何を尊敬しているのか、その上司から何を学び、自分の店長像にどう生かすかまで答える。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"だめだった上司",q:"だめだった上司は？",mine:"未記録",model:"個人批判にせず、具体的な行動や考え方の何が問題だったのか、自分ならどうするのかに変換する。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"店長3要素",q:"店長に必要なことを三個あげて",mine:"未記録",model:"①利益・結果への責任、②自ら考え行動し人を巻き込む力、③お客様・現場を起点に判断する力。この3つを、抽象語だけでなく自分の経験につなげる。",src:"面接対策資料の軸・本日実戦"},
-{m:"today",t:"実現レベル",q:"それぞれどれくらいのレベルで実現できているか？",mine:"未記録",model:"3項目それぞれを自己評価し、できている点と不足点を具体的な事実で説明する。弱点は認めたうえで、どう改善しているかまで話す。",src:"本日実戦質問。回答内容は未記録"},
-{m:"today",t:"MIRACLE WORLD",q:"ミラクルワールドの経営状況をしっているか？",mine:"未記録",model:"分からない数字を知ったふりはしない。把握している範囲を答えたうえで、責任者なら来場者数、客単価、再来場率、集客チャネル、営業利益などを確認し、利益が残る集客モデルを作る。",src:"本日実戦質問・MIRACLE WORLD対策"},
-{m:"today",t:"新規事業案",q:"新規事業案はあるか？",mine:"遊休資産を活用し、初期投資を抑えて小さく始め、採算を確認してから全国展開する。駐車場・遊休スペースを活用したモビリティ、シニア・ウェルネスなどを考えています。",model:"マルハンの規模、資産、人財を使える事業であることが重要。まず小さく始めて黒字化を確認し、横展開する。遊休資産・遊休スペースを使うモビリティやシニア・ウェルネスは候補になる。",src:"新規事業面接対策"},
-{m:"today",t:"こだわるイズム",q:"こだわっているイズムは何か？",mine:"未記録",model:"経営理念「人生にヨロコビを」が最上位。そのうえで、自分が特にこだわるのは提供価値の「安心・刺激・やすらぎ」、西日本で強くしたいのは「挑戦し続ける組織」。",src:"マルハン公式ISMを踏まえた面接整理"},
-{m:"today",t:"イズムの理由",q:"そのイズムはなぜそう思うか？",mine:"未記録",model:"個別の言葉を覚えるのではなく、実際の店舗判断やお客様・スタッフへの価値につながるから。自分の経験と結びつけて説明する。",src:"マルハン公式ISMを踏まえた面接整理"},
-{m:"today",t:"挑戦する組織",q:"挑戦する組織に対して、そうなっていない理由はなんだと思うか？",mine:"未記録",model:"新しいことへのチャレンジが足りず、対抗店への対応や打ち手が後手になること。できない理由を先に考えると挑戦が止まる。店長自身が先頭に立ち、できることを考えて行動する必要がある。",src:"上田・2025PDF・ISM対策"},
-{m:"today",t:"最後の意気込み",q:"最後に店長になる意気込みをおねがいします。",mine:"未記録",model:"店長になること自体をゴールにせず、任された店舗の結果と責任を引き受ける。利益を残し、人を育て、お客様に選ばれる店を作る。南宮崎と羽曳野の失敗を、店長として結果に変える。",src:"面接対策資料・本日実戦"}
-
-];
-let mode="all",pool=[],idx=0,weakOnly=false;
-const $=id=>document.getElementById(id);
-function build(){let base=Q.filter(x=>mode==="all"||x.m===mode);pool=weakOnly?base.filter(x=>localStorage.getItem("interview_grade_"+x.q)==="weak"):base;if(!pool.length){pool=base;weakOnly=false;$("weakMode").classList.remove("active")}idx=Math.min(idx,Math.max(0,pool.length-1));render()}
-function render(){const x=pool[idx];$("chips").innerHTML='<span class="chip">'+(x.m==="take"?"武山部長":x.m==="pres"?"社長":x.m==="west"?"西日本・経営":x.m==="today"?"本日実戦":"総合")+'</span><span class="chip">'+x.t+'</span>';$("count").textContent=(idx+1)+" / "+pool.length+"　回答済み "+pool.filter(z=>localStorage.getItem("interview_actual_"+z.q)).length+"問";$("progressBar").style.width=((idx+1)/pool.length*100)+"%";$("q").textContent=x.q;$("out").innerHTML="";loadActual();const g=localStorage.getItem("interview_grade_"+x.q);$("good").classList.toggle("active",g==="good");$("weak").classList.toggle("active",g==="weak")}
-function key(){return "interview_actual_"+pool[idx].q}
-function renderList(){const el=$("questionList");el.innerHTML='<div class="label">現在のモード：質問一覧</div>'+pool.map((x,i)=>'<button style="width:100%;text-align:left;margin:3px 0;background:'+(i===idx?'#67dcff':'#142238')+';color:'+(i===idx?'#03111b':'#eef6ff')+'" data-qidx="'+i+'">'+(i+1)+'. '+x.t+(localStorage.getItem("interview_grade_"+x.q)==="weak"?' △':localStorage.getItem("interview_actual_"+x.q)?' ✓':'')+'</button>').join('');el.querySelectorAll('[data-qidx]').forEach(b=>b.onclick=()=>{idx=Number(b.dataset.qidx);attackIdx=0;render();renderList()})}
-const FOLLOW={take:["なぜそう思うのですか？","あなた自身の経験で具体的に教えてください。","それを店長になったらどう実行しますか？","スタッフがついてこなかったらどうしますか？","それで利益はどう変わりますか？"],pres:["はい、できますか？","では、具体的にいくら残せますか？","できなかった場合、誰の責任ですか？","その判断を現場でどう実行しますか？","言い訳せずに、最後までやり切れますか？"],west:["それはイズムのどの部分につながりますか？","具体的に何を変えますか？","今までできなかった理由は何ですか？","数字で成果をどう測りますか？","店長として自分から何をしますか？"],today:["なぜそう答えたのですか？","具体的な数字は？","その数字の根拠は？","自分で何を変えましたか？","店長ならどうしますか?"]};
-let attackIdx=0;
-function attackQuestion(){const x=pool[idx],list=FOLLOW[x.m]||FOLLOW.today,q=list[attackIdx%list.length];attackIdx++;$("out").insertAdjacentHTML("beforeend",'<div class="box"><div class="label">'+(x.m==="pres"?"社長の追撃":x.m==="take"?"武山部長の追撃":"面接官の追撃")+'</div><div class="answer">'+q+'</div><div class="source">回答したら、もう一度「追撃する」で次の質問へ。</div></div>')}
-function review(){const items=Q.map(x=>localStorage.getItem("interview_actual_"+x.q)||"").filter(Boolean),n=items.length,avg=n?Math.round(items.reduce((a,v)=>a+v.length,0)/n):0;$("recordReview").innerHTML='<div class="box"><div class="label">今日の面接レビュー</div><div class="answer">記録回答：'+n+'問　／　平均回答文字数：'+avg+'文字</div><div class="weak">'+(n===0?'まだ回答記録がありません。実際の回答を保存すると、ここに蓄積されます。':avg<60?'最優先：回答が短い。結論→理由→具体例→店長としてどうする、まで足す。':avg>320?'最優先：長い。社長面接では結論を先にして、必要な事実だけ残す。':'回答量は概ね適正。次は「数字」「利益」「自分が何をしたか」を重点確認。')+'</div></div>'}
-
-function loadActual(){const v=localStorage.getItem(key())||"";$("actual").value=v;$("saved").textContent=v?"保存済み":"未保存";setTimeout(()=>$("actual").focus(),0)}
-function saveOnly(){localStorage.setItem(key(),$("actual").value);$("saved").textContent="保存済み"}
-function fastNext(){saveOnly();idx=(idx+1)%pool.length;attackIdx=0;render()}
-function grade(v){localStorage.setItem("interview_grade_"+pool[idx].q,v);$("good").classList.toggle("active",v==="good");$("weak").classList.toggle("active",v==="weak")}
-function analyze(){const v=$("actual").value.trim();const scores=[/^(はい|いいえ|結論|私は|まず|一番)/.test(v),/なぜ|理由|からです|ためです/.test(v),/南宮崎|羽曳野|前崎|現場|スタッフ|お客様|機種|利益|稼働/.test(v),/します|しました|徹底|行動|改善|確認|精査|実行/.test(v),/[0-9０-９]+(％|%|万|億|台|円|人|店舗)/.test(v)];const labels=["結論","理由","経験・事実","行動","数字"];return '<div class="box"><div class="label">回答セルフ診断</div><div class="score">'+scores.map((ok,i)=>'<div>'+labels[i]+'<b>'+(ok?4:2)+'/4</b></div>').join("")+'</div><div class="weak">'+(v.length<40?"短い。結論→理由→具体例まで足す。":v.length>350?"長い。結論を先に置き、不要な説明を削る。":"長さは概ね使いやすい。")+'</div></div>'}
-$("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><div class="label">模範解答・過去試験の解答例を基にした回答の軸</div><div class="answer">'+x.model+'</div><div class="why"><div class="label">私の回答例</div><div class="answer">'+x.mine+'</div><div class="source">出典・位置づけ：'+x.src+'</div></div><div class="why"><div class="label">深掘り想定</div><div class="answer">「なぜ？」「具体的には？」「数字は？」「それで何が変わった？」「店長ならどうする？」の順に追撃される想定。</div></div></div>'};
-$("prev").onclick=()=>{idx=(idx-1+pool.length)%pool.length;attackIdx=0;render();renderList()};
-$("attack").onclick=attackQuestion;
-$("listToggle").onclick=()=>{$("questionList").classList.toggle("hidden");if(!$("questionList").classList.contains("hidden"))renderList()};
-$("review").onclick=review;
-$("next").onclick=()=>{idx=(idx+1)%pool.length;attackIdx=0;render()};
-$("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
-document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-mode]").forEach(z=>z.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;idx=0;build()});
-$("save").onclick=()=>{saveOnly();$("out").insertAdjacentHTML("beforeend",analyze())};
-$("saveNext").onclick=fastNext;
-$("actual").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();fastNext()}});
-$("good").onclick=()=>grade("good");$("weak").onclick=()=>grade("weak");
-$("weakMode").onclick=()=>{weakOnly=!weakOnly;$("weakMode").classList.toggle("active",weakOnly);idx=0;build()};
-$("resetWeak").onclick=()=>{Q.forEach(x=>localStorage.removeItem("interview_grade_"+x.q));weakOnly=false;$("weakMode").classList.remove("active");build()};
-$("voice").onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("saved").textContent="このブラウザは音声入力に未対応です";return}const r=new SR();r.lang="ja-JP";r.interimResults=false;$("saved").textContent="聞いています…";r.onresult=e=>{$("actual").value+=($("actual").value?" ":"")+e.results[0][0].transcript;$("saved").textContent="音声入力しました"};r.onerror=()=>{$("saved").textContent="音声入力できませんでした"};r.start()};
-$("clear").onclick=()=>{localStorage.removeItem(key());$("actual").value="";$("saved").textContent="未保存"};
-build();
-</script></body></html>
+<section id="insights" class="view" hidden><p class="eyebrow">REVIEW & ADAPT</p><h1>次に、潰す弱点。</h1><div id="insightsContent"></div></section>
+<section id="library" class="view" hidden><p class="eyebrow">QUESTION LIBRARY</p><h1>角度を変えて、鍛える。</h1><div class="filters"><input id="search" type="search" placeholder="質問・回答から検索" aria-label="質問検索"><select id="categoryFilter" aria-label="カテゴリ"><option value="">すべてのテーマ</option></select><select id="sourceFilter" aria-label="既存モード"><option value="">すべての質問</option><option value="take">既存・武山部長</option><option value="pres">既存・社長</option><option value="west">既存・西日本経営</option><option value="today">既存・実戦</option></select></div><div id="questionList"></div></section>
+<section id="facts" class="view" hidden><p class="eyebrow">FACTS, NOT FICTION</p><h1>数字に、根拠を。</h1><p class="intro">実績・予算・具体例は、確認した事実だけ。登録値はこの端末の回答案に反映します。</p><div id="factsContent"></div></section>
+<section id="settings" class="view" hidden><p class="eyebrow">YOUR WORKSPACE</p><h1>積み重ねを、残す。</h1><div class="settings-grid"><div class="panel"><h3>バックアップ</h3><p>入力は端末に自動保存。回答履歴は追加して記録します。別端末への移動やブラウザ変更前に書き出してください。</p><button id="export" class="primary">バックアップを書き出す</button><label class="file-button">バックアップを統合<input type="file" id="import" accept="application/json,.json"></label><p id="storageDetail" class="muted"></p><p class="muted">この公開ページの回答例は閲覧可能です。入力した回答や数字は、AI・同期を実行するまでサーバーに送信されません。</p></div><div class="panel"><h3>AI面接官・クラウド</h3><p id="cloudStatus">専用バックエンドの接続前です。現在の追撃は回答内容に応じたローカルルールです。</p><div id="loginForm" hidden><label>メール<input id="email" type="email" autocomplete="username"></label><label>パスワード<input id="password" type="password" autocomplete="current-password"></label><button id="login">ログイン</button><button id="logout" hidden>ログアウト</button><button id="sync">履歴を同期</button><label class="check"><input type="checkbox" id="aiConsent">AI評価を使用する（質問・回答・会話をサーバー経由でOpenAIへ送信）</label></div><p class="muted">AIキーはサーバー側のみ。個人用の許可ユーザーに限定し、利用上限を設定して接続します。</p></div></div></section>
+</main><footer>TEAM ARCHITECT <span>ひよらない強さを、毎日の判断に。</span></footer></div></div>
+<div id="toast" class="toast" role="status" hidden></div><script type="module" src="./app.js"></script></body></html>

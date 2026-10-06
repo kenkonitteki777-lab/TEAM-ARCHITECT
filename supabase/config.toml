@@ -1,0 +1,4 @@
+[functions.interview-coach]
+# The handler validates the session with Auth /user on every request.
+# No unauthenticated request can reach the database or AI call.
+verify_jwt = false

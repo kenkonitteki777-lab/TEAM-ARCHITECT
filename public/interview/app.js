@@ -1,0 +1,129 @@
+import {QUESTIONS as Q} from './questions.js';
+import {WEAKNESSES,AXES,diagnose,priority,weightedNext,emptyState,validateBackup,mergeBackup} from './engine.js';
+import {CLOUD} from './config.js';
+const $=id=>document.getElementById(id), KEY='team_architect_interview_v3';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let state=emptyState(),idb=null,mode='take',question=Q[1],pool=Q,weakOnly=false,sessionType='rapid',sessionStart=Date.now(),started=Date.now(),firstInput=null,completed=0,sessionQueue=[],navHistory=[],turns=[],follow=false,diagnostic=null,recognition=null,voiceEpoch=0,aiBusy=false,sessionClosed=false,manualGrade=null,toastTimer,storageOK=true,mutation=0,shownAt=Date.now(),pauseStart=null,pausedMs=0;
+function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500)}
+function safeGet(k){try{return localStorage.getItem(k)}catch{return null}}
+function write(){mutation++;state.savedAt=new Date().toISOString();try{const json=JSON.stringify(state);localStorage.setItem(KEY,json);storageOK=true;$('saveStatus').textContent='端末に保存済み'}catch{storageOK=false;$('saveStatus').textContent='保存不可：バックアップ推奨';toast('端末への保存に失敗しました。バックアップを書き出してください。')}
+ if(idb){const tx=idb.transaction('snapshots','readwrite');tx.objectStore('snapshots').put(structuredClone(state),'current');tx.onerror=()=>{$('saveStatus').textContent='二重保存の一部に失敗'}}
+}
+async function init(){
+ const before=mutation;try{const raw=safeGet(KEY);if(raw)state=validateBackup(JSON.parse(raw),Q)}catch{toast('保存データを読み取れません。元データは削除せず保持しています。')}
+ // Read-only migration preserves old keys and all previous answers.
+ for(const q of Q){const a=safeGet('interview_actual_'+q.q),g=safeGet('interview_grade_'+q.q);if((a||g)&&!state.records[q.id]){state.records[q.id]={answer:a||'',grade:g||null,weaknesses:g==='weak'?['回答できない']:[],updatedAt:new Date().toISOString()};if(a)state.history.push({id:'legacy-'+q.id,questionId:q.id,prompt:q.q,mode:q.m,answer:a,seconds:0,grade:g||null,weaknesses:[],updatedAt:new Date().toISOString(),kind:'answer'})}}
+ try{idb=await new Promise((resolve,reject)=>{const r=indexedDB.open('team-architect-interview',1);r.onupgradeneeded=()=>r.result.createObjectStore('snapshots');r.onerror=()=>reject(r.error);r.onsuccess=()=>resolve(r.result)});const previous=await new Promise((resolve,reject)=>{const tx=idb.transaction('snapshots','readonly');const r=tx.objectStore('snapshots').get('current');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});if(previous){const recovered=validateBackup(previous,Q);if(Date.parse(previous.savedAt||0)>Date.parse(state.savedAt||0))state=recovered;if(mutation!==before)toast('入力を保持して保存済みデータを統合しました。')}}catch{ /* Local storage remains the primary store. */ }
+ try{const saved=JSON.parse(sessionStorage.getItem('interview-conversation'));if(saved&&Q.some(q=>q.id===saved.questionId)&&Array.isArray(saved.turns)&&saved.turns.length<=10&&saved.turns.every(t=>typeof t.prompt==='string'&&typeof t.answer==='string'&&t.answer.length<=12000)){question=Q.find(q=>q.id===saved.questionId);turns=saved.turns;follow=true}}catch{}
+ mode=state.preferences.mode||'take';document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));write();render();setupCloud();
+}
+function stopVoice(){voiceEpoch++;if(recognition){recognition.onend=null;recognition.abort();recognition=null}$('voice').textContent='◉ 音声入力';$('voice').setAttribute('aria-pressed','false')}
+function draftKey(){return question.id}
+function saveDraft(){if(follow){persistConversation();return}state.drafts[draftKey()]=$('actual').value;write()}
+function elapsed(){return Math.round((Date.now()-started-pausedMs-(pauseStart?Date.now()-pauseStart:0))/1000)}
+function stats(){
+ const records=Object.values(state.records), n=records.filter(r=>r.answer?.trim()).length,w=records.filter(r=>r.grade==='weak'||r.weaknesses?.length).length;
+ $('answered').textContent=n;$('weakCount').textContent=w;$('coverage').textContent=`${Q.length}問中 ${n}問 · 回答履歴 ${state.history.length}件`;$('progressBar').style.width=(n/Q.length*100)+'%';
+ const counts=weaknessCounts();$('focusWeakness').innerHTML=counts.length?counts.slice(0,3).map(([w,n])=>`<div class="focus-item"><span>${esc(w)}</span><b>${n}</b></div>`).join(''):'<p>回答から、次の課題を見つける。</p>';
+}
+function weaknessCounts(){const count={};Object.values(state.records).forEach(r=>(r.weaknesses||[]).forEach(w=>count[w]=(count[w]||0)+1));return Object.entries(count).sort((a,b)=>b[1]-a[1])}
+function render(){
+ stopVoice();started=Date.now();shownAt=started;firstInput=null;pausedMs=0;pauseStart=document.hidden?Date.now():null;diagnostic=null;manualGrade=null;
+ $('category').textContent=follow?'追撃 · '+question.category:question.category;$('question').textContent=follow?turns.at(-1).prompt:question.q;
+ $('questionNumber').textContent=`${question.id.toUpperCase()} / ${Q.length}問`;
+ $('modeHint').textContent=mode==='pres'?'結論 → 根拠 → 行動。短く、強く。':'人間性 ＋ 論理 ＋ 経験 ＋ 店長としての行動。';
+ $('lens').textContent=mode==='pres'?'利益・入金・現場・判断・責任。説明過多や言い訳を減らし、できるかを先に答える。':'その経験から何を学び、どう人を育てるか。感情だけで終わらず、店長としての行動を示す。';
+ $('anchor').textContent=mode==='pres'?'とる時にとる、\n出す時に出す。':'遠回りこそ\n最大の近道。';
+ $('actual').value=follow?(turns.at(-1)?.answer||''):(state.drafts[question.id]??'');$('chars').textContent=$('actual').value.length+'字';$('saveStatus').textContent=storageOK?'入力と同時に保存':'保存不可：バックアップ推奨';
+ $('diagnostic').hidden=true;$('model').hidden=true;$('modelToggle').setAttribute('aria-expanded','false');$('modelToggle').disabled=sessionType==='mock';$('good').disabled=sessionType==='mock';$('weak').disabled=sessionType==='mock';$('diagnose').disabled=sessionType==='mock';
+ const r=state.records[question.id];$('good').setAttribute('aria-pressed',String(r?.grade==='good'));$('weak').setAttribute('aria-pressed',String(r?.grade==='weak'));
+ $('conversation').hidden=!turns.length||sessionType==='mock';$('conversation').innerHTML=turns.filter(t=>t.answer).map(t=>`<b>${esc(t.prompt)}</b><p>${esc(t.answer)}</p>`).join('');stats();updateClock();
+ $('saveNext').disabled=false;$('followup').disabled=false;$('sessionResult').hidden=true;
+ if(matchMedia('(min-width: 900px)').matches)$('actual').focus({preventScroll:true});
+}
+function selectedPool(){const base=Q.filter(q=>!$('categoryFilter').value||q.category===$('categoryFilter').value);return weakOnly?base.filter(q=>{const r=state.records[q.id];return r&&(r.grade==='weak'||r.weaknesses?.length)}):base}
+function changeQuestion(q){if(!q){toast('対象の質問がありません。弱点を記録してから再出題してください。');return}navHistory.push(question.id);question=q;follow=false;turns=[];try{sessionStorage.removeItem('interview-conversation')}catch{}render()}
+function record(kind=follow?'followup':'answer'){
+ const answer=$('actual').value.trim(), now=new Date().toISOString();const prompt=follow?turns.at(-1).prompt:question.q;
+ const check=diagnose(answer,{...question,q:prompt,requiresNumber:question.requiresNumber||/数字|いくら|改善額|何円/.test(prompt)},mode,elapsed(),firstInput===null?null:Math.round((firstInput-started)/1000));
+ const manual=state.records[question.id];const weaknesses=manualGrade==='good'?[]:diagnostic?.weaknesses??(manualGrade==='weak'?state.records[question.id]?.weaknesses||['回答できない']:check.weaknesses);
+ const r={id:crypto.randomUUID(),questionId:question.id,prompt,answer,mode,seconds:elapsed(),firstSeconds:check.firstSeconds,updatedAt:now,kind,weaknesses,grade:manualGrade|| (weaknesses.length?'weak':null)};
+ state.history.push(r);if(state.history.length>5000)state.history=state.history.slice(-5000);
+ state.records[question.id]={...r,answer:kind==='answer'?answer:(manual?.answer||''),weaknesses:[...new Set([...(kind==='followup'?manual?.weaknesses||[]:[]),...weaknesses])]};
+ if(!follow)state.drafts[question.id]='';write();stats();return r;
+}
+function next(skip=false){
+ if(aiBusy)return;if(!skip&&!$('actual').value.trim()){toast('回答を入力するか、スキップしてください。');return}
+ if(skip){saveDraft();const prev=state.records[question.id]||{answer:'',updatedAt:new Date().toISOString()};state.records[question.id]={...prev,grade:'weak',weaknesses:[...new Set([...(prev.weaknesses||[]),'回答できない'])]};write()}
+ else {const r=record();if(r.weaknesses.length)toast('次の課題：'+r.weaknesses.slice(0,2).join('・'))}
+ if((sessionType==='mock'||sessionType==='20')&&!follow&&!skip){localFollowup();return}
+ completed++;
+ const limit=sessionType==='5'?5:sessionType==='10'||sessionType==='mock'?10:Infinity;
+ if(completed>=limit||sessionClosed){endSession();return}
+ if(sessionQueue.length){changeQuestion(sessionQueue.shift());return}
+ pool=selectedPool();const recent=state.history.slice(-6).map(r=>r.questionId);changeQuestion(weightedNext(pool,state,recent));
+}
+function endSession(){sessionClosed=true;stopVoice();$('saveNext').disabled=true;$('followup').disabled=true;$('sessionResult').hidden=false;
+ const recent=state.history.filter(r=>Date.parse(r.updatedAt)>=sessionStart);$('sessionResult').innerHTML=`<p class="eyebrow">SESSION COMPLETE</p><h3>${completed}問を練習しました。</h3><p>回答 ${recent.length}件 · 要復習 ${recent.filter(r=>r.weaknesses.length).length}件</p><p>弱点・履歴で、次の課題を確認できます。</p><button id="restart" class="primary">もう一度、鍛える</button>`;$('restart').onclick=startSession;$('sessionResult').scrollIntoView({block:'nearest',behavior:'instant'});toast('セッション完了。回答は保存済みです。')}
+function startSession(){saveDraft();sessionType=$('sessionType').value;sessionClosed=false;sessionStart=Date.now();completed=0;sessionQueue=[];
+ const base=selectedPool();if(!base.length){toast('対象の弱点がありません。');$('sessionType').value='rapid';sessionType='rapid';return}
+ if(sessionType==='5'||sessionType==='10'){sessionQueue=[...base].sort((a,b)=>b.priority-a.priority).slice(0,Number(sessionType));changeQuestion(sessionQueue.shift())}
+ else if(sessionType==='mock'){sessionQueue=[...base].sort(()=>Math.random()-.5).slice(0,10);changeQuestion(sessionQueue.shift())}
+ else if(sessionType==='20'){sessionQueue=[...base].sort((a,b)=>priority(b,state)-priority(a,state)).slice(0,20);changeQuestion(sessionQueue.shift())}
+ else changeQuestion(weightedNext(base,state));
+}
+function localFollowup(){
+ const answer=$('actual').value.trim()||state.history.at(-1)?.answer||'', used=turns.map(t=>t.prompt);let prompt;
+ if(/利益|入金|赤字|黒字/.test(answer)&&!/具体|無駄玉|機械費|販促|精査/.test(answer))prompt='利益を残すために、具体的に何を変えますか？';
+ else if(/機械費|無駄玉|営業|精査|改善/.test(answer)&&!/[0-9０-９]/.test(answer))prompt='それで、いくら利益改善できますか？数字と根拠を答えてください。';
+ else if(/要確認|分から|わから|未確認/.test(answer))prompt='数字を答えられない理由は何ですか？いつ、何で確認しますか？';
+ else if(/スタッフ|部下|人材/.test(answer))prompt='その人が納得せず動かなかったら、あなたはどうしますか？';
+ else if(/イズム|ヨロコビ|安心|刺激|やすらぎ/.test(answer))prompt='その言葉を、明日の営業判断と人材育成にどう落とし込みますか？';
+ else prompt=question.followups[turns.length%2].q;
+ if(used.includes(prompt))prompt=question.followups.find(t=>!used.includes(t.q))?.q||'その判断で結果が出なかった場合、次に何を変えますか？';
+ if(follow)turns.at(-1).answer=answer;else turns.push({prompt:question.q,answer});turns.push({prompt,answer:''});follow=true;render();persistConversation();toast('回答に応じたローカル追撃');
+}
+async function askFollowup(){
+ if(aiBusy)return;if(!$('actual').value.trim()){toast('先に回答してください。');return}if(turns.length>=9){toast('深掘りを記録しました。次の質問へ進んでください。');return}
+ record();if(CLOUD.enabled&&$('aiConsent').checked){await aiCoach(true);return}localFollowup();
+}
+function modelAnswer(text){return text.replace(/【要確認：([^】]+)】/g,(all,key)=>{const f=state.facts[key];return f?.value&&f.source&&f.date?f.value+'（本人登録・'+f.date+'）':all})}
+function showModel(){if(sessionType==='mock')return;$('model').hidden=!$('model').hidden;$('modelToggle').setAttribute('aria-expanded',String(!$('model').hidden));if($('model').hidden)return;
+ const q=question;$('model').innerHTML=`<p class="eyebrow">ANSWER BLUEPRINT</p><h3>回答の核</h3><p class="core">${esc(q.core)}</p><h3>あなた向け回答案</h3><p>${esc(modelAnswer(q.answer))}</p><p class="note">${esc(q.status)}。確認前の実績や数値は、実際の回答として断定しないでください。</p><details><summary>面接官が確認したいこと</summary><p>${esc(q.intent)}</p></details>${q.followups.map((f,i)=>`<details><summary>${i+1}段階目の追撃 · ${esc(f.q)}</summary><p>${esc(modelAnswer(f.answer))}</p></details>`).join('')}<p class="note">${esc(q.src)}<br>${esc(q.sourceStatus)}</p>`;
+}
+function showDiagnostic(){
+ if(sessionType==='mock')return;diagnostic=diagnose($('actual').value,question,mode,elapsed(),firstInput===null?null:Math.round((firstInput-started)/1000));renderDiagnostic();
+ if(CLOUD.enabled&&$('aiConsent').checked&&$('actual').value.trim())aiCoach(false);
+}
+function renderDiagnostic(){const d=diagnostic;$('diagnostic').hidden=false;$('diagnostic').innerHTML=`<h3>${d.kind==='ai'?'AI評価':'診断・確認候補'}</h3><p class="muted">${esc(d.note||'評価軸ごとの根拠を確認してください。')}</p><div>${WEAKNESSES.map(w=>`<button class="pill ${d.weaknesses.includes(w)?'selected':''}" data-weakness="${esc(w)}" aria-pressed="${d.weaknesses.includes(w)}">${esc(w)}</button>`).join('')}</div>${(d.evidence||[]).map(e=>`<p class="evidence">${esc(e)}</p>`).join('')}${d.axes?d.axes.map(a=>`<p class="evidence"><b>${esc(a.name)} · ${a.score===null?'未判定':a.score+'/4'}</b><br>${esc(a.evidence)}</p>`).join(''):''}<p class="muted">${d.characters??$('actual').value.length}字 · ${elapsed()}秒 / 計測は表示から保存まで。音声の無音や入力時間も含みます。</p>`;
+ $('diagnostic').querySelectorAll('[data-weakness]').forEach(b=>b.onclick=()=>{const w=b.dataset.weakness;d.weaknesses=d.weaknesses.includes(w)?d.weaknesses.filter(x=>x!==w):[...d.weaknesses,w];const prev=state.records[question.id]||{answer:'',updatedAt:new Date().toISOString()};state.records[question.id]={...prev,weaknesses:d.weaknesses,grade:d.weaknesses.length?'weak':null,updatedAt:new Date().toISOString()};write();stats();renderDiagnostic()});
+}
+function grade(value){if(sessionType==='mock')return;manualGrade=value;const prev=state.records[question.id]||{answer:'',updatedAt:new Date().toISOString()};state.records[question.id]={...prev,grade:value,weaknesses:value==='good'?[]:(prev.weaknesses?.length?prev.weaknesses:['回答できない']),updatedAt:new Date().toISOString()};if(diagnostic)diagnostic.weaknesses=state.records[question.id].weaknesses;write();stats();$('good').setAttribute('aria-pressed',String(value==='good'));$('weak').setAttribute('aria-pressed',String(value==='weak'))}
+function showView(view){saveDraft();document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));if(view==='library')renderLibrary();if(view==='insights')renderInsights();if(view==='facts')renderFacts();if(view==='settings')$('storageDetail').textContent=`${state.history.length}件の履歴 · ${storageOK?'端末保存中':'端末保存に失敗'} · ${idb?'二重保存有効':'追加保存未対応'}`;stopVoice();}
+function renderLibrary(){const term=$('search').value.trim(),cat=$('categoryFilter').value,src=$('sourceFilter').value;const list=Q.filter(q=>(!term||(q.q+q.answer+q.core).includes(term))&&(!cat||q.category===cat)&&(!src||q.m===src));$('questionList').innerHTML=`<p class="muted">${list.length}問 · 既存48問＋追加想定18問</p>`+list.map(q=>`<button class="question-row" data-id="${q.id}"><span class="index">${q.id.slice(1)}</span><span class="row-text">${esc(q.q)}<small>${esc(q.category)} · ${esc(q.status)}</small></span><span class="grade">${state.records[q.id]?.grade==='good'?'✓':state.records[q.id]?.grade==='weak'?'要復習':'→'}</span></button>`).join('');$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{saveDraft();sessionType='rapid';$('sessionType').value='rapid';sessionClosed=false;changeQuestion(Q.find(q=>q.id===b.dataset.id));showView('practice')})}
+function renderInsights(){const counts=weaknessCounts(),h=state.history;const today=h.filter(r=>new Date(r.updatedAt).toLocaleDateString('ja-JP')===new Date().toLocaleDateString('ja-JP'));$('insightsContent').innerHTML=`<div class="insight-stats"><div class="panel"><b>${today.length}</b><small>今日の回答</small></div><div class="panel"><b>${h.length}</b><small>累積の回答</small></div><div class="panel"><b>${counts.reduce((a,b)=>a+b[1],0)}</b><small>弱点の合計</small></div></div><div class="panel"><h3>次回の出題に反映</h3>${counts.length?counts.map(([w,n])=>`<div class="weak-bar"><span>${esc(w)}</span><i style="width:${Math.round(n/counts[0][1]*50)}%"></i><b>${n}問</b></div>`).join(''):'<p>まだ弱点がありません。回答を記録すると確認候補が蓄積します。</p>'}<button id="practiceWeak">弱点から練習する</button></div><h3>回答履歴</h3>${h.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))} · ${r.mode==='pres'?'社長':'武山部長'} · ${r.seconds}秒${r.kind==='followup'?' · 追撃':''}</small><h4>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h4><p>${esc(r.answer)}</p><small>${esc(r.weaknesses.join(' / ')||'弱点の確認候補なし')}</small></article>`).join('')}`;$('practiceWeak').onclick=()=>{weakOnly=true;$('weakMode').setAttribute('aria-pressed','true');if(selectedPool().length){showView('practice');$('sessionType').value='rapid';startSession()}else toast('記録済みの弱点がありません。')};}
+function renderFacts(){const keys=new Set();Q.forEach(q=>[q.answer,...q.followups.map(f=>f.answer)].forEach(a=>{for(const m of a.matchAll(/【要確認：([^】]+)】/g))keys.add(m[1])}));$('factsContent').innerHTML=[...keys].map((k,i)=>{const f=state.facts[k]||{};return `<div class="panel"><h3 class="fact-title">${esc(k)}</h3><div class="fact-grid" data-fact="${i}"><label>確認した値・事実<input data-field="value" value="${esc(f.value)}" placeholder="指標・期間・単位を含める" maxlength="12000"></label><label>確認資料<input data-field="source" value="${esc(f.source)}" placeholder="例：営業実績資料" maxlength="300"></label><label>確認日<input type="date" data-field="date" value="${esc(f.date)}"></label></div></div>`}).join('');[...keys].forEach((k,i)=>{$('factsContent').querySelector(`[data-fact="${i}"]`).querySelectorAll('input').forEach(input=>input.oninput=()=>{state.facts[k]={...(state.facts[k]||{}),[input.dataset.field]:input.value,updatedAt:new Date().toISOString()};write()})})}
+$('actual').oninput=()=>{if(firstInput===null&&$('actual').value.trim())firstInput=Date.now();diagnostic=null;manualGrade=null;$('diagnostic').hidden=true;$('chars').textContent=$('actual').value.length+'字';if(!follow)saveDraft();else{turns.at(-1).answer=$('actual').value;persistConversation()}};
+function persistConversation(){try{sessionStorage.setItem('interview-conversation',JSON.stringify({questionId:question.id,turns,answer:$('actual').value}))}catch{toast('追撃の一時保存ができません。回答を記録してください。')}}
+$('saveNext').onclick=()=>next();$('skip').onclick=()=>next(true);$('saveOnly').onclick=()=>{if(!$('actual').value.trim()){toast('回答を入力してください。');return}record();toast('回答を履歴に記録しました。')};$('prev').onclick=()=>{saveDraft();if(navHistory.length){const id=navHistory.pop();question=Q.find(q=>q.id===id)||Q[0];turns=[];follow=false;render()}else toast('前の質問はありません。')};$('good').onclick=()=>grade('good');$('weak').onclick=()=>grade('weak');$('diagnose').onclick=showDiagnostic;$('modelToggle').onclick=showModel;$('followup').onclick=askFollowup;
+$('sessionType').onchange=startSession;$('weakMode').onclick=()=>{saveDraft();weakOnly=!weakOnly;$('weakMode').setAttribute('aria-pressed',String(weakOnly));if(weakOnly&&!selectedPool().length){weakOnly=false;$('weakMode').setAttribute('aria-pressed','false');toast('まだ記録済みの弱点がありません。');return}startSession()};
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{saveDraft();mode=b.dataset.mode;state.preferences.mode=mode;write();document.querySelectorAll('[data-mode]').forEach(z=>z.setAttribute('aria-pressed',String(z===b)));render()});
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('categoryFilter').innerHTML+=[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');['search','categoryFilter','sourceFilter'].forEach(id=>$(id).oninput=renderLibrary);
+window.addEventListener('keydown',e=>{if($('practice').hidden||e.isComposing)return;if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();next()}if(e.altKey&&e.key.toLowerCase()==='f'){e.preventDefault();askFollowup()}if(e.altKey&&e.key.toLowerCase()==='h'){e.preventDefault();showModel()}});
+$('voice').onclick=()=>{if(recognition){stopVoice();return}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('このブラウザは音声入力に未対応です。端末キーボードのマイクを利用できます。');return}const epoch=++voiceEpoch,r=new SR();recognition=r;r.lang='ja-JP';r.continuous=true;r.interimResults=false;r.onresult=e=>{if(epoch!==voiceEpoch)return;for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)$('actual').value+=($('actual').value?' ':'')+e.results[i][0].transcript;$('actual').dispatchEvent(new Event('input'))};r.onerror=()=>{stopVoice();toast('音声入力を開始できません。マイク権限とブラウザ対応を確認してください。')};r.onend=()=>{if(epoch===voiceEpoch)stopVoice()};try{r.start();$('voice').textContent='■ 音声入力を停止';$('voice').setAttribute('aria-pressed','true')}catch{stopVoice();toast('音声入力を開始できません。')}};
+function updateClock(){const sec=elapsed();$('timer').textContent=`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;const limit=['5','10','20'].includes(sessionType)?Number(sessionType)*60:0, used=Math.floor((Date.now()-sessionStart)/1000);$('sessionClock').textContent=limit?`残り ${Math.floor(Math.max(0,limit-used)/60)}:${String(Math.max(0,limit-used)%60).padStart(2,'0')}`:'';$('sessionProgress').textContent=sessionType==='rapid'?'制限なし':`${completed} / ${sessionType==='5'?5:sessionType==='10'||sessionType==='mock'?10:'時間内'}問`;if(limit&&used>=limit&&!sessionClosed){sessionClosed=true;toast('時間です。現在の回答を保存してセッションを終了してください。')}}
+setInterval(updateClock,1000);document.addEventListener('visibilitychange',()=>{if(document.hidden){pauseStart=Date.now();stopVoice();if(!follow)saveDraft();else persistConversation()}else if(pauseStart){pausedMs+=Date.now()-pauseStart;pauseStart=null}});
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`team-architect-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('バックアップを書き出しました。')};
+$('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10*1024*1024)throw new Error('10MB以内のファイルを選んでください。');const incoming=validateBackup(JSON.parse(await file.text()),Q);state=mergeBackup(state,incoming);write();stats();toast('既存履歴を保持してバックアップを統合しました。')}catch(e){toast(e.message||'バックアップを読み込めません。')}e.target.value=''};
+let auth=null;
+function setupCloud(){if(!CLOUD.enabled)return;if(!/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(CLOUD.url)){toast('バックエンド設定が不正です。');return}$('loginForm').hidden=false;$('cloudStatus').textContent='ログイン後に同期・AI評価を利用できます。回答は明示的に実行した時だけ送信します。';try{auth=JSON.parse(sessionStorage.getItem('interview-auth'))}catch{auth=null}updateAuth()}
+function updateAuth(){$('logout').hidden=!auth;$('login').hidden=!!auth;$('email').hidden=!!auth;$('password').hidden=!!auth;$('connection').innerHTML='<i></i>'+ (auth?'接続済み · 手動同期':'端末保存')}
+async function request(path,{method='GET',body,headers={}}={}){const h={apikey:CLOUD.publishableKey,'Content-Type':'application/json',...headers};if(auth)h.Authorization='Bearer '+auth.access_token;const res=await fetch(CLOUD.url+path,{method,headers:h,body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(45000)});let data;try{data=await res.json()}catch{throw new Error('応答を読み取れません。')}if(!res.ok){if(res.status===401){auth=null;sessionStorage.removeItem('interview-auth');updateAuth()}throw new Error(data.error_description||data.error||data.message||'接続に失敗しました。')}return data}
+$('login').onclick=async()=>{try{auth=await request('/auth/v1/token?grant_type=password',{method:'POST',body:{email:$('email').value,password:$('password').value}});sessionStorage.setItem('interview-auth',JSON.stringify({access_token:auth.access_token}));$('password').value='';updateAuth();toast('ログインしました。')}catch(e){toast(e.message)}};
+$('logout').onclick=async()=>{try{await request('/auth/v1/logout',{method:'POST'})}catch{}auth=null;sessionStorage.removeItem('interview-auth');$('aiConsent').checked=false;updateAuth();toast('ログアウトしました。')};
+$('sync').onclick=async()=>{if(!auth){toast('先にログインしてください。');return}try{const data=await request('/functions/v1/interview-coach',{method:'POST',body:{action:'sync',state}});if(data.state)state=mergeBackup(state,validateBackup(data.state,Q));write();stats();toast('履歴を統合・同期しました。')}catch(e){toast(e.message)}};
+async function aiCoach(wantFollowup){if(!auth){toast('AI面接官にはログインが必要です。');return}if(aiBusy)return;aiBusy=true;$('followup').disabled=true;$('saveNext').disabled=true;const qid=question.id,prompt=follow?turns.at(-1).prompt:question.q,text=$('actual').value;
+ try{const data=await request('/functions/v1/interview-coach',{method:'POST',body:{action:'coach',mode,prompt,questionId:qid,answer:text,seconds:elapsed(),conversation:turns.map(t=>({prompt:t.prompt,answer:t.answer})),facts:state.facts}});if(question.id!==qid||$('actual').value!==text){toast('回答が変わったため、前のAI評価は適用しません。');return}diagnostic={kind:'ai',weaknesses:(data.weaknesses||[]).filter(w=>WEAKNESSES.includes(w)),axes:data.axes,evidence:[data.feedback],note:'AIによる改善提案。事実の正しさは本人が確認してください。'};if(sessionType!=='mock')renderDiagnostic();if(wantFollowup){if(follow)turns.at(-1).answer=text;else turns.push({prompt,answer:text});turns.push({prompt:data.followup,answer:''});follow=true;render();persistConversation()}}
+ catch(e){toast('AI評価に失敗：'+e.message+'。ローカル練習は継続できます。')}finally{aiBusy=false;$('followup').disabled=false;$('saveNext').disabled=sessionClosed}}
+init();
