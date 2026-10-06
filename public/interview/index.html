@@ -12,7 +12,7 @@ main{padding:16px 12px 60px}.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bott
 <header><div class="w"><div class="ey">MARUHAN WEST JAPAN / INTERVIEW</div><div class="t">店長昇進 面接トレーナー</div><div class="s">過去試験 × あなたの回答 × 面接官別モード</div></div></header>
 <main class="w">
 <div class="bar">
-<button data-mode="all" class="active">総合</button><button data-mode="take">武山部長</button><button data-mode="pres">社長</button><button data-mode="west">西日本・経営</button>
+<button data-mode="all" class="active">総合</button><button data-mode="take">武山部長</button><button data-mode="pres">社長</button><button data-mode="west">西日本・経営</button><button data-mode="today">本日実戦</button>
 </div>
 <div class="bar"><button id="random">ランダム出題</button><button id="next">次の質問</button><button id="show" class="primary">解答を見る</button></div>
 <div class="layout">
@@ -91,5 +91,7 @@ $("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><d
 $("next").onclick=()=>{idx=(idx+1)%pool.length;render()};
 $("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-mode]").forEach(z=>z.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;idx=0;build()});
+$("save").onclick=()=>{localStorage.setItem(key(),$("actual").value);$("saved").textContent="保存済み";$("out").insertAdjacentHTML("beforeend",analyze())};
+$("clear").onclick=()=>{localStorage.removeItem(key());$("actual").value="";$("saved").textContent="未保存"};
 build();
 </script></body></html>
