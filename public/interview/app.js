@@ -1,6 +1,6 @@
 import {QUESTIONS as Q} from './questions.js';
 import {WEAKNESSES,AXES,diagnose,priority,weightedNext,emptyState,validateBackup,mergeBackup} from './engine.js';
-import {CLOUD} from './config.js';
+import {CLOUD} from './config.js?v=20261006-free1';
 const $=id=>document.getElementById(id), KEY='team_architect_interview_v3';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state=emptyState(),idb=null,mode='take',question=Q[1],pool=Q,weakOnly=false,sessionType='rapid',sessionStart=Date.now(),started=Date.now(),firstInput=null,completed=0,sessionQueue=[],navHistory=[],turns=[],follow=false,diagnostic=null,recognition=null,voiceEpoch=0,aiBusy=false,sessionClosed=false,sessionTarget=Infinity,manualGrade=null,toastTimer,storageOK=true,mutation=0,shownAt=Date.now(),pauseStart=null,pausedMs=0;
