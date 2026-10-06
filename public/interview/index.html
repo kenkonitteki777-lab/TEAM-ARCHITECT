@@ -64,7 +64,7 @@ const Q=[
 let mode="all",pool=[],idx=0;
 const $=id=>document.getElementById(id);
 function build(){pool=Q.filter(x=>mode==="all"||x.m===mode);if(!pool.length)pool=Q;idx=Math.min(idx,pool.length-1);render()}
-function render(){const x=pool[idx];$("chips").innerHTML='<span class="chip">'+(x.m==="take"?"武山部長":x.m==="pres"?"社長":x.m==="west"?"西日本・経営":"総合")+'</span><span class="chip">'+x.t+'</span>';$("count").textContent=(idx+1)+" / "+pool.length;$("q").textContent=x.q;$("out").innerHTML=""}
+function render(){const x=pool[idx];$("chips").innerHTML='<span class="chip">'+(x.m==="take"?"武山部長":x.m==="pres"?"社長":x.m==="west"?"西日本・経営":x.m==="today"?"本日実戦":"総合")+'</span><span class="chip">'+x.t+'</span>';$("count").textContent=(idx+1)+" / "+pool.length;$("q").textContent=x.q;$("out").innerHTML=""}
 $("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><div class="label">模範解答・過去試験の解答例を基にした回答の軸</div><div class="answer">'+x.model+'</div><div class="why"><div class="label">私の回答例</div><div class="answer">'+x.mine+'</div><div class="source">出典・位置づけ：'+x.src+'</div></div><div class="why"><div class="label">深掘り想定</div><div class="answer">「なぜそう考える？」「具体的には？」「利益は？」「店長なら最初に何をする？」まで続けて答える。</div></div></div>'};
 $("next").onclick=()=>{idx=(idx+1)%pool.length;render()};
 $("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
