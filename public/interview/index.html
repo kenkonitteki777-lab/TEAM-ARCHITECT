@@ -87,6 +87,9 @@ let mode="all",pool=[],idx=0;
 const $=id=>document.getElementById(id);
 function build(){pool=Q.filter(x=>mode==="all"||x.m===mode);if(!pool.length)pool=Q;idx=Math.min(idx,pool.length-1);render()}
 function render(){const x=pool[idx];$("chips").innerHTML='<span class="chip">'+(x.m==="take"?"武山部長":x.m==="pres"?"社長":x.m==="west"?"西日本・経営":x.m==="today"?"本日実戦":"総合")+'</span><span class="chip">'+x.t+'</span>';$("count").textContent=(idx+1)+" / "+pool.length;$("q").textContent=x.q;$("out").innerHTML="";loadActual()}
+function key(){return "interview_actual_"+pool[idx].q}
+function loadActual(){const v=localStorage.getItem(key())||"";$("actual").value=v;$("saved").textContent=v?"保存済み":"未保存"}
+function analyze(){const v=$("actual").value.trim();const scores=[/^(はい|いいえ|結論|私は|まず|一番)/.test(v),/なぜ|理由|からです|ためです/.test(v),/南宮崎|羽曳野|前崎|現場|スタッフ|お客様|機種|利益|稼働/.test(v),/します|しました|徹底|行動|改善|確認|精査|実行/.test(v),/[0-9０-９]+(％|%|万|億|台|円|人|店舗)/.test(v)];const labels=["結論","理由","経験・事実","行動","数字"];return '<div class="box"><div class="label">回答セルフ診断</div><div class="score">'+scores.map((ok,i)=>'<div>'+labels[i]+'<b>'+(ok?4:2)+'/4</b></div>').join("")+'</div><div class="weak">'+(v.length<40?"短い。結論→理由→具体例まで足す。":v.length>350?"長い。結論を先に置き、不要な説明を削る。":"長さは概ね使いやすい。")+'</div></div>'}
 $("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><div class="label">模範解答・過去試験の解答例を基にした回答の軸</div><div class="answer">'+x.model+'</div><div class="why"><div class="label">私の回答例</div><div class="answer">'+x.mine+'</div><div class="source">出典・位置づけ：'+x.src+'</div></div><div class="why"><div class="label">深掘り想定</div><div class="answer">「なぜ？」「具体的には？」「数字は？」「それで何が変わった？」「店長ならどうする？」の順に追撃される想定。</div></div></div>'};
 $("next").onclick=()=>{idx=(idx+1)%pool.length;render()};
 $("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
