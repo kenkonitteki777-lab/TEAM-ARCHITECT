@@ -21,7 +21,7 @@ main{padding:16px 12px 60px}.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bott
 <div class="chips" id="chips"></div><div class="hint" id="count"></div>
 <div class="q" id="q"></div>
 <div class="hint">まず自分の言葉で答えてから「解答を見る」。暗記ではなく、結論→理由→経験→店長としてどうする、の順で話す。</div>
-<div id="out" class="out"></div><div id="recordReview"></div><div class="record box"><div class="label">今日の実際の回答を記録</div><textarea id="actual" placeholder="今日、実際にどう答えたかを入力。話した内容をそのまま残してOK。"></textarea><div class="mini"><button id="save">回答を保存</button><button id="clear">この回答を消す</button></div><div id="saved" class="saved"></div></div>
+<div id="out" class="out"></div><div id="recordReview"></div><div class="record box"><div class="label">今日の実際の回答を記録</div><textarea id="actual" placeholder="今日、実際にどう答えたかを入力。話した内容をそのまま残してOK。"></textarea><div class="mini"><button id="saveNext" class="primary">保存して次へ →</button><button id="save">保存だけ</button><button id="clear">消す</button></div><div class="hint">高速操作：Ctrl＋Enter（スマホは「保存して次へ」）で即、次の質問へ。</div><div id="saved" class="saved"></div></div>
 </section>
 <aside class="p side">
 <h3>このアプリの基準</h3>
@@ -95,7 +95,9 @@ let attackIdx=0;
 function attackQuestion(){const x=pool[idx],list=FOLLOW[x.m]||FOLLOW.today,q=list[attackIdx%list.length];attackIdx++;$("out").insertAdjacentHTML("beforeend",'<div class="box"><div class="label">'+(x.m==="pres"?"社長の追撃":x.m==="take"?"武山部長の追撃":"面接官の追撃")+'</div><div class="answer">'+q+'</div><div class="source">回答したら、もう一度「追撃する」で次の質問へ。</div></div>')}
 function review(){const items=Q.map(x=>localStorage.getItem("interview_actual_"+x.q)||"").filter(Boolean),n=items.length,avg=n?Math.round(items.reduce((a,v)=>a+v.length,0)/n):0;$("recordReview").innerHTML='<div class="box"><div class="label">今日の面接レビュー</div><div class="answer">記録回答：'+n+'問　／　平均回答文字数：'+avg+'文字</div><div class="weak">'+(n===0?'まだ回答記録がありません。実際の回答を保存すると、ここに蓄積されます。':avg<60?'最優先：回答が短い。結論→理由→具体例→店長としてどうする、まで足す。':avg>320?'最優先：長い。社長面接では結論を先にして、必要な事実だけ残す。':'回答量は概ね適正。次は「数字」「利益」「自分が何をしたか」を重点確認。')+'</div></div>'}
 
-function loadActual(){const v=localStorage.getItem(key())||"";$("actual").value=v;$("saved").textContent=v?"保存済み":"未保存"}
+function loadActual(){const v=localStorage.getItem(key())||"";$("actual").value=v;$("saved").textContent=v?"保存済み":"未保存";setTimeout(()=>$("actual").focus(),0)}
+function saveOnly(){localStorage.setItem(key(),$("actual").value);$("saved").textContent="保存済み"}
+function fastNext(){saveOnly();idx=(idx+1)%pool.length;attackIdx=0;render()}
 function analyze(){const v=$("actual").value.trim();const scores=[/^(はい|いいえ|結論|私は|まず|一番)/.test(v),/なぜ|理由|からです|ためです/.test(v),/南宮崎|羽曳野|前崎|現場|スタッフ|お客様|機種|利益|稼働/.test(v),/します|しました|徹底|行動|改善|確認|精査|実行/.test(v),/[0-9０-９]+(％|%|万|億|台|円|人|店舗)/.test(v)];const labels=["結論","理由","経験・事実","行動","数字"];return '<div class="box"><div class="label">回答セルフ診断</div><div class="score">'+scores.map((ok,i)=>'<div>'+labels[i]+'<b>'+(ok?4:2)+'/4</b></div>').join("")+'</div><div class="weak">'+(v.length<40?"短い。結論→理由→具体例まで足す。":v.length>350?"長い。結論を先に置き、不要な説明を削る。":"長さは概ね使いやすい。")+'</div></div>'}
 $("show").onclick=()=>{const x=pool[idx];$("out").innerHTML='<div class="box"><div class="label">模範解答・過去試験の解答例を基にした回答の軸</div><div class="answer">'+x.model+'</div><div class="why"><div class="label">私の回答例</div><div class="answer">'+x.mine+'</div><div class="source">出典・位置づけ：'+x.src+'</div></div><div class="why"><div class="label">深掘り想定</div><div class="answer">「なぜ？」「具体的には？」「数字は？」「それで何が変わった？」「店長ならどうする？」の順に追撃される想定。</div></div></div>'};
 $("prev").onclick=()=>{idx=(idx-1+pool.length)%pool.length;attackIdx=0;render();renderList()};
@@ -105,7 +107,9 @@ $("review").onclick=review;
 $("next").onclick=()=>{idx=(idx+1)%pool.length;attackIdx=0;render()};
 $("random").onclick=()=>{idx=Math.floor(Math.random()*pool.length);render()};
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-mode]").forEach(z=>z.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;idx=0;build()});
-$("save").onclick=()=>{localStorage.setItem(key(),$("actual").value);$("saved").textContent="保存済み";$("out").insertAdjacentHTML("beforeend",analyze())};
+$("save").onclick=()=>{saveOnly();$("out").insertAdjacentHTML("beforeend",analyze())};
+$("saveNext").onclick=fastNext;
+$("actual").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();fastNext()}});
 $("clear").onclick=()=>{localStorage.removeItem(key());$("actual").value="";$("saved").textContent="未保存"};
 build();
 </script></body></html>
