@@ -1,5 +1,16 @@
--- Apply to a dedicated TEAM-ARCHITECT project only, after reviewing deployment instructions.
+-- Add interview-only resources to the non-MOCOMO shared project. Existing apps are untouched.
 begin;
+create table public.interview_members (
+  user_id uuid primary key references auth.users(id),
+  enabled boolean not null default true,
+  created_at timestamptz not null default now()
+);
+alter table public.interview_members enable row level security;
+revoke all on public.interview_members from public, anon, authenticated;
+grant select on public.interview_members to authenticated;
+create policy interview_member_self on public.interview_members for select to authenticated
+  using ((select auth.uid()) = user_id);
+-- Membership can only be granted administratively, never by the browser or shared-app users.
 create table public.interview_profiles (
   user_id uuid primary key references auth.users(id),
   payload jsonb not null check (jsonb_typeof(payload) = 'object' and octet_length(payload::text) <= 10485760),
@@ -9,9 +20,9 @@ create table public.interview_profiles (
 alter table public.interview_profiles enable row level security;
 revoke all on public.interview_profiles from public, anon, authenticated;
 grant select, insert, update on public.interview_profiles to authenticated;
-create policy interview_select on public.interview_profiles for select to authenticated using ((select auth.uid()) = user_id);
-create policy interview_insert on public.interview_profiles for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy interview_update on public.interview_profiles for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy interview_select on public.interview_profiles for select to authenticated using ((select auth.uid()) = user_id and exists (select 1 from public.interview_members m where m.user_id = (select auth.uid()) and m.enabled));
+create policy interview_insert on public.interview_profiles for insert to authenticated with check ((select auth.uid()) = user_id and exists (select 1 from public.interview_members m where m.user_id = (select auth.uid()) and m.enabled));
+create policy interview_update on public.interview_profiles for update to authenticated using ((select auth.uid()) = user_id and exists (select 1 from public.interview_members m where m.user_id = (select auth.uid()) and m.enabled)) with check ((select auth.uid()) = user_id and exists (select 1 from public.interview_members m where m.user_id = (select auth.uid()) and m.enabled));
 create table public.interview_ai_usage (
   user_id uuid not null references auth.users(id),
   day date not null default current_date,

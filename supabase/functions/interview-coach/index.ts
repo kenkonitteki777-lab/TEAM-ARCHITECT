@@ -3,7 +3,8 @@ import { AXES, WEAKNESSES, validateBackup, mergeBackup, emptyState } from './eng
 const env = (key: string) => Deno.env.get(key) || '';
 const url=env('SUPABASE_URL'), anon=env('SUPABASE_ANON_KEY'), service=env('SUPABASE_SERVICE_ROLE_KEY');
 const allowedOrigin=env('INTERVIEW_ORIGIN') || 'https://kenkonitteki777-lab.github.io';
-const allowUsers=new Set(env('INTERVIEW_ALLOWED_USER_IDS').split(',').map(x=>x.trim()).filter(Boolean));
+// Free release: provider calls remain disabled even if another shared app sets an AI key.
+const AI_ENABLED = false;
 const dailyLimit=Math.max(1,Math.min(100,Number(env('INTERVIEW_DAILY_LIMIT'))||30));
 const schema={type:'object',additionalProperties:false,required:['axes','weaknesses','feedback','followup'],properties:{
  axes:{type:'array',items:{type:'object',additionalProperties:false,required:['name','score','evidence'],properties:{name:{type:'string',enum:AXES},score:{type:['integer','null'],minimum:0,maximum:4},evidence:{type:'string'}}}},
@@ -24,13 +25,19 @@ async function rest(path:string,token:string,body?:unknown,method='POST',admin=f
 export async function handler(req:Request){
  if(req.headers.get('Origin')!==allowedOrigin)return reply({error:'Origin not allowed'},403);
  if(req.method==='OPTIONS')return reply({ok:true});if(req.method!=='POST')return reply({error:'Method not allowed'},405);
- if(!url||!anon||!allowUsers.size)return reply({error:'専用バックエンドの設定が未完了です。'},503);
+ if(!url||!anon)return reply({error:'専用バックエンドの設定が未完了です。'},503);
  const bearer=req.headers.get('Authorization')||'';if(!/^Bearer \S+$/.test(bearer))return reply({error:'ログインが必要です。'},401);
  const token=bearer.slice(7);let user;
  try{const authRes=await fetch(url+'/auth/v1/user',{headers:{apikey:anon,Authorization:bearer},signal:AbortSignal.timeout(10000)});if(!authRes.ok)return reply({error:'セッションが無効です。'},401);user=await authRes.json()}catch{return reply({error:'認証を確認できません。'},503)}
- if(!allowUsers.has(user.id)||user.is_anonymous)return reply({error:'この個人用アプリの利用権限がありません。'},403);
+ if(user.is_anonymous)return reply({error:'この個人用アプリの利用権限がありません。'},403);
+ try {
+  const membership=await rest('/rest/v1/interview_members?user_id=eq.'+encodeURIComponent(user.id)+'&enabled=eq.true&select=user_id',token,undefined,'GET');
+  if(!membership.ok)return reply({error:'利用権限を確認できません。'},503);
+  if(!(await membership.json()).length)return reply({error:'面接用の利用権限が未設定です。ログインするアカウントを開発担当へ伝えてください。'},403);
+ }catch{return reply({error:'利用権限を確認できません。'},503)}
  let body;try{if(Number(req.headers.get('Content-Length'))>10485760)return reply({error:'データが大きすぎます。'},413);const raw=await req.text();if(raw.length>10485760)return reply({error:'データが大きすぎます。'},413);body=JSON.parse(raw)}catch{return reply({error:'Invalid JSON'},400)}
  try{
+ if(body.action==='status')return reply({ok:true,aiEnabled:AI_ENABLED});
  if(body.action==='sync'){
   const incoming=validateBackup(body.state,QUESTIONS);incoming.drafts={};
   // Optimistic concurrency: a conflicting write never overwrites a newer snapshot.
@@ -45,6 +52,7 @@ export async function handler(req:Request){
   return reply({error:'別端末と競合しました。もう一度同期してください。'},409);
  }
  if(body.action!=='coach')return reply({error:'Unknown action'},400);
+ if(!AI_ENABLED)return reply({error:'無料モードです。有料AIへの送信は無効です。'},503);
  const q=QUESTIONS.find(q=>q.id===body.questionId);
  if(!q||!['take','pres'].includes(body.mode)||typeof body.answer!=='string'||body.answer.length>12000||!body.answer.trim()||typeof body.prompt!=='string'||body.prompt.length>1000)return reply({error:'Invalid coaching request'},400);
  if(!env('OPENAI_API_KEY')||!env('INTERVIEW_AI_MODEL')||!service)return reply({error:'AI接続前です。ローカル練習をご利用ください。'},503);

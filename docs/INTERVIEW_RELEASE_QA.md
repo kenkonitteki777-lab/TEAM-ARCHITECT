@@ -33,3 +33,13 @@ Public root URL initially rendered a blank page with `Cannot read properties of 
 ## Next activation task
 
 Confirm dedicated Supabase organization/project plan and AI budget; follow `docs/INTERVIEW_BACKEND.md`. Run live RLS/advisors/auth denial tests before setting `CLOUD.enabled`. Then test real contextual AI output for both modes, user consent, per-day cap and offline recovery. Do not report fully completed AI coaching until these pass.
+
+
+## Free shared backend / 2026-10-06
+
+- User-approved non-MOCOMO sharing: interview-prefixed resources added to ジョブシート. Existing app resources and Auth configuration not altered. Infrastructure/Auth/quotas shared. MOCOMO untouched.
+- Live migration and Edge Function deployment succeeded. Live rollback-only RLS checks passed: owner isolation, unapproved shared-user denial, self-enrollment denial, anonymous denial, ownership transfer denial, server-only reservation. No synthetic users or snapshots remain.
+- 20 local regression checks passed, including no paid provider invocation despite shared keys, membership lookup failing closed, and optimistic sync conflict retry excluding drafts. Vite production build passed.
+- Advisor: interview_ai_usage has RLS without policies intentionally (deny all clients; service role only). Existing unrelated findings preserved; no new interview warning-level findings.
+- Membership initially empty pending owner's verified Auth account. Authorized end-to-end sync and two-device round trip are not yet verified.
+- Live Edge HTTP checks passed: OPTIONS preflight 200, missing bearer 401, forged bearer 401. Anonymous REST on profiles denied with insufficient privilege.
