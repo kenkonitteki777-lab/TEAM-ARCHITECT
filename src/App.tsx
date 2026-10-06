@@ -116,7 +116,7 @@ function buildFlow(kind:MissionKind,selected:number[],overrides:Record<string,Le
   const reportTo=prevOwner===null?(owner===0?null:0):(prevOwner===owner?null:prevOwner);
   const command=commandFor(people[owner],task,meta.done,fn);
   const output=fnMeta[fn].jp+'の成果物：'+meta.done;
-  const handoff=nextOwner===undefined?'前﨑店長へ最終報告':nextOwner===owner?'同一担当内で自己確認後、次工程へ':people[nextOwner].name+'へ「'+meta.done+'」を共有し、次工程の開始条件を満たす';
+  const handoff=nextOwner===null?'前﨑店長へ最終報告':nextOwner===owner?'同一担当内で自己確認後、次工程へ':people[nextOwner].name+'へ「'+meta.done+'」を共有し、次工程の開始条件を満たす';
   return {owner,fn,task,done:meta.done,reason,support:'必要時は '+(helpers[0]?.name||'チーム')+' が補助',handoff,request:command+' 完了条件：'+meta.done+'。',reportTo,command,output,mbtiRule:mbtiRule(people[owner]).rule};
  });
 }

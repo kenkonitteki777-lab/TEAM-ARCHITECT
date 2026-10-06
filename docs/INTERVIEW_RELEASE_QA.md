@@ -3,7 +3,7 @@
 ## Scope and source
 
 - Original interview app: `edaed67a06825d213a57a1907cda7e5852987387`.
-- Concurrent organizational-app handoff `6370220edec500728cabfcf6185fbf1a9bf30753` was preserved. `src/App.tsx` and `src/index.css` are unchanged.
+- Concurrent organizational-app handoff `6370220edec500728cabfcf6185fbf1a9bf30753` was preserved. `src/index.css` is unchanged. A single existing null-sentinel error in `src/App.tsx` was fixed after root-URL regression verification found a blank page. No organization redesign was performed.
 - Initial public release: `e2934649db1ae879e3e2ed3af9eef37b4980cdfe`; follow-up hardens storage recovery and question positioning.
 - URL: https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/interview/
 - 48 original questions retained with stable IDs; 18 new angle questions; all 66 have answer draft, core, interviewer intent, two followup questions and proposed responses. Unknown personal facts and numbers remain marked.
@@ -22,9 +22,13 @@
 - Supabase projects listed: ジョブシート and MOCOMO; neither used or modified. No dedicated interview project exists.
 - Server implementation and SQL prepared, but no server deployment, live AI call, real RLS database tests or live two-device synchronization claimed. Live RLS test script is rollback-only and must run on the dedicated project before activation.
 - Browser verification runs in remote desktop Chrome. Android hardware, mobile microphone permission, mobile speech recognition and 360/390/430px screenshots are not verified here. Responsive CSS is provided and uses 600/850/1100px breakpoints with 16px mobile input text and primary 54px action.
-- Root app TypeScript check has six pre-existing errors in `src/App.tsx`: unused done, fn, p, requestText, rel, and a null index. Root app still builds; these files were not altered by interview work.
+- Root app TypeScript check initially had six pre-existing errors in `src/App.tsx`: unused done, fn, p, requestText, rel, and a null index. The null-index runtime defect was fixed with a one-line null check; five unused-symbol errors remain outside interview scope.
 - Original PDF source material is absent; original source labels explicitly marked unverified. New answers are proposals, not confirmed past statements. No budgets/achievements fabricated.
 - AI requires dedicated project/account and server-side API secret with a cost decision; remains visibly disabled until then.
+
+## Root regression recovery
+
+Public root URL initially rendered a blank page with `Cannot read properties of undefined (reading name)`. The final workflow step assigns `nextOwner=null`, but the handoff expression checked `undefined`. Corrected the sentinel to null. A regression test runs all five mission kinds and verifies their final handoff and valid owners.
 
 ## Next activation task
 
