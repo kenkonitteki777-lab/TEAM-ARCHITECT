@@ -62,5 +62,12 @@ public/interviewとsupabase配下には今回の変更を加えない。
 
 ## 公開確認
 
-GitHub反映・Actions公開・配信版・公開URLの操作は、実行後に別記する。
+実装コミット：0536eef4aad948e449947488b203d260a6bb62ae。
+公開URL：https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/
+GitHub Actions run：37531961614。ビルド・型検査・ドメインテスト・面接テスト・Pages配信処理は成功。
+公開されたJS：assets/index-CYGtaKha.js（ローカル検証済みビルドと一致）。
+公開URLを390px幅のChromiumで操作し、ミッション作成・指示編集・保存・再読込・再開を確認。
+/interview/もHTTP 200で読込み、回答の核の展開・スキップを確認。
+公開操作中のpageerrorは0件、HTTP 400以上のレスポンスは0件。
+この確認は検証環境からのアクセスであり、ユーザーAndroid実機の確認とは区別する。
 Android実機の到達性は、ユーザー端末で確認されるまで未確認として扱う。
