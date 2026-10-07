@@ -22,7 +22,9 @@ Baseline: `43eedeeb873f3bd0722ae273d7ac3107eaf1e5bc`.
 - One E2E run overlapped a rebuild and timed out while opening a clean context. Sequential run on the final build passed all 10 cases.
 
 Public URL: https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/
-Deployment and public-browser verification are recorded after release. Android user device remains unverified.
+Released source commit: `d0d61218eb59daf2bdb7cdfed197d5669b9e5e55`.
+GitHub Pages workflow: https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/37620185913 — build and deploy succeeded.
+Public-browser verification: new bundle `index-BjV-CCRC.js`, seven role cards, navigation to member settings, mission creation, command edit/save/reload and interview answer/next-question flow passed. No page errors or HTTP failures. HOME document overflow checks passed at 360/390/430/1440 pixels. Android user device remains unverified.
 
 ## Limits
 
