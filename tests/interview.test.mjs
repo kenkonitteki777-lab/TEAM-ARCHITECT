@@ -12,3 +12,32 @@ test('malformed backup is rejected, invalid IDs and weakness tags are stripped',
 test('new backup snapshot timestamp survives validation',()=>{const a=emptyState();a.savedAt='2026-10-06T00:00:00.000Z';assert.equal(validateBackup(a,QUESTIONS).savedAt,a.savedAt)});
 test('free cloud uses only a publishable key; paid AI stays off',()=>{const config=fs.readFileSync('public/interview/config.js','utf8');assert.ok(config.includes('aiEnabled:false'));assert.ok(config.includes('sb_publishable_'));for(const file of fs.readdirSync('public/interview'))assert.ok(!/sk-[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{20,}/.test(fs.readFileSync('public/interview/'+file,'utf8')))});
 test('frontend and server shared engines/questions match exactly',()=>{for(const f of ['engine.js','questions.js'])assert.equal(fs.readFileSync('public/interview/'+f,'utf8'),fs.readFileSync('supabase/functions/interview-coach/'+f,'utf8'));assert.equal(AXES.length,15)});
+
+import {emptyModels,validateModels,mergeModels,setModel,persistModels,MODEL_KEY} from '../public/interview/model-store.js';
+test('personal model answers and followups roundtrip without changing source questions',()=>{
+ const original=QUESTIONS[0].answer;
+ let store=setModel(emptyModels(),'q001','本人が編集した模範解答','2026-10-07T04:00:00Z');
+ store=setModel(store,'q001:f0','追撃にも自分の回答を登録','2026-10-07T04:01:00Z');
+ const saved=validateModels(JSON.parse(JSON.stringify(store)),QUESTIONS);
+ assert.equal(saved.entries.q001.text,'本人が編集した模範解答');assert.equal(saved.entries['q001:f0'].text,'追撃にも自分の回答を登録');assert.equal(QUESTIONS[0].answer,original);
+});
+test('editing a model answer retains previous personal versions',()=>{
+ const first=setModel(emptyModels(),'q001','初回の本人回答','2026-10-07T04:00:00Z');
+ const second=setModel(first,'q001','改善した本人回答','2026-10-07T04:02:00Z');
+ assert.equal(first.entries.q001.text,'初回の本人回答');assert.equal(second.entries.q001.revisions[0].text,'初回の本人回答');
+});
+test('merging model backups keeps newest answer and preserves differing older versions',()=>{
+ const old=setModel(emptyModels(),'q001','前の回答','2026-10-07T04:00:00Z');
+ const newer=setModel(emptyModels(),'q001','新しい回答','2026-10-07T05:00:00Z');
+ const merged=mergeModels(newer,old);assert.equal(merged.entries.q001.text,'新しい回答');assert.ok(merged.entries.q001.revisions.some(r=>r.text==='前の回答'));assert.deepEqual(mergeModels(merged,old),merged);
+});
+test('model validation rejects malformed content and ignores unknown question IDs',()=>{
+ assert.throws(()=>setModel(emptyModels(),'q001','   '));assert.throws(()=>setModel(emptyModels(),'q001','a'.repeat(12001)));
+ assert.throws(()=>validateModels({version:1,entries:{q001:{text:'answer',updatedAt:'broken'}}},QUESTIONS));
+ assert.deepEqual(validateModels({version:1,entries:{q999:{text:'unknown',updatedAt:'2026-10-07',revisions:[]}}},QUESTIONS),emptyModels());
+});
+test('quota errors retain active model answer instead of reporting a successful save',()=>{
+ const current=setModel(emptyModels(),'q001','保存済み','2026-10-07T04:00:00Z'),next=setModel(current,'q001','新しい文章','2026-10-07T05:00:00Z');
+ assert.throws(()=>persistModels({setItem(){throw new Error('QuotaExceededError')}},next));assert.equal(current.entries.q001.text,'保存済み');
+ const storage=new Map();persistModels({setItem:(k,v)=>storage.set(k,v)},next);assert.equal(JSON.parse(storage.get(MODEL_KEY)).entries.q001.text,'新しい文章');
+});
