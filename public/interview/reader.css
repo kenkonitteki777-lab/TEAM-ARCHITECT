@@ -1,3 +1,7 @@
+@font-face { font-family: "Interview Sans JP"; font-style: normal; font-weight: 400; font-display: swap; src: url('./fonts/interview-sans-jp-regular.woff2') format('woff2'); }
+@font-face { font-family: "Interview Sans JP"; font-style: normal; font-weight: 500; font-display: swap; src: url('./fonts/interview-sans-jp-medium.woff2') format('woff2'); }
+@font-face { font-family: "Interview Sans JP"; font-style: normal; font-weight: 600; font-display: swap; src: url('./fonts/interview-sans-jp-semibold.woff2') format('woff2'); }
+@font-face { font-family: Manrope; font-style: normal; font-weight: 200 800; font-display: swap; src: url('./fonts/manrope.woff2') format('woff2'); }
 * { box-sizing: border-box; }
 :root {
   color-scheme: dark;
@@ -12,7 +16,7 @@ body {
   margin: 0;
   color: var(--text);
   background: radial-gradient(ellipse at 50% 0, #20232a 0, var(--bg) 60%) fixed;
-  font-family: "IBM Plex Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Interview Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 button, input, select, textarea { font: inherit; }
@@ -66,7 +70,7 @@ h1 { font-size: 39px; line-height: 1.55; letter-spacing: -.035em; font-weight: 6
 .primary:hover { background: #fff; }
 #reveal { flex: 1; max-width: 432px; margin: 0 auto; }
 #reveal > span { font-family: Manrope, sans-serif; font-size: 19px; font-weight: 400; line-height: 1; color: #555f69; }
-.keyhint { font-family: Manrope, "IBM Plex Sans JP", sans-serif; font-size: 9px; color: #7e8593; margin: 3px 0 18px; text-align: center; letter-spacing: .04em; }
+.keyhint { font-family: Manrope, "Interview Sans JP", sans-serif; font-size: 9px; color: #7e8593; margin: 3px 0 18px; text-align: center; letter-spacing: .04em; }
 .keyhint span { margin-left: 24px; }
 dialog { width: min(700px, calc(100% - 32px)); max-height: 88dvh; background: #191c22; color: var(--text); padding: 28px; border: 1px solid #3a424d; border-radius: 18px; overflow: auto; box-shadow: 0 24px 100px #0009; }
 dialog::backdrop { background: #080a0fbf; backdrop-filter: blur(7px); }
