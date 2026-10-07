@@ -3,7 +3,7 @@ import {emptyState,validateBackup,mergeBackup} from './engine.js';
 import {MODEL_KEY,DRAFT_KEY,emptyModels,validateModels,mergeModels,setModel,persistModels} from './model-store.js';
 const $=id=>document.getElementById(id),KEY='team_architect_interview_v3',POSITION='team_architect_reader_question';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let state=emptyState(),models=emptyModels(),idb=null,index=0,pool=Q,toastTimer,revealed=false,ready=false,editKey=null,modelDrafts={},damagedModels=null;
+let state=emptyState(),models=emptyModels(),idb=null,index=0,pool=Q,toastTimer,revealed=false,ready=false,editKey=null,modelDrafts={},damagedModels=null,interviewFilter='all';
 function get(k){try{return localStorage.getItem(k)}catch{return null}}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500)}
 function modelText(q,n=null){return models.entries[n===null?q.id:q.id+':f'+n]?.text??(n===null?q.answer:q.followups[n].answer)}
@@ -17,10 +17,16 @@ function paintAnswer(){
 function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'解答を隠す <span aria-hidden="true">−</span>':'模範解答を見る <span aria-hidden="true">＋</span>';}
 function render(){
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
+ const president=q.m==='pres';document.body.dataset.interviewer=president?'president':'department';
+ $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'韓浩社長をイメージした面接キャラクター':'部長面接のオリジナルコーチ');
+ const source=president?'./assets/president-koh-han-v1.webp':'./assets/interview-coach-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
+ $('coachImage').alt=president?'韓浩社長を参考にしたイメージイラスト':'銀髪と黒いジャケットのオリジナル面接コーチ';
+ $('coachName').textContent=president?'韓 浩 ／ 社長面接':'ARCH ／ 部長面接';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'実在の部長の似顔絵ではないオリジナルコーチ';
  paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id)}catch{}
 }
 function move(step){if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();window.scrollTo({top:0,behavior:'instant'})}
-function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return Q.filter(q=>(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
+function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return Q.filter(q=>(interviewFilter==='all'||(interviewFilter==='president'?q.m==='pres':q.m!=='pres'))&&(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{interviewFilter=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===b)));renderList()});
 function renderList(){const list=filtered();$('resultCount').textContent=`${list.length}問`;$('questionList').innerHTML=list.length?list.map(q=>`<button class="question-row" data-id="${q.id}" aria-current="${q.id===pool[index].id}"><span class="index">${q.id.slice(1)}</span><span>${esc(q.q)}<small>${esc(q.category)}${models.entries[q.id]?' · 本人登録':''}</small></span></button>`).join(''):'<p class="muted">一致する質問がありません。</p>';$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{pool=list;index=pool.findIndex(q=>q.id===b.dataset.id);render();$('navigation').close();window.scrollTo({top:0,behavior:'instant'})})}
 function history(){$('storageDetail').textContent=`本人登録 ${Object.keys(models.entries).length}件 · 過去の回答履歴 ${state.history.length}件。バックアップには編集した模範解答も含まれます。`;$('history').innerHTML=state.history.length?state.history.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))}</small><h3>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h3><p>${esc(r.answer)}</p></article>`).join(''):'<p class="muted">保存された回答履歴はありません。</p>'}
 function snapshot(key,value){return new Promise((resolve,reject)=>{if(!idb){resolve();return}const tx=idb.transaction('snapshots','readwrite');tx.objectStore('snapshots').put(structuredClone(value),key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}

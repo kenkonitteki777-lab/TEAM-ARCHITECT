@@ -166,3 +166,14 @@ textarea { display: block; width: 100%; resize: vertical; font-size: 16px; line-
   main { padding-left: 20px; padding-right: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+.interviewer-label { border-left: 1px solid #ffffff20; padding-left: 10px; color: var(--accent); font-size: 10px; font-weight: 400; }
+.interviewer-tabs { display: flex; gap: 6px; margin-bottom: 16px; padding: 4px; background: #101216; border: 1px solid var(--line); border-radius: 11px; }
+.interviewer-tab { flex: 1; background: transparent; color: var(--muted); min-height: 40px; }
+.interviewer-tab[aria-pressed=true] { background: #2c3238; color: #eef0eb; box-shadow: 0 1px 4px #0003; }
+body[data-interviewer=president] { --accent: #d4b989; }
+body[data-interviewer=president] .progress span { background: linear-gradient(90deg, #776145, var(--accent)); }
+body[data-interviewer=president] .coach-orbit { border-color: #d4b98940; background: radial-gradient(circle, #d4b98916, transparent 70%); }
+body[data-interviewer=president] .coach-identity { border-color: #d4b98935; }
+body[data-interviewer=president] .coach-name, body[data-interviewer=president] .coach-motto { color: #c6b392; }
+@media(max-width:600px) { .interviewer-label { font-size: 9px; padding-left: 7px; } .topic { gap: 7px; } .coach-name { font-family: "Interview Sans JP", sans-serif; font-size: 8px; letter-spacing: 0; } }
