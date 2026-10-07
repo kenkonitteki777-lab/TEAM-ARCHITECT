@@ -1,5 +1,5 @@
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
-import {QUESTIONS as Q} from './questions.js';
+import {QUESTIONS as Q} from './questions.js?v=20261007-profile2';
 import {emptyState,validateBackup,mergeBackup} from './engine.js';
 import {MODEL_KEY,DRAFT_KEY,emptyModels,validateModels,mergeModels,setModel,persistModels} from './model-store.js';
 const $=id=>document.getElementById(id),KEY='team_architect_interview_v3',POSITION='team_architect_reader_question';
