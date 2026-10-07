@@ -1,3 +1,4 @@
+import {PRESIDENT_PROFILE} from './interviewer-profile.js';
 import {QUESTIONS as Q} from './questions.js';
 import {emptyState,validateBackup,mergeBackup} from './engine.js';
 import {MODEL_KEY,DRAFT_KEY,emptyModels,validateModels,mergeModels,setModel,persistModels} from './model-store.js';
@@ -12,18 +13,25 @@ function paintAnswer(){
  const q=pool[index];$('answer').innerHTML=answer(modelText(q));$('answerOrigin').textContent=models.entries[q.id]?'本人登録':'回答案';
  $('followups').innerHTML=q.followups.map((f,i)=>`<details><summary>追撃：${esc(f.q)}</summary><p>${answer(modelText(q,i))}</p><button class="edit-button" data-followup="${i}">この追撃回答を編集 ↗</button></details>`).join('');
  $('followups').querySelectorAll('[data-followup]').forEach(b=>b.onclick=()=>openEditor(Number(b.dataset.followup)));
+ $('answerCore').textContent='回答の核：'+q.core;$('answerIntent').textContent='確認される点：'+q.intent;
  $('provenance').textContent=models.entries[q.id]?'本人登録 · '+new Date(models.entries[q.id].updatedAt).toLocaleDateString('ja-JP'):q.status+' · '+q.src;
 }
 function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'解答を隠す <span aria-hidden="true">−</span>':'模範解答を見る <span aria-hidden="true">＋</span>';}
 function render(){
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
- const president=q.m==='pres';document.body.dataset.interviewer=president?'president':'department';
+ const president=q.m==='pres';document.querySelectorAll('[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
  $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'韓浩社長をイメージした面接キャラクター':'部長面接のオリジナルコーチ');
  const source=president?'./assets/president-koh-han-v1.webp':'./assets/interview-coach-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
  $('coachImage').alt=president?'韓浩社長を参考にしたイメージイラスト':'銀髪と黒いジャケットのオリジナル面接コーチ';
  $('coachName').textContent=president?'韓 浩 ／ 社長面接':'ARCH ／ 部長面接';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'実在の部長の似顔絵ではないオリジナルコーチ';
- paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id)}catch{}
+ paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}
 }
+function selectInterviewer(mode){
+ interviewFilter=mode;$('search').value='';$('categoryFilter').value='';pool=Q.filter(q=>mode==='president'?q.m==='pres':q.m!=='pres');const previous=get(POSITION+'_'+mode);index=Math.max(0,pool.findIndex(q=>q.id===previous));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));render();renderList();window.scrollTo({top:0,behavior:'instant'});
+}
+document.querySelectorAll('[data-interviewer]').forEach(b=>b.onclick=()=>selectInterviewer(b.dataset.interviewer));
+$('profileContent').innerHTML=`<p class="profile-note">${esc(PRESIDENT_PROFILE.note)}</p><h3>公開発言で確認できる経営姿勢</h3>${PRESIDENT_PROFILE.evidence.map(e=>`<article class="profile-axis"><strong>${esc(e.axis)}</strong><p>${esc(e.detail)}</p><a href="${PRESIDENT_PROFILE.sources[e.source].url}" target="_blank" rel="noopener noreferrer">公式資料 ↗</a></article>`).join('')}<h3>あなたが指定した練習条件</h3><p>${esc(PRESIDENT_PROFILE.training)}</p><h3>問答への落とし込み</h3><p>${esc(PRESIDENT_PROFILE.inference)}</p><p class="muted">資料確認日：${PRESIDENT_PROFILE.checkedAt} · 本人登録の模範解答は優先して表示します。</p>`;
+$('openProfile').onclick=()=>$('profile').showModal();$('closeProfile').onclick=()=>$('profile').close();
 function move(step){if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();window.scrollTo({top:0,behavior:'instant'})}
 function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return Q.filter(q=>(interviewFilter==='all'||(interviewFilter==='president'?q.m==='pres':q.m!=='pres'))&&(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{interviewFilter=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===b)));renderList()});
@@ -86,4 +94,4 @@ $('import').onchange=async e=>{
   await snapshot('modelAnswers',models);await snapshot('current',state);paintAnswer();history();toast('既存の回答と模範解答を保持して統合しました。');
  }catch(error){paintAnswer();history();toast('読み込み未完了：'+(error.message||'保存容量を確認してください。'))}e.target.value='';
 };
-const saved=get(POSITION);if(saved){const pos=Q.findIndex(q=>q.id===saved);if(pos>=0)index=pos}render();init();
+const saved=get(POSITION);interviewFilter=Q.find(q=>q.id===saved)?.m==='pres'?'president':'department';pool=Q.filter(q=>interviewFilter==='president'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===saved));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===interviewFilter)));render();init();
