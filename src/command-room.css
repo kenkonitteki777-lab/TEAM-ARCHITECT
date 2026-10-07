@@ -1,0 +1,183 @@
+/* Command-room visual language: ink, steel, amber. Assets are original SVG. */
+:root { color-scheme: dark; --blue:#e7b46c; --muted:#a2afb7; --border:#2b3641; }
+body { background:#0b1119; }
+main { max-width:1500px; padding-top:28px; }
+h1,h2,h3 { color:#f1eee7; }
+small { color:#a2afb7; }
+.panel { background:linear-gradient(135deg,#17212c,#111b25); border-radius:6px; box-shadow:0 10px 32px #00000012; }
+.primary { background:#e7b46c; color:#171b20; font-weight:700; box-shadow:none; border-radius:4px; }
+.primary:hover { background:#f0c78d; }
+.secondary,.upload-button { background:#18232e; color:#d1dae0; border-color:#3a4652; border-radius:4px; }
+.secondary:hover,.upload-button:hover { background:#253543; }
+.sidebar { background:#080e16; border-right:1px solid #28323c; }
+.brand { letter-spacing:1.8px; }
+.brand-icon { color:#e7b46c; border:1px solid #6f5838; background:#201d1a; border-radius:4px; transform:rotate(-3deg); }
+.brand i { color:#e7b46c; }
+.workspace { background:#121d28; border-color:#2b3742; border-radius:4px; }
+.sidebar nav button { border-radius:4px; }
+.sidebar nav button.selected { background:#25251f; color:#efd4ac; box-shadow:inset 3px 0 #e7b46c; }
+.sidebar nav button:hover { background:#1a2632; }
+.sidebar-bottom svg { color:#e7b46c; }
+.sidebar-bottom small { color:#99a8b4; }
+.topbar { background:#0e1620; height:66px; border-color:#2b3641; }
+.topbar>div span { color:#bcaa8e; letter-spacing:2px; }
+.topbar b { color:#d3dce1; }
+.live-dot { background:#91bba9; box-shadow:0 0 9px #91bba940; }
+.mode { color:#a2afb7; }
+.command-hero { position:relative; isolation:isolate; min-height:340px; overflow:hidden; border:1px solid #34404b; border-radius:6px; display:grid; grid-template-columns:1.15fr 1fr; background:radial-gradient(ellipse at 76% 40%,#34424b70,transparent 55%),linear-gradient(120deg,#18232e,#0b131d); margin-bottom:24px; }
+.command-hero::before { content:''; position:absolute; inset:0; z-index:-1; background-image:linear-gradient(#8094a00a 1px,transparent 1px),linear-gradient(90deg,#8094a00a 1px,transparent 1px); background-size:42px 42px; mask-image:linear-gradient(90deg,transparent,#000); }
+.command-hero::after { content:''; position:absolute; left:0; top:32px; height:44px; width:3px; background:#e7b46c; }
+.hero-copy { padding:35px 34px 25px; position:relative; z-index:2; }
+.hero-copy>small { display:flex; gap:9px; align-items:center; font-size:9px; color:#c6b193; letter-spacing:1.8px; }
+.hero-wordmark { font-size:clamp(23px,2.6vw,38px); line-height:1.08; letter-spacing:-.9px; font-weight:800; color:#f2eee6; margin:23px 0 20px; }
+.hero-wordmark span { color:#a58d6c; }
+.hero-copy h1 { font-size:27px; letter-spacing:0; }
+.hero-copy p { font-size:12px; color:#b4c1ca; line-height:1.95; margin-top:10px; }
+.hero-coordinate { display:flex; gap:20px; margin-top:26px; color:#8d9da9; font-size:8px; letter-spacing:1px; }
+.hero-squad { position:relative; min-width:0; }
+.hero-squad::before { content:''; position:absolute; width:255px; height:255px; border:1px solid #b9956340; border-radius:50%; top:48px; left:50%; transform:translateX(-50%); box-shadow:0 0 0 23px #e7b46c04,0 0 0 24px #e7b46c0c; }
+.operative-portrait { position:relative; overflow:hidden; width:100%; aspect-ratio:240/290; background:radial-gradient(ellipse at 50% 38%,color-mix(in srgb,var(--operative-color) 12%,transparent),transparent 70%); }
+.operative-portrait svg { width:100%; height:100%; display:block; }
+.portrait-index { position:absolute; top:10px; left:10px; font-size:9px; font-family:monospace; color:var(--operative-color); opacity:.75; }
+.hero-squad .operative-portrait { position:absolute; bottom:0; width:260px; background:none; }
+.hero-squad .portrait-index { display:none; }
+.hero-strategist { left:-23px; transform:scale(.87); transform-origin:bottom; opacity:.68; }
+.hero-field { right:-25px; transform:scale(.87); transform-origin:bottom; opacity:.68; }
+.hero-squad .hero-commander { width:300px; left:50%; transform:translateX(-50%); z-index:1; }
+.hero-insignia { position:absolute; right:19px; top:18px; font-size:10px; font-family:monospace; color:#ad9470; border:1px solid #6d5a3e; padding:6px 9px; }
+.hero-caption { position:absolute; bottom:14px; right:20px; font-size:8px; letter-spacing:1.7px; color:#b8ac98; z-index:2; }
+.home-grid { grid-template-columns:minmax(0,1fr) 265px; gap:22px; }
+.mission-input { border-top:2px solid #bc955f; }
+.section-label svg { color:#d1ad7a; }
+.section-label { color:#dbe3e8; font-size:14px; }
+.section-label>span { color:#a5b0b8; }
+.field { color:#cdd6dc; font-size:13px; }
+.field input,.field textarea,.field select,select { background:#0e1721; color:#e1e7e9; border-color:#36434f; border-radius:4px; }
+.field input:focus,.field textarea:focus { border-color:#c39e69; }
+.field textarea::placeholder,input::placeholder { color:#91a0ac; }
+.mission-input>form>.field textarea { background:#0e1721; font-size:15px; min-height:120px; border-color:#3b4a57; }
+.preset-row button { color:#c2ccd5; background:#202d3a; border-color:#3a4753; min-height:38px; font-size:11px; }
+.brief-details summary { color:#b7c4ce; }
+.form-footer small { font-size:11px; max-width:210px; }
+.dark-panel { background:linear-gradient(150deg,#202d3a,#101923); border:1px solid #3a4753; border-radius:6px; padding:24px; }
+.dark-panel::after { border-color:#697b8a30; }
+.dark-panel>small { color:#d2b283; font-size:9px; }
+.dark-panel h2 { font-size:24px; font-weight:650; margin:18px 0 25px; }
+.dark-panel li>span { border-radius:2px; color:#e7b46c; background:#282820; border-color:#66563d; }
+.dark-panel li b { font-size:13px; }
+.dark-panel li p,.side-note { color:#b3bfca; font-size:11px; }
+.compact>small { color:#bba583; }
+.metric b { color:#e8bc7d; font-family:monospace; font-size:30px; }
+.metric span { color:#b3c1cb; }
+.squad-section { margin-top:32px; }
+.section-title small { color:#bba583; letter-spacing:1.6px; font-size:9px; }
+.squad-section .section-title h2 { margin-top:6px; font-size:19px; }
+.squad-roster { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:9px; }
+.operative-card { padding:0; text-align:left; background:#15202b; border:1px solid #33414d; border-radius:4px; overflow:hidden; color:#e4e7e5; min-width:0; transition:transform .2s,border-color .2s; }
+.operative-card:hover { transform:translateY(-4px); border-color:#c29f70; }
+.operative-card .operative-portrait { height:155px; aspect-ratio:auto; }
+.operative-card .operative-portrait svg { width:auto; min-width:100%; position:absolute; left:50%; transform:translateX(-50%); }
+.operative-info { position:relative; padding:12px 10px 14px; border-top:1px solid #34414c; background:linear-gradient(#1d2b37,#15212d); }
+.operative-role { display:flex; gap:6px; align-items:center; min-height:22px; margin-bottom:10px; }
+.operative-role small { color:#bac6ce; font-size:7px; letter-spacing:.7px; }
+.role-emblem { display:inline-flex; justify-content:center; align-items:center; color:var(--operative-color); flex-shrink:0; }
+.operative-info>b { display:block; font-size:15px; letter-spacing:.3px; }
+.operative-info>span { color:#bdab90; font-family:monospace; font-size:10px; display:block; margin-top:4px; }
+.operative-info>p { font-size:10px; color:#adbcc6; margin-top:8px; line-height:1.7; }
+.portrait-note { font-size:10px; color:#91a3af; margin-top:12px; }
+.mission-row { background:#15202b; color:#e0e5e8; border-radius:5px; }
+.mission-row:hover { border-color:#8b7251; background:#1d2b37; }
+.empty { border-color:#394754; color:#a3b1bc; }
+.page-heading p,.mission-heading p { color:#a5b4c0; }
+.page-heading small,.mission-heading small { color:#c6aa80; }
+.tabs button[aria-selected=true] { color:#e7b46c; border-bottom-color:#e7b46c; }
+.tabs { border-color:#36434f; }
+.current-goal h2 { font-size:23px; }
+.next-action { border-top-color:#d0aa70; }
+.next-action p,.action-list,.analysis-list dd { color:#c4d0d8; font-size:13px; }
+.text-button { color:#e0bb83; }
+.analysis-list dt { color:#aab8c3; font-size:11px; }
+.subtle,.command-intro p { color:#a6b5c1; font-size:12px; }
+.risk-list { font-size:13px; }
+.risk-list span { color:#e3b97c; }
+.org-tier article { position:relative; padding-top:130px; overflow:hidden; background:#182733; border-color:#40515d; border-radius:4px; }
+.org-tier article>.operative-portrait { position:absolute; top:0; left:50%; transform:translateX(-50%); width:130px; height:138px; aspect-ratio:auto; }
+.org-tier article>.role-emblem { position:absolute; top:14px; right:13px; }
+.org-tier article p { color:#bdcad4; }
+.org-tier article em { color:#aabcc7; }
+.org-tier.commander article { background:#262b2d; border-color:#9c7c51; }
+.org-tier.leader article { background:#1c2c38; border-color:#678799; }
+.org-tier>span { color:#c1ab8c; font-size:9px; }
+.command-portrait { width:67px; height:79px; position:relative; overflow:hidden; background:#202e3a; border:1px solid #44535e; border-radius:4px; flex-shrink:0; }
+.command-portrait .operative-portrait { height:90px; }
+.command-portrait .portrait-index { display:none; }
+.command-top .step { position:absolute; bottom:0; left:0; padding:2px 5px; border-radius:0; font-size:10px; background:#121d28e8; color:#d9b782; }
+.command-top h3 { font-size:24px; }
+.command-authority { color:#b3c5d3; }
+.command-facts b { color:#d4dce1; font-size:12px; }
+.command-card details summary { color:#bdcbd4; }
+.completion { color:#a5c6b7; }
+.completion p,.completion small { color:#b8d0c4; }
+.member-card { position:relative; overflow:hidden; padding:0 15px 0 0; height:105px; background:#16232e; border-radius:4px; }
+.member-card>.operative-portrait { width:89px; height:115px; flex-shrink:0; align-self:flex-start; }
+.member-card>.role-emblem { position:absolute; top:10px; right:10px; }
+.member-card b { font-size:17px; }
+.member-card small { color:#b4c5cf; font-size:11px; }
+.member-card.selected { background:#242a2d; border-color:#c2a071; }
+.type-selector button { background:#16232e; color:#b3c3ce; min-height:44px; }
+.type-selector button.selected { color:#efd0a3; background:#302b23; border-color:#c2a071; }
+.editor-footer { background:#141e28; }
+.mobile-new { background:#e7b46c; color:#171b20; box-shadow:0 5px 20px #0006; }
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible { outline-color:#e7b46c; }
+progress::-webkit-progress-bar { background:#34414b; } progress::-webkit-progress-value { background:#d4ac72; } progress::-moz-progress-bar { background:#d4ac72; }
+@media(min-width:1450px) { main { padding-top:32px; } }
+@media(max-width:1120px) { .hero-copy { padding:28px; } .hero-wordmark { font-size:28px; } .hero-squad .operative-portrait { width:220px; } .hero-squad .hero-commander { width:270px; } .hero-strategist { left:-40px; } .hero-field { right:-50px; } .home-grid { grid-template-columns:minmax(0,1fr) 235px; } .squad-roster { grid-template-columns:repeat(4,minmax(0,1fr)); } .operative-card .operative-portrait { height:165px; } }
+@media(max-width:850px) { .home-grid { grid-template-columns:1fr; } .home-side { grid-template-columns:1.5fr 1fr; } .dark-panel h2 { font-size:21px; margin:14px 0; } .hero-squad .hero-commander { width:240px; } .hero-squad .operative-portrait:not(.hero-commander) { display:none; } .hero-copy { padding:25px; } .hero-copy h1 { font-size:24px; } .hero-wordmark { font-size:25px; } .hero-coordinate { display:none; } .hero-caption { display:none; } .command-hero { min-height:310px; grid-template-columns:1.25fr 1fr; } .hero-squad::before { width:200px;height:200px; } .squad-roster { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:640px) {
+ main { padding:18px 16px 0; }
+ .topbar { height:58px; background:#0e1620; }
+ .sidebar { border-top-color:#3a4652; background:#0c141e; }
+ .sidebar nav button.selected { background:#292920; box-shadow:inset 0 3px #e7b46c; }
+ .command-hero { display:block; min-height:285px; margin-bottom:18px; }
+ .hero-copy { padding:24px 20px; }
+ .hero-copy>small { font-size:8px; letter-spacing:1.1px; }
+ .hero-wordmark { font-size:25px; margin:21px 0 24px; position:relative; z-index:2; }
+ .hero-copy h1 { font-size:23px; position:relative; z-index:2; }
+ .hero-copy p { font-size:11px; max-width:225px; position:relative; z-index:2; }
+ .hero-squad { position:absolute; inset:0 0 0 auto; width:160px; z-index:0; opacity:.48; }
+ .hero-squad .hero-commander { width:210px; left:auto; right:-37px; transform:none; }
+ .hero-squad::before { width:170px; height:170px; left:90px; top:58px; }
+ .hero-insignia { display:none; }
+ .command-hero::after { top:23px; height:30px; }
+ .hero-copy { background:linear-gradient(90deg,#111c26 5%,#111c26c9 58%,transparent); }
+ .home-side { grid-template-columns:1fr; }
+ .dark-panel { display:none; }
+ .panel { border-radius:5px; padding:20px 16px; }
+ .squad-section { margin-top:26px; }
+ .squad-section .section-title h2 { font-size:17px; }
+ .squad-section .section-title>span { font-size:8px; }
+ .squad-roster { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x proximity; padding:0 1px 12px; scrollbar-color:#8d7350 #18242f; }
+ .operative-card { flex:0 0 135px; scroll-snap-align:start; }
+ .operative-card .operative-portrait { height:148px; }
+ .operative-info>b { font-size:16px; }
+ .operative-role small { font-size:8px; }
+ .operative-info>p { font-size:11px; }
+ .portrait-note { font-size:10px; line-height:1.8; }
+ .member-grid { grid-template-columns:1fr; }
+ .member-card { height:105px; padding:0 20px 0 0; gap:18px; }
+ .member-card>.operative-portrait { width:100px; height:121px; }
+ .member-card b { font-size:19px; }
+ .member-card small { font-size:12px; }
+ .org-tier article { padding-top:118px; }
+ .org-tier article>.operative-portrait { height:127px; width:120px; }
+ .org-tier article b { font-size:16px; }
+ .org-tier article p,.org-tier article em { font-size:10px; }
+ .org-tier.commander article,.org-tier.leader article { max-width:250px; }
+ .command-top h3 { font-size:23px; }
+ .command-portrait { width:64px; height:77px; }
+ .command-facts { grid-template-columns:1fr; gap:12px; }
+ .form-footer .primary { font-size:13px; }
+ .page-heading p,.mission-heading p { font-size:12px; }
+ .editor-footer { background:#141e28; }
+}
+@media(prefers-reduced-motion:reduce) { .operative-card { transition:none; } .operative-card:hover { transform:none; } }
