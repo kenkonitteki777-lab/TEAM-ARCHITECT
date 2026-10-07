@@ -43,3 +43,12 @@ Confirm dedicated Supabase organization/project plan and AI budget; follow `docs
 - Advisor: interview_ai_usage has RLS without policies intentionally (deny all clients; service role only). Existing unrelated findings preserved; no new interview warning-level findings.
 - Membership initially empty pending owner's verified Auth account. Authorized end-to-end sync and two-device round trip are not yet verified.
 - Live Edge HTTP checks passed: OPTIONS preflight 200, missing bearer 401, forged bearer 401. Anonymous REST on profiles denied with insufficient privilege.
+
+
+## Focus UI redesign / 2026-10-07
+
+- Replaced persistent rails, slogans and side panels with a single centered training column and accessible native dialog navigation. Main action stays fixed; review tools and full answer drafts expand on demand. Personal phrases remain in question data and answer cores.
+- Japanese Noto Sans JP loaded via Google Fonts (400/500/600/700); verified loaded on the actual public page. Desktop question font 34 px; answer font 18 px; mobile CSS 26 px / 17 px. Neutral charcoal palette and blue primary action.
+- Live public-page checks passed: answer record and next, contextual local follow-up, collapsed preceding conversation, answer core and collapsed full answer, dialog navigation, saved history, no horizontal overflow. App-origin JavaScript errors absent (browser extension errors excluded).
+- Keyboard actions blocked while the navigation dialog is open. View changes return to the top; legacy persistence and question IDs unchanged. Existing 20 tests and production build passed.
+- Mobile responsive rules and VisualViewport keyboard inset implemented. Actual mobile keyboard, speech input, and 390 px browser rendering remain unverified: the available browser refused a local-file responsive harness. The harness is not deployed or included in the app. Authorized AI and cloud sync still pending the owner setup documented separately.
