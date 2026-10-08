@@ -181,3 +181,29 @@ progress::-webkit-progress-bar { background:#34414b; } progress::-webkit-progres
  .editor-footer { background:#141e28; }
 }
 @media(prefers-reduced-motion:reduce) { .operative-card { transition:none; } .operative-card:hover { transform:none; } }
+
+/* Premium artwork pilot: commander + strategist. Compact assets for small cards. */
+.operative-portrait.illustrated { background:#0c141e; }
+.operative-portrait.illustrated img { width:100%; height:100%; object-fit:cover; object-position:50% 13%; display:block; }
+.operative-card .operative-portrait.illustrated img { object-position:50% 12%; }
+.hero-squad .operative-portrait.illustrated { height:100%; width:270px; aspect-ratio:auto; background:none; mask-image:linear-gradient(to bottom,#000 86%,transparent),linear-gradient(to right,transparent,#000 18%,#000 82%,transparent); mask-composite:intersect; }
+.hero-squad .hero-commander.illustrated { width:300px; }
+.hero-squad .illustrated img { object-fit:cover; object-position:50% 5%; }
+.hero-squad .hero-strategist.illustrated { left:-22px; opacity:.86; }
+.member-card>.operative-portrait.illustrated { height:105px; }
+.member-card>.operative-portrait.illustrated img { object-position:50% 7%; }
+.org-tier article>.operative-portrait.illustrated { width:100%; height:123px; }
+.org-tier article>.operative-portrait.illustrated img { object-position:50% 15%; mask-image:linear-gradient(#000 75%,transparent); }
+.command-portrait .operative-portrait.illustrated { height:100%; }
+.command-portrait .illustrated img { object-position:50% 3%; }
+@media(max-width:850px) { .hero-squad .hero-commander.illustrated { width:240px; } }
+@media(max-width:640px) {
+ .hero-squad .hero-commander.illustrated { width:190px; right:-26px; mask-image:linear-gradient(to right,transparent,#000 28%),linear-gradient(to bottom,#000 80%,transparent); }
+ .member-card>.operative-portrait.illustrated { height:105px; }
+ .org-tier article>.operative-portrait.illustrated { height:110px; }
+}
+@media(prefers-reduced-motion:no-preference) {
+ .operative-card .illustrated img { transition:transform .3s ease; }
+ .operative-card:hover .illustrated img { transform:scale(1.035); }
+}
+

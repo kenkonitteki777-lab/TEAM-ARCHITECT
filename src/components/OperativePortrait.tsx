@@ -21,6 +21,12 @@ export function RoleEmblem({ memberId }: { memberId: string }) {
 export function OperativePortrait({ memberId, className = '' }: { memberId: string; className?: string }) {
  const identity = identities[memberId as keyof typeof identities] || identities.matsuo;
  const id = useId().replace(/:/g, '');
+ const artwork = memberId === 'maesaki' ? 'commander' : memberId === 'matsuo' ? 'strategist' : null;
+ const hero = className.startsWith('hero-');
+ if (artwork) return <div className={`operative-portrait illustrated ${className}`} style={{ '--operative-color': identity.color } as CSSProperties} aria-hidden="true">
+  <img src={`./operatives/${artwork}-v2${hero ? '' : '-small'}.webp`} width={hero ? 640 : 280} height={hero ? 960 : 420} alt="" loading={hero ? 'eager' : 'lazy'} decoding="async"/>
+  <span className="portrait-index">{identity.number}</span>
+ </div>;
  const longCoat = identity.cut === 'creative' || identity.cut === 'engage';
  const field = identity.cut === 'field' || identity.cut === 'scout';
  return <div className={`operative-portrait ${className}`} style={{ '--operative-color': identity.color } as CSSProperties} aria-hidden="true">
@@ -61,3 +67,4 @@ export function OperativePortrait({ memberId, className = '' }: { memberId: stri
   <span className="portrait-index">{identity.number}</span>
  </div>;
 }
+
