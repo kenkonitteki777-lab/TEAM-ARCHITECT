@@ -29,7 +29,14 @@ Read both `TEAM_ARCHITECT_2_RESTART_HANDOFF.md` and the formal work specificatio
 
 ## Public verification
 
-To be appended after publication. Android real-device access remains unconfirmed; request only the result from the new app URL or the diagnostic page if still blocked. Do not tell the user to clear site data.
+- Published implementation commit: `394d57ffcc74e0c0a64fcfc54ddcb0fdf2127417`.
+- Pages workflow https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/37780759526: build, browser E2E and deployment succeeded.
+- Cloud Chrome opened https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/?v=r2 and verified the new stable entry URL and hidden startup shell after successful rendering.
+- A mission created in the previous public version was retained in R2. Opened its seven individual commands and reloaded; saved mission was still available.
+- https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/recovery.html: HTML reached, storage readable, JS / CSS / portrait each HTTP 200 with matching content types.
+- Public `/interview/` was reloaded after publication; model answer displayed and next question changed successfully.
+- Protected paths (`public/interview/`, `supabase/`, `public/operatives/`, lockfile) have no diff against baseline.
+- Android real-device access remains unconfirmed; request only the result from the new app URL or the diagnostic page if still blocked. Do not tell the user to clear site data.
 
 ## Next work
 
