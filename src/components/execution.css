@@ -1,0 +1,52 @@
+.execution-board { margin-bottom:24px; }
+.execution-board .panel { margin-bottom:20px; }
+.execution-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#34404b; border:1px solid #34404b; margin-bottom:18px; border-radius:5px; overflow:hidden; }
+.execution-summary>div { display:flex; align-items:baseline; gap:12px; padding:18px 22px; background:#131e29; }
+.execution-summary b { color:#eed6b2; font-size:25px; }
+.execution-summary span { color:#acbac5; font-size:12px; }
+.execution-board progress { width:100%; margin:18px 0; }
+.actual-kpi { padding:16px 0; display:flex; flex-wrap:wrap; align-items:baseline; gap:12px; }
+.actual-kpi strong { font-size:30px; color:#e7b46c; }
+.actual-kpi span { color:#d1dae0; font-size:12px; }
+.execution-board summary { cursor:pointer; color:#dac29f; padding:12px 0; min-height:44px; }
+.execution-board form { margin-top:12px; }
+.execution-board .field { margin-bottom:14px; }
+.execution-board .field input,.execution-board .field select,.execution-board .field textarea { min-width:0; width:100%; }
+.execution-board .dashboard-grid,.execution-board .two-column { align-items:stretch; }
+.task-filter { max-width:280px; margin-top:18px; }
+.execution-task { padding:18px 0; border-top:1px solid #34404b; display:flex; align-items:center; gap:20px; justify-content:space-between; }
+.execution-task>div { min-width:0; }
+.execution-task h3 { margin:10px 0; font-size:15px; }
+.execution-task p { font-size:13px; line-height:1.8; color:#c4d0d8; margin:8px 0; }
+.execution-task small { line-height:1.8; display:block; }
+.execution-task button { flex-shrink:0; }
+.execution-task.completed { opacity:.72; }
+.execution-task .task-state { margin-right:10px; }
+.task-wait { color:#b8ac98!important; }
+.deadline-warning { font-size:12px; color:#f0b8a3!important; line-height:1.8; }
+.hold-check { display:flex; align-items:center; gap:10px; min-height:44px; margin-bottom:12px; font-size:13px; }
+.hold-check input { width:20px; height:20px; }
+.execution-history { margin-top:18px; }
+.execution-history article { padding:14px 0; border-top:1px solid #34404b; }
+.execution-history article b,.decision-item h3 { font-size:15px; }
+.execution-history article p,.decision-item p { margin:8px 0; font-size:13px; line-height:1.8; white-space:pre-wrap; }
+.decision-item { border:1px solid #46515c; border-left:3px solid #d8b27a; padding:20px; margin:18px 0; border-radius:4px; }
+.decision-item.immediate { border-left-color:#eda78d; }
+.decision-badge { display:block; font-size:11px; color:#e7b46c; margin-bottom:10px; }
+.decision-item small { display:block; line-height:1.8; }
+.change-entry { border-top:1px solid #34404b; }
+.change-entry summary small { display:block; padding-top:6px; }
+.change-comparison { display:grid; grid-template-columns:1fr 1fr; gap:20px; padding:12px 0; }
+.change-comparison>div { min-width:0; }
+.change-comparison pre { font-family:inherit; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; color:#bfcbd5; line-height:1.8; padding:12px; background:#0c1620; }
+.execution-error { border:1px solid #b68b70; padding:16px; background:#30241f; color:#f4cab2; margin-bottom:16px; }
+.active-resume { margin-bottom:24px; border-left:3px solid #e7b46c; padding:20px; background:#17232e; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.active-resume b { display:block; margin:8px 0; }
+.editor-revision { margin-top:16px; padding-top:16px; border-top:1px solid #34404b; }
+@media(max-width:700px){.execution-summary>div{padding:12px 10px;flex-direction:column;gap:5px}.execution-summary b{font-size:22px}.execution-summary span{font-size:10px}.execution-task{align-items:stretch;flex-direction:column;gap:10px}.execution-task button{align-self:flex-start}.change-comparison{grid-template-columns:1fr}.decision-item{padding:14px}.active-resume{flex-direction:column;align-items:stretch}}
+.execution-summary>a { display:flex; align-items:baseline; gap:12px; padding:18px 22px; background:#131e29; color:inherit; text-decoration:none; min-height:44px; }
+.execution-summary>a:hover { background:#263440; }
+.mission-conditions { padding-top:10px; padding-bottom:10px; }
+.decision-queue { scroll-margin-top:20px; }
+@media(max-width:850px){.execution-board .next-action{order:-1}}
+@media(max-width:640px){.mission-heading{margin-bottom:16px;gap:12px}.heading-actions button{flex:none}.mission-switch{margin:12px 0}.tabs{margin-bottom:16px}.execution-summary>a{padding:12px 10px;flex-direction:column;gap:5px}}

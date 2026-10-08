@@ -1,3 +1,4 @@
+import type { Execution } from './execution';
 import { abilityNames, people, type Level, type Member } from './data';
 export type Kind='sales'|'machine'|'promo'|'people'|'service';
 export type FunctionKey='ANALYZE'|'DESIGN'|'CREATE'|'TRANSLATE'|'FIELD'|'OPERATE'|'SCOUT'|'REVIEW'|'COACH';
@@ -6,7 +7,7 @@ export type Brief={issue:string;goal:string;constraints:string;deadline:string;k
 export type Overrides=Record<string,Level>;
 export type Command={id:string;fn:FunctionKey;owner:string;issuer:string;reportTo:string;purpose:string;actions:string[];due:string;done:string;output:string;reportWhen:string;discretion:string;consult:string;immediate:string;dependsOn:string[];priority:string;status:Status;evidence:string;style:string;reason:string;alternative:string;version:number};
 export type Assignment={memberId:string;role:'COMMANDER'|'LEADER'|'MEMBER';reportsTo:string|null;functions:FunctionKey[]};
-export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string};
+export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution};
 export const blankBrief:Brief={issue:'',goal:'',constraints:'',deadline:'',kpi:'',baseline:'',target:'',source:'',period:'',checkpoint:'',excluded:[]};
 export const kindLabels:Record<Kind,string>={sales:'稼働・営業改善',machine:'新台・入替',promo:'販促・集客',people:'育成・組織',service:'接客品質'};
 export const classify=(x:string):Kind=>/育成|スタッフ|人材|面談/.test(x)?'people':/接客|CS|クレーム/.test(x)?'service':/新台|入替|遊技機/.test(x)?'machine':/販促|POP|SNS|広告/.test(x)?'promo':'sales';
@@ -87,3 +88,4 @@ export function validateMission(m:Mission):string[] {
 export function activationIssues(m:Mission):string[]{return [...validateMission(m),...(!m.brief.goal?['目的を設定してください']:[]),...(!m.brief.deadline||m.commands.some(c=>!c.due)?['期限を設定してください']:[]),...(!m.brief.checkpoint?['チェックポイントを設定してください']:[])];}
 export const nameOf=(id:string)=>people.find(p=>p.id===id)?.name||'未設定';
 export function commandText(c:Command):string {return `${nameOf(c.issuer)} → ${nameOf(c.owner)}｜${specs[c.fn].name}\n目的：${c.purpose}\n${c.actions.map((x,i)=>`${i+1}. ${x}`).join('\n')}\n期限：${c.due||'未設定'}（日本時間）\n完了条件：${c.done}\n成果物：${c.output}\n報告先：${nameOf(c.reportTo)}\n報告：${c.reportWhen}\n裁量：${c.discretion}\n相談：${c.consult}\n即時報告：${c.immediate}\n伝え方：${c.style}`;}
+
