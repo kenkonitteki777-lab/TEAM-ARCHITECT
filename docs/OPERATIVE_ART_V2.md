@@ -32,6 +32,7 @@ Total: 141,828 bytes. Existing SVG illustrations remain for the other five membe
 - Browser verified loaded image dimensions, role-card navigation and no document overflow at 360/390/430px.
 - No local application page errors.
 - Interview application source, storage schema, rule engine and infrastructure are unchanged by this release.
-- Public verification to be recorded after deployment. User Android device not yet verified.
+- Released source commit: `75a2ae10ae5971a089bbbadabfbbdecfd506df37`. GitHub Pages run `37711218430` succeeded.
+- Public browser: bundle `index-WrjqIJzt.js`; both new portraits loaded, 360/390/430/1440px without document overflow, role-card navigation, mission creation/save/reload and interview answer/next-question flow passed. No page errors or failed HTTP responses. User Android device not yet verified.
 
 Next artwork task: carry this established direction into the other five roles, each with distinct silhouette, pose and job-relevant prop. Do not infer actual appearances or personality from MBTI.
