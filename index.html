@@ -6,6 +6,33 @@
     <title>TEAM ARCHITECT 2.0｜組織設計司令室</title>
   </head>
   <body>
+    <section id="startup" role="status" style="max-width:640px;margin:12vh auto;padding:24px;font:16px/1.8 sans-serif;color:#e7edf5;background:#111e30;border-radius:16px">
+      <b>TEAM ARCHITECT 2.0</b>
+      <h1 style="font-size:24px">司令室を読み込んでいます</h1>
+      <p id="startup-message">画面の準備中です。保存データは削除しません。</p>
+      <p id="startup-code">読込段階：HTML到達 → アプリの起動待ち</p>
+      <p><a id="startup-retry" href="?reload=1" style="color:#ffd599">最新版を再読み込み</a> ／ <a href="./recovery.html" style="color:#ffd599">読込診断・データ保護</a></p>
+      <noscript>JavaScriptが無効です。このブラウザーではアプリを起動できません。</noscript>
+    </section>
+    <script>
+      (function () {
+        var retry = document.getElementById('startup-retry');
+        var url = new URL(location.href); url.searchParams.set('reload', String(Date.now())); retry.href = url.href;
+        function fail(code) {
+          if (document.getElementById('startup').hidden) return;
+          document.querySelector('#startup h1').textContent = '司令室の起動を確認できません';
+          document.getElementById('startup-message').textContent = '「最新版を再読み込み」を押してください。保存データはそのまま残ります。';
+          document.getElementById('startup-code').textContent = '読込段階：HTML到達 ／ ' + code;
+        }
+        window.addEventListener('error', function (event) {
+          if (event.target && event.target.tagName === 'SCRIPT') fail('JS取得失敗');
+          else if (event.target && event.target.tagName === 'LINK') fail('CSS取得失敗');
+          else if (event.message) fail('JS実行失敗');
+        }, true);
+        window.addEventListener('unhandledrejection', function () { fail('非同期処理失敗'); });
+        setTimeout(function () { fail('起動待ちが15秒を超過'); }, 15000);
+      }());
+    </script>
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
   </body>

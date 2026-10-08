@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TEAM ARCHITECT｜読込診断</title>
+<style>body{margin:0;background:#0b1422;color:#e7edf5;font:16px/1.8 sans-serif}main{max-width:660px;margin:6vh auto;padding:24px}h1{font-size:25px}a,button{display:inline-block;padding:12px 18px;margin:6px 6px 6px 0;border:1px solid #43546c;border-radius:8px;background:#17263c;color:#ffcf88;font:inherit}li{margin:10px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:16px;background:#17263c}small{color:#aebdd1}</style></head>
+<body><main><small>TEAM ARCHITECT 2.0 / R2</small><h1>読み込みの確認とデータ保護</h1>
+<p>この画面が見えれば、サイトには到達しています。アプリの通信と端末内保存を確認します。データの削除・書換え・外部送信は行いません。</p>
+<a id="retry" href="./?v=r2">最新版を開く</a><button id="check">読込診断を実行</button>
+<pre id="result" role="status">診断はまだ実行していません。</pre>
+<p>開けない場合は、ここに表示された「JS」「CSS」「端末内保存」の結果を伝えてください。</p>
+<button id="backup">TEAM ARCHITECTの原データを書き出す</button><p><small>バックアップにはミッションと能力設定が含まれます。手元で保管してください。面接アプリの保存キーには触れません。</small></p>
+<a href="./interview/">面接対策アプリへ</a><noscript><p>JavaScriptが無効です。Chromeなど、JavaScriptを利用できるブラウザーで上の「最新版を開く」を開いてください。</p></noscript>
+<script>
+(function(){
+ var result=document.getElementById('result');
+ var url=new URL('./',location.href);url.searchParams.set('v','r2');url.searchParams.set('reload',String(Date.now()));document.getElementById('retry').href=url.href;
+ document.getElementById('check').onclick=async function(){
+  this.disabled=true;result.textContent='HTML：到達済み\n';
+  try{window.localStorage.getItem('team-architect-v2');result.textContent+='端末内保存：読取可能（内容は送信しません）\n';}catch(e){result.textContent+='端末内保存：利用不可\n';}
+  var checks=[['JS','./assets/team-architect.js','javascript'],['CSS','./assets/team-architect.css','text/css'],['イラスト','./operatives/commander-v2.webp','image/']];
+  await Promise.all(checks.map(async function(check){var controller=new AbortController();var timer=setTimeout(function(){controller.abort();},12000);try{var response=await fetch(check[1],{cache:'no-store',signal:controller.signal});var ok=response.ok&&(response.headers.get('content-type')||'').indexOf(check[2])>=0;result.textContent+=check[0]+'：'+(ok?'取得成功':'取得失敗')+'（HTTP '+response.status+'）\n';}catch(e){result.textContent+=check[0]+'：通信失敗または12秒で時間切れ\n';}finally{clearTimeout(timer);}}));
+  result.textContent+='診断版：R2';this.disabled=false;
+ };
+ document.getElementById('backup').onclick=function(){try{var raw={};['team-architect-v2','team-architect-history','team-architect-capabilities','team-architect-legacy-backup-v1'].forEach(function(key){raw[key]=localStorage.getItem(key);});var blob=new Blob([JSON.stringify(raw,null,2)],{type:'application/json'});var src=URL.createObjectURL(blob);var a=document.createElement('a');a.href=src;a.download='team-architect-original.json';a.click();setTimeout(function(){URL.revokeObjectURL(src);},1000);result.textContent='原データを書き出しました。保存データは変更していません。';}catch(e){result.textContent='原データを取得できません。このブラウザーでは端末内保存が制限されています。';}};
+}());
+</script></main></body></html>

@@ -38,6 +38,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify startup recovery and application workflows
+        run: npm run test:e2e -- --workers=2
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
