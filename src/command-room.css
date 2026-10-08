@@ -207,3 +207,18 @@ progress::-webkit-progress-bar { background:#34414b; } progress::-webkit-progres
  .operative-card:hover .illustrated img { transform:scale(1.035); }
 }
 
+.hero-library{display:inline-flex;align-items:center;gap:9px;min-height:40px;margin-top:15px;padding:8px 12px;border:1px solid #876d49;background:#252820;color:#e9c797;font-size:12px;border-radius:4px;position:relative;z-index:3}
+.character-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:28px}
+.type-card{background:#17232e;border:1px solid #3a4955;border-radius:5px;overflow:hidden;padding:0;text-align:left;color:#e8e9e5;min-width:0}
+.type-card .type-art{display:block;width:100%;height:230px;object-fit:cover;object-position:50% 6%;background:#0e1721}
+.type-card>div{padding:16px;border-top:1px solid #35424d}
+.type-card small{color:#e5bb82;font-size:12px;letter-spacing:2px;display:block}
+.type-card b{font-size:20px;display:block;margin:6px 0}
+.type-card span{font-size:11px;line-height:1.8;color:#afc1cd;display:block}
+.type-card.selected{border-color:#e4b97d;box-shadow:0 0 0 1px #e4b97d}
+.type-card:hover{border-color:#ae8f64}
+.character-detail{display:grid;grid-template-columns:260px 1fr;gap:30px;scroll-margin-top:24px}
+.character-detail>.type-art{width:100%;height:390px;object-fit:cover;object-position:50% 0;border-radius:4px}
+.character-detail h2{font-size:30px;margin:8px 0}.character-detail h3{font-size:16px;color:#c5ad8a;margin-bottom:14px}.character-detail p{font-size:13px;color:#c6d2da;margin-bottom:18px}.character-detail .portrait-note{font-size:11px;margin-top:22px;color:#a0b3c0}
+@media(max-width:1000px){.character-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.type-card .type-art{height:210px}.character-detail{grid-template-columns:200px 1fr;gap:22px}}
+@media(max-width:640px){.character-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.type-card .type-art{height:208px}.type-card>div{padding:12px}.type-card b{font-size:18px}.type-card span{font-size:11px}.character-detail{grid-template-columns:1fr;gap:20px}.character-detail>.type-art{height:350px;width:100%;object-fit:cover;object-position:50% 12%}.hero-library{font-size:11px;margin-top:13px}.hero-copy .hero-coordinate{display:none}.sidebar nav button{font-size:8px}.hero-squad .hero-field.illustrated{display:none}}

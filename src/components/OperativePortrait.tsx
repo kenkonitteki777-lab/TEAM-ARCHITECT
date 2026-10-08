@@ -1,4 +1,6 @@
 import { useId, type CSSProperties } from 'react';
+import { people } from '../core/data';
+import { TypePortrait, typeArtwork } from './TypePortrait';
 import { Crosshair, Gem, Layers3, Network, Radar, ShieldCheck, Zap } from 'lucide-react';
 
 const identities = {
@@ -21,10 +23,11 @@ export function RoleEmblem({ memberId }: { memberId: string }) {
 export function OperativePortrait({ memberId, className = '' }: { memberId: string; className?: string }) {
  const identity = identities[memberId as keyof typeof identities] || identities.matsuo;
  const id = useId().replace(/:/g, '');
- const artwork = memberId === 'maesaki' ? 'commander' : memberId === 'matsuo' ? 'strategist' : null;
+ const type = people.find(p=>p.id===memberId)?.mbti || '';
+ const artwork = typeArtwork[type];
  const hero = className.startsWith('hero-');
  if (artwork) return <div className={`operative-portrait illustrated ${className}`} style={{ '--operative-color': identity.color } as CSSProperties} aria-hidden="true">
-  <img src={`./operatives/${artwork}-v2${hero ? '' : '-small'}.webp`} width={hero ? 640 : 280} height={hero ? 960 : 420} alt="" loading={hero ? 'eager' : 'lazy'} decoding="async"/>
+  <TypePortrait type={type} large={hero} eager={hero}/>
   <span className="portrait-index">{identity.number}</span>
  </div>;
  const longCoat = identity.cut === 'creative' || identity.cut === 'engage';

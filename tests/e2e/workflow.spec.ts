@@ -7,3 +7,10 @@ test('missing values stay unknown and activation blocked until configured',async
 test('corrupt storage protects original while UI remains usable',async({page})=>{await page.goto('/');await page.evaluate(()=>localStorage.setItem('team-architect-v2','broken'));await page.reload();await expect(page.getByRole('alert')).toContainText('元データの上書きを止め');await page.getByLabel('解決したい課題').fill('テスト');await page.getByRole('button',{name:'編成と指示の初稿を作る'}).click();expect(await page.evaluate(()=>localStorage.getItem('team-architect-v2'))).toBe('broken');});
 test('interview application is intact and opens model answers',async({page})=>{await page.goto('/interview/');await expect(page.locator('body')).toContainText('面接');await expect(page.locator('body')).not.toContainText('MISSION FIRST');await page.getByRole('button',{name:/模範解答を見る/}).click();await expect(page.locator('#modelPanel')).toBeVisible();const before=await page.locator('#question').textContent();await page.getByRole('button',{name:'次の質問',exact:true}).click();await expect(page.locator('#question')).not.toHaveText(before!);});
 
+
+test('all sixteen character portraits load and selection opens work-style guidance',async({page})=>{
+ await page.goto('/?view=characters');await expect(page.getByRole('heading',{name:'16の個性。ひとつのチーム。'})).toBeVisible();
+ const cards=page.locator('.type-card');await expect(cards).toHaveCount(16);
+ for(let i=0;i<16;i++){const card=cards.nth(i);const type=await card.locator('small').textContent();await card.click();await expect(card).toHaveAttribute('aria-pressed','true');await expect(page.locator('#character-detail')).toContainText(type!);await expect(page.locator('#character-detail')).toContainText('伝え方の参考');await expect.poll(()=>page.locator('#character-detail img').evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);}
+ for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}
+});
