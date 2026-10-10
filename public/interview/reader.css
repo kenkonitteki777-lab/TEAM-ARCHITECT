@@ -204,3 +204,9 @@ body[data-interviewer=president] .coach-name, body[data-interviewer=president] .
  .practice-caption { margin-bottom: 16px; font-size: 9px; }
  .practice-caption button { font-size: 9px; }
 }
+
+/* Director silhouette: retain the approved pose without facial detail. */
+body:not([data-interviewer=president]) .coach-portrait img {
+  filter: brightness(0) invert(1);
+  opacity: .32;
+}
