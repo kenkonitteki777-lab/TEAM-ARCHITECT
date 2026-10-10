@@ -5,7 +5,7 @@ test('daily work opens the right mission and directive, preserves waiting states
  await page.goto('/');await create(page);await page.getByRole('button',{name:'確認して実行を開始'}).click();
  await page.getByRole('button',{name:'今日の仕事',exact:true}).click();const board=page.getByRole('region',{name:'全案件の仕事'}).or(page.locator('.work-board'));
  await expect(board).toContainText('着手可能 1');await expect(board).toContainText('先行待ち・保留 6');
- await page.getByLabel('仕事の担当').selectOption('matsuo');await page.getByRole('button',{name:'共有用の仕事メモを作る'}).click();await expect(page.getByLabel('共有用の仕事メモ')).toContainText('仕事の共有メモ / 松尾');
+ await page.getByLabel('仕事の担当').selectOption('matsuo');await page.getByRole('button',{name:'共有用の仕事メモを作る'}).click();await expect(page.getByLabel('共有用の仕事メモ',{exact:true})).toHaveValue(/仕事の共有メモ \/ 松尾/);
  await page.getByLabel('確認する仕事').selectOption('ready');await page.getByRole('button',{name:'指示を開く'}).first().click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.getByRole('dialog')).toContainText('現状分析');await page.getByRole('button',{name:'閉じる',exact:true}).click();
  await page.getByRole('button',{name:'今日の仕事',exact:true}).click();
  for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}
