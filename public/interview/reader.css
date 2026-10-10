@@ -10,7 +10,7 @@
   --text: #f4f5f6;
   --muted: #969ba5;
   --line: #292d32;
-  --accent: #c4d0c7;
+  --accent: #d6bd86;
 }
 body {
   margin: 0;
@@ -54,7 +54,7 @@ main { max-width: 868px; margin: auto; padding: 44px 36px 150px; }
 .coach-motto { font-size: 11px; font-weight: 500; letter-spacing: .08em; color: #949d90; }
 .section-label { font-family: Manrope, sans-serif; font-size: 9px; letter-spacing: .19em; color: #828996; font-weight: 500; }
 .section-label span { margin-left: 9px; color: #b0b6bf; font-variant-numeric: tabular-nums; }
-h1 { font-size: 42px; line-height: 1.5; letter-spacing: -.035em; font-weight: 600; margin: 20px 0 16px; overflow-wrap: anywhere; text-wrap: pretty; }
+h1 { font-size: 42px; line-height: 1.5; letter-spacing: -.035em; font-weight: 600; margin: 20px 0 16px; overflow-wrap: anywhere; text-wrap: balance; }
 .recall-hint { display: none; }
 .model { position: relative; background: linear-gradient(145deg, #171a1d, #0f1114); border: 1px solid #ffffff17; border-radius: 14px; padding: 26px 30px; box-shadow: 0 18px 42px #00000020, inset 0 1px #ffffff04; }
 .answer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #ffffff09; margin-bottom: 22px; }
@@ -236,4 +236,50 @@ body[data-interviewer=president] .coach-name, body[data-interviewer=president] .
  .dock-inner { padding-top: 12px; padding-bottom: 14px; }
  .primary { border-color: #7b888f; }
  .question-stage .section-label::before { content: ""; display: inline-block; width: 18px; height: 1px; background: var(--accent); margin-right: 9px; vertical-align: middle; }
+}
+
+/* Champagne gold: restrained jewelry-like lines and editorial typography. */
+@font-face { font-family: "Interview Serif JP"; font-style: normal; font-weight: 500; font-display: swap; src: url('./fonts/interview-serif-jp.woff2') format('woff2'); }
+@font-face { font-family: "Interview Display"; font-style: normal; font-weight: 500; font-display: swap; src: url('./fonts/interview-display.woff2') format('woff2'); }
+body { background: radial-gradient(ellipse at 78% 22%, #8b703516, transparent 48%), linear-gradient(125deg, #080809, #151413 52%, #08090a); background-attachment: fixed; }
+.header { position: relative; border-bottom-color: #d6bd8618; }
+.header::before { content: ""; position: absolute; top: 0; left: 8%; right: 8%; height: 1px; background: linear-gradient(90deg, transparent, #d6bd8680, transparent); }
+.brand { font-family: "Interview Display", Georgia, serif; font-size: 25px; font-weight: 500; letter-spacing: .07em; color: #e1cfaa; }
+.brand small { font-family: Manrope, sans-serif; font-size: 8px; letter-spacing: .23em; color: #9c8d71; margin-top: 4px; }
+.brand-mark { color: #d6bd86; }
+h1 { font-family: "Interview Serif JP", "Interview Sans JP", serif; font-weight: 500; letter-spacing: -.025em; line-height: 1.6; color: #f1ece2; }
+.section-label { color: #a18e69; }
+.section-label span { color: #d6bd86; }
+.progress { background: linear-gradient(90deg, #d6bd861a, #d6bd8608); }
+.progress span { background: linear-gradient(90deg, #79633d, #dec58d); }
+.practice-switch button { border-color: #d6bd8620; background: linear-gradient(130deg, #1b1915, #0d0e10); }
+.practice-switch button[aria-pressed=true] { border-color: #d6bd8680; background: linear-gradient(130deg, #30291b, #181613); color: #efdfbe; box-shadow: inset 0 1px #d6bd8612, 0 8px 24px #0003; }
+.practice-switch button:hover { border-color: #d6bd8690; }
+.practice-switch button[aria-pressed=true]::after { box-shadow: 0 0 8px #d6bd8633; }
+.coach-orbit { border-color: #d6bd861b; background: radial-gradient(ellipse, #d6bd8609, transparent 70%); }
+.coach-identity { gap: 7px; border-top-color: #d6bd8629; }
+.coach-role { font-family: "Interview Display", Georgia, serif; font-size: 16px; letter-spacing: .13em; color: #c6af80; line-height: 1; }
+.coach-name { color: #c8c0b0; font-size: 10px; }
+.coach-motto { color: #968b77; }
+.model { border-color: #d6bd8630; background: linear-gradient(140deg, #1b1915, #111214 70%); box-shadow: inset 0 1px #d6bd860b, 0 20px 48px #0003; }
+.answer-head { border-bottom-color: #d6bd8616; }
+.answer-head h2::before { background: #d6bd86; }
+.dock { border-top-color: #d6bd861d; }
+.primary { border-color: #bda57888; background: linear-gradient(125deg, #393024, #201d18); color: #f3e5c8; box-shadow: inset 0 1px #e9d8ac22, 0 5px 20px #0003; }
+.primary:hover { background: linear-gradient(125deg, #4b3d29, #2b251c); border-color: #d6bd86; }
+#reveal > span { color: #d6bd86; }
+#reveal > .action-label { font: inherit; text-align: left; color: #f3e5c8; }
+.action-label small { display: block; font: 500 8px Manrope, sans-serif; letter-spacing: .2em; margin-top: 3px; color: #baa77f; }
+.quiet, .nav-step { border-color: #d6bd8622; }
+.edit-button { border-color: #d6bd862b; color: #ccbfaa; }
+@media(max-width:600px) {
+ .brand { font-size: 21px; gap: 10px; }
+ .brand small { font-size: 7px; letter-spacing: .15em; }
+ h1 { font-size: clamp(26px, 7.3vw, 33px); line-height: 1.7; }
+ .coach-role { font-size: 11px; letter-spacing: .08em; }
+ .coach-name { font-size: 8px; }
+ .coach-identity { gap: 4px; bottom: -4px; }
+ .coach { height: 105px; }
+ .primary { border-color: #bda57888; }
+ .action-label small { font-size: 7px; letter-spacing: .14em; }
 }

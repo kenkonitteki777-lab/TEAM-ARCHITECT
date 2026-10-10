@@ -16,14 +16,14 @@ function paintAnswer(){
  $('answerCore').textContent='回答の核：'+q.core;$('answerIntent').textContent='確認される点：'+q.intent;
  $('provenance').textContent=models.entries[q.id]?'本人登録 · '+new Date(models.entries[q.id].updatedAt).toLocaleDateString('ja-JP'):q.status+' · '+q.src;
 }
-function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'解答を隠す <span aria-hidden="true">−</span>':'模範解答を見る <span aria-hidden="true">＋</span>';}
+function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'<span class="action-label">解答を隠す<small aria-hidden="true">HIDE ANSWER</small></span><span aria-hidden="true">−</span>':'<span class="action-label">模範解答を見る<small aria-hidden="true">REVEAL ANSWER</small></span><span aria-hidden="true">＋</span>';}
 function render(){
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
  const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
  $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長面接のシルエット');
  const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-noir-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
  $('coachImage').alt=president?'社長を参考にしたイメージイラスト':'部長面接のシルエット';
- $('coachName').textContent=president?'社長':'部長';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'部長面接の練習用シルエット';
+ $('coachRole').textContent=president?'PRESIDENT':'DIRECTOR';$('coachName').textContent=president?'社長':'部長';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'部長面接の練習用シルエット';
  paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}
 }
 function selectInterviewer(mode){

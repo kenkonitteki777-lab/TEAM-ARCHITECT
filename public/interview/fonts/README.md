@@ -7,3 +7,5 @@ The Japanese fonts are subsetted to the application text, Latin, kana and full-w
 Latin: unmodified Manrope variable font, converted to WOFF2. Source: https://github.com/google/fonts/tree/main/ofl/manrope
 
 Both licenses are included alongside the fonts. No external font request is needed.
+
+Luxury headings: Interview Serif JP (Noto Serif JP, static weight 500, subset to app text) and Interview Display (Cormorant Garamond, static weight 500, Latin subset). Retrieved from official Google Fonts repository 2026-10-10. Modified fonts renamed; original copyright notices and SIL OFL retained. Self-hosted; no runtime third-party font requests. Questions use the serif family; answer text remains sans-serif for reading speed.
