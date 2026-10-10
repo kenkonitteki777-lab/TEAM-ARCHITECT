@@ -20,10 +20,10 @@ function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!re
 function render(){
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
  const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
- $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'韓浩社長をイメージした面接キャラクター':'武山部長をイメージした面接キャラクター');
- const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-takeyama-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
- $('coachImage').alt=president?'韓浩社長を参考にしたイメージイラスト':'本人指定の特徴を基にした武山部長のイメージイラスト';
- $('coachName').textContent=president?'韓 浩 ／ 社長面接':'武山部長 ／ 部長面接';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'本人が選んだ候補⑥を基にした練習用イメージイラスト';
+ $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長をイメージした面接キャラクター');
+ const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-takeyama-v2.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
+ $('coachImage').alt=president?'社長を参考にしたイメージイラスト':'本人指定の特徴を基にした部長のイメージイラスト';
+ $('coachName').textContent=president?'社長':'部長';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'本人が選んだ候補⑥を基にした練習用イメージイラスト';
  paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}
 }
 function selectInterviewer(mode){

@@ -127,8 +127,8 @@ textarea { display: block; width: 100%; resize: vertical; font-size: 16px; line-
   .question-stage h1 { grid-column: 1 / -1; grid-row: 2; margin-top: 2px; }
   .coach { grid-column: 2; grid-row: 1; position: relative; height: 80px; margin-top: -12px; }
   .coach-portrait { height: 76px; }
-  .coach-portrait img { object-fit: cover; object-position: center 12%; height: 114px; }
-  .coach-portrait::after { background: linear-gradient(transparent, #1b1d22); }
+  .coach-portrait img { object-fit: contain; object-position: center; height: 100%; }
+  .coach-portrait::after { inset: 88% 0 0; background: linear-gradient(transparent, #1b1d22); }
   .coach-orbit { height: 62px; width: 62px; left: 9px; top: 7px; }
   .coach-identity { border: 0; padding: 0; position: absolute; left: 0; right: 0; bottom: -4px; }
   .coach-name { font-size: 7px; letter-spacing: .1em; }

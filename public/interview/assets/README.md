@@ -8,3 +8,6 @@ Generated with the built-in image-generation tool. Prompt: Preserve recognizable
 
 
 department-takeyama-v1.webp is the standalone illustration derived from candidate 6 selected by the user on 2026-10-08. Its appearance follows user-specified features (short black hair, broad forehead, small eyes, short parallel eyebrows, glasses and an ordinary salaryman appearance). This is a training illustration, not a verified likeness or official portrait, and does not imply endorsement. Generated with the built-in image-generation tool and resized/compressed to WebP without changing facial features. The earlier ARCH asset remains available for rollback.
+
+
+department-takeyama-v2.webp edits the selected candidate-6 standalone using the built-in image tool: preserve face and clothing, turn shoulders slightly left and gaze back at viewer, keep full head visible with transparent padding. Resized/compressed without further aesthetic edits. The mobile portrait now uses contain at 100% frame height to prevent facial clipping.
