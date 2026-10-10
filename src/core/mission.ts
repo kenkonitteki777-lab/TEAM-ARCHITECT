@@ -1,4 +1,5 @@
 import type { Execution } from './execution';
+import type { LearningApplication, Review } from './review';
 import { abilityNames, people, type Level, type Member } from './data';
 export type Kind='sales'|'machine'|'promo'|'people'|'service';
 export type FunctionKey='ANALYZE'|'DESIGN'|'CREATE'|'TRANSLATE'|'FIELD'|'OPERATE'|'SCOUT'|'REVIEW'|'COACH';
@@ -7,7 +8,7 @@ export type Brief={issue:string;goal:string;constraints:string;deadline:string;k
 export type Overrides=Record<string,Level>;
 export type Command={id:string;fn:FunctionKey;owner:string;issuer:string;reportTo:string;purpose:string;actions:string[];due:string;done:string;output:string;reportWhen:string;discretion:string;consult:string;immediate:string;dependsOn:string[];priority:string;status:Status;evidence:string;style:string;reason:string;alternative:string;version:number};
 export type Assignment={memberId:string;role:'COMMANDER'|'LEADER'|'MEMBER';reportsTo:string|null;functions:FunctionKey[]};
-export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution};
+export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution;reviews?:Review[];learning?:LearningApplication};
 export const blankBrief:Brief={issue:'',goal:'',constraints:'',deadline:'',kpi:'',baseline:'',target:'',source:'',period:'',checkpoint:'',excluded:[]};
 export const kindLabels:Record<Kind,string>={sales:'稼働・営業改善',machine:'新台・入替',promo:'販促・集客',people:'育成・組織',service:'接客品質'};
 export const classify=(x:string):Kind=>/育成|スタッフ|人材|面談/.test(x)?'people':/接客|CS|クレーム/.test(x)?'service':/新台|入替|遊技機/.test(x)?'machine':/販促|POP|SNS|広告/.test(x)?'promo':'sales';
@@ -36,7 +37,7 @@ export function instructionStyle(issuerType:string,receiverType:string):string {
  return parts.join('。')+'。本人の希望を優先する。';
 }
 function actionsFor(fn:FunctionKey,b:Brief,kind:Kind):string[] {
- const scope=kind==='sales'?'夜時間帯の稼働':kind==='machine'?'入替対象と導入後の稼働':kind==='promo'?'販促対象と顧客反応':kind==='people'?'対象スタッフの現在の行動':'接客場面と顧客の反応';
+ const scope=kind==='sales'?/売上|粗利|利益/.test(b.issue)?'売上・利益の実績':/夜/.test(b.issue)?'夜時間帯の稼働':/朝|午前/.test(b.issue)?'朝時間帯の稼働':'対象時間帯の営業実績':kind==='machine'?'入替対象と導入後の稼働':kind==='promo'?'販促対象と顧客反応':kind==='people'?'対象スタッフの現在の行動':'接客場面と顧客の反応';
  const map:Record<FunctionKey,string[]>={
  ANALYZE:[`${scope}の取得可能な記録と比較期間を確認し、未取得データを一覧にする`,`${b.source||'確認したデータ出所'}を明記し、曜日・場所・対象別に現状を比較する`,'低下・未達の要因を事実と仮説に分け、主要論点を3点以内にまとめる'],
  DESIGN:[`分析資料を読み、ミッション「${b.issue}」に対する打ち手を3案作る`,'各案の必要人員・費用・期限・顧客への影響・リスクを比較する','推奨案と継続・中止の判断条件を店長へ提出する。未承認の予算・配置変更は実施しない'],
@@ -49,13 +50,14 @@ function actionsFor(fn:FunctionKey,b:Brief,kind:Kind):string[] {
  COACH:['対象者と期待行動を確認し、現場で実際の行動を観察する','具体的な行動を一緒に練習し、できた点と改善点を本人へ伝える','次回の行動と確認日時を本人と合意し、支援が必要な点を報告する']};
  return map[fn];
 }
-export function createMission(brief:Brief,overrides:Overrides={},now=new Date()):Mission {
+export function createMission(brief:Brief,overrides:Overrides={},now=new Date(),existingLoad:Record<string,number>={}):Mission {
  if(!brief.issue.trim())throw new Error('ミッションを入力してください。');
  if(brief.excluded.includes('maesaki'))throw new Error('店長不在時の代理決裁権限は未設定です。店長を最終判断者として残し、実行担当のみ調整してください。');
  const b={...brief,issue:brief.issue.trim(),excluded:[...brief.excluded]};
  const kind=classify(b.issue);const fns=required[kind];const candidates=people.filter(p=>p.id!=='maesaki'&&!b.excluded.includes(p.id));
  if(!candidates.length)throw new Error('実行担当がいません。少なくとも1名を選んでください。');
- const count:Record<string,number>={};
+ const count:Record<string,number>={...existingLoad};
+ if(Object.values(count).some(n=>!Number.isInteger(n)||n<0))throw new Error('担当件数が不正です。');
  const assigned=fns.map(fn=>{
  const ranked=[...candidates].sort((a,b)=> (fit(b,fn,overrides)-(count[b.id]||0)*2)-(fit(a,fn,overrides)-(count[a.id]||0)*2));
  const owner=ranked[0];count[owner.id]=(count[owner.id]||0)+1;return {fn,owner,alternative:ranked[1]};
@@ -70,7 +72,7 @@ export function createMission(brief:Brief,overrides:Overrides={},now=new Date())
  const commands:Command[]=assigned.map(({fn,owner,alternative},i)=>{
  const issuer=owner.id===leader.id?'maesaki':leader.id;const boss=people.find(p=>p.id===issuer)!;
  const abilities=specs[fn].abilities.map(n=>abilityNames[n-1]+'：'+({strong:'強い',standard:'標準',growth:'支援前提',unknown:'未評価'}[assessment(owner,n,overrides)]));
- return {id:id+':'+fn,fn,owner:owner.id,issuer,reportTo:issuer,purpose:b.goal||b.issue,actions:actionsFor(fn,b,kind),due:b.deadline,done:specs[fn].done,output:specs[fn].output,reportWhen:b.checkpoint?`中間報告：${b.checkpoint}（日本時間）。完了時にも報告。`:'中間報告日時を開始前に合意する。着手時・完了時・遅延見込み時に報告。',discretion:'承認済みの目的・予算・人員・期限の範囲内で、手順と資料形式を判断してよい。',consult:'データ不足、期限遅延見込み、他タスクとの優先順位競合、予算・人員・営業方針の変更が必要な場合は報告先へ相談。',immediate:'安全問題・重大クレーム・機密情報の問題は直ちに前﨑店長へ報告。緊急時は現場の安全手順を優先。',dependsOn:i===0?[]:fn==='REVIEW'?assigned.slice(0,i).map(x=>id+':'+x.fn):[id+':'+assigned[i-1].fn],priority:i===0?'最優先の初動':'先行成果物を確認して開始',status:'todo',evidence:'',style:instructionStyle(boss.mbti,owner.mbti),reason:`登録評価：${abilities.join('／')}。専門領域：${owner.specialty}。担当集中を抑えて配置。実績と稼働量は未確認。`,alternative:alternative?`${alternative.name}（${alternative.specialty}）。交代時は負荷・期限・権限を再確認。`:'代替担当なし。支援人員の確保が必要。',version:1};
+ return {id:id+':'+fn,fn,owner:owner.id,issuer,reportTo:issuer,purpose:b.goal||b.issue,actions:actionsFor(fn,b,kind),due:b.deadline,done:specs[fn].done,output:specs[fn].output,reportWhen:b.checkpoint?`中間報告：${b.checkpoint}（日本時間）。完了時にも報告。`:'中間報告日時を開始前に合意する。着手時・完了時・遅延見込み時に報告。',discretion:'承認済みの目的・予算・人員・期限の範囲内で、手順と資料形式を判断してよい。',consult:'データ不足、期限遅延見込み、他タスクとの優先順位競合、予算・人員・営業方針の変更が必要な場合は報告先へ相談。',immediate:'安全問題・重大クレーム・機密情報の問題は直ちに前﨑店長へ報告。緊急時は現場の安全手順を優先。',dependsOn:i===0?[]:fn==='REVIEW'?assigned.slice(0,i).map(x=>id+':'+x.fn):[id+':'+assigned[i-1].fn],priority:i===0?'最優先の初動':'先行成果物を確認して開始',status:'todo',evidence:'',style:instructionStyle(boss.mbti,owner.mbti),reason:`登録評価：${abilities.join('／')}。専門領域：${owner.specialty}。他の実行中ミッションの未完了指示：${existingLoad[owner.id]||0}件。登録能力・専門性と担当件数を考慮。所要時間と実績は未確認。`,alternative:alternative?`${alternative.name}（${alternative.specialty}／他の実行中指示${existingLoad[alternative.id]||0}件）。交代時は負荷・期限・権限を再確認。`:'代替担当なし。支援人員の確保が必要。',version:1};
  });
  const unknowns=[!b.goal&&'最終的に達成したい状態',!b.deadline&&'具体的な期限',!b.kpi&&'KPIの定義・単位',!b.baseline&&'KPIの現状値',!b.target&&'KPIの目標値',!b.source&&'データ取得元',!b.period&&'観測期間',!b.checkpoint&&'次回チェックポイント','メンバーの実際の稼働余力と関連実績'].filter((x):x is string=>!!x);
  return {id,version:1,engine:'rules-b1',createdAt:now.toISOString(),updatedAt:now.toISOString(),state:'draft',kind,brief:b,team,commands,analysis:{hypothesis:`${kindLabels[kind]}として一次分類。${/競合|リニューアル/.test(b.issue)?'競合変化と自店の時間帯別実績を比較する。':'現状の事実を収集し、原因と打ち手を分けて検討する。'}分類・要因は仮説です。`,success:b.goal||'成功条件は未設定。目的・KPI目標・期限を開始前に確定してください。',unknowns,risks:['データ不足のまま対策を決める','担当集中と実際の稼働余力の未確認','期限・予算・営業方針の認識違い']},notes:''};

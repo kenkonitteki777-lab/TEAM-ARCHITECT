@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import './command-room.css';
 import './components/execution.css';
+import './components/practical.css';
 
 class StartupBoundary extends Component<{children:ReactNode},{failed:boolean}> {
   state={failed:false};

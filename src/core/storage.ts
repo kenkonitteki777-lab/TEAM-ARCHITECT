@@ -1,4 +1,5 @@
 import { validateExecution } from './execution';
+import { validateReview } from './review';
 import { people, type Level } from './data';
 import { specs, validateMission, type Mission, type Overrides } from './mission';
 export const STORE_KEY='team-architect-v2';
@@ -23,7 +24,7 @@ export function parseStore(raw:string):Store {
  if(!m.team.length||!m.commands.length)throw new Error('組織・指示が空です。');
  for(const t of m.team){if(!object(t)||typeof t.memberId!=='string'||!['COMMANDER','LEADER','MEMBER'].includes(String(t.role))||!(t.reportsTo===null||typeof t.reportsTo==='string')||!strings(t.functions)||t.functions.some(f=>!Object.prototype.hasOwnProperty.call(specs,f)))throw new Error('組織の形式が不正です。');}
  for(const c of m.commands){if(!object(c)||!strFields(c,['id','fn','owner','issuer','reportTo','purpose','due','done','output','reportWhen','discretion','consult','immediate','priority','status','evidence','style','reason','alternative'])||!Object.prototype.hasOwnProperty.call(specs,String(c.fn))||!strings(c.actions)||!strings(c.dependsOn)||!['todo','doing','blocked','done'].includes(String(c.status))||!Number.isInteger(c.version)||Number(c.version)<1)throw new Error('指示の形式が不正です。');}
- const errors=[...validateMission(m as unknown as Mission),...validateExecution(m as unknown as Mission)];if(errors.length)throw new Error(errors.join('／'));
+ const errors=[...validateMission(m as unknown as Mission),...validateExecution(m as unknown as Mission),...validateReview(m as unknown as Mission)];if(errors.length)throw new Error(errors.join('／'));
  }
  return x as unknown as Store;
 }

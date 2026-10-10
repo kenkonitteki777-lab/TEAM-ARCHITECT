@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 test('unavailable entry never leaves a blank page and retry preserves URL state',async({page})=>{
- await page.route('**/assets/team-architect.js',route=>route.fulfill({status:404,body:'missing'}));
+ await page.route('**/assets/team-architect.js*',route=>route.fulfill({status:404,body:'missing'}));
  await page.goto('/?view=characters');
  await expect(page.locator('#startup')).toBeVisible();
  await expect(page.locator('#startup-code')).toContainText('JS取得失敗');
  const retry=await page.locator('#startup-retry').getAttribute('href');
  expect(retry).toContain('view=characters');expect(retry).toContain('reload=');
- await page.unroute('**/assets/team-architect.js');
+ await page.unroute('**/assets/team-architect.js*');
  await page.locator('#startup-retry').click();
  await expect(page.getByRole('heading',{name:'16の個性。ひとつのチーム。'})).toBeVisible();
  await expect(page.locator('#startup')).toBeHidden();
