@@ -1,0 +1,2 @@
+import { typeTraits } from '../core/typeTraits';
+export function TypeTraits({type}:{type:string}){const t=typeTraits[type];if(!t)return null;return <div className="type-traits"><dl>{([['strength','強み'],['weakness','弱み'],['good','得意'],['hard','不得意']] as const).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{t[key]}</dd></div>)}</dl><p className="subtle">性格の傾向を整理した参考例です。本人の経験・希望で変わります。</p></div>;}

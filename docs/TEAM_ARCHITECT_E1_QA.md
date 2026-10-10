@@ -42,3 +42,15 @@ Next improvements: actual availability and task effort, capability evidence/date
 - Public interview app: current approved portrait was present; model answer opened and next-question navigation succeeded.
 - A separate scratch Chromium attempt could not reach Pages (`ERR_EMPTY_RESPONSE`), so it was not counted as a public test pass. The public checks above used the working cloud browser. Its datetime fill required native keyboard adjustment to commit the input; local/CI Playwright date-input tests passed.
 - User Android startup and actual business/time-saving outcomes remain unmeasured.
+
+## E2 — short instructions and readable sixteen-type traits
+
+2026-10-10. User requested a simple mission view showing only who needs which message, and understandable strengths, weaknesses, comfortable and difficult work for all sixteen types.
+
+- Mission selection/creation now opens **individual instructions** first. Person cards group multiple tasks under one recipient. Show next action, deliverable, deadline/report recipient and waiting/completion state; full remaining actions and authority conditions expand on demand. A recipient filter and selectable, short handoff message reduce searching. Completed/waiting work is labelled in the message.
+- Existing progress/KPI/decisions/review/learning/hierarchy remain available under **進捗・詳細**. All saved command actions and data are retained; no migration or deletion.
+- Each of the sixteen portrait cards and both personality detail views now use four explicit headings: 強み / 弱み / 得意 / 不得意. Text is an editorial collaboration example, not an individual ability rating or job-selection rule. Existing artwork and assessments are unchanged.
+- Reviewed the official preferences/types guidance: https://www.myersbriggs.org/my-mbti-personality-type/all-types-are-valuable/ and https://www.myersbriggs.org/my-mbti-personality-type/the-16-mbti-personality-types/home.htm . Concrete workplace examples and possible difficulties are editorial interpretations, not official measured scores.
+- Synced main 5b35404 (latest interview director v2/name/crop update) before editing. No interview/Supabase/artwork edits.
+- React review: extracted components at module scope, labelled filter/text fields, native details, local derived grouping; no new dependency or data schema.
+- E2 validation: typecheck/build passed; domain 34 + interview 25 + desktop/mobile E2E 30 = 89 passing tests. E2 tests exercise person filtering, short-message contents, full-action disclosure, correct edit dialog, preserved progress/review route, all sixteen four-field profiles and responsive widths 360/390/430/1440. Existing startup/recovery, backups, review reuse and interview tests passed.
