@@ -11,3 +11,6 @@ department-takeyama-v1.webp is the standalone illustration derived from candidat
 
 
 department-takeyama-v2.webp edits the selected candidate-6 standalone using the built-in image tool: preserve face and clothing, turn shoulders slightly left and gaze back at viewer, keep full head visible with transparent padding. Resized/compressed without further aesthetic edits. The mobile portrait now uses contain at 100% frame height to prevent facial clipping.
+
+
+department-noir-v1.webp: anonymous cinematic director silhouette, generated using the earlier pose only as a contour reference. Prompt: completely obscure facial features with deep black shadow; dimensional black suit; restrained silver rim light and glasses highlights; full head within transparent margins. Not a verified likeness. Built-in image tool; WebP optimization preserves alpha.
