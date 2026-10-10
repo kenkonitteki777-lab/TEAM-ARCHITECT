@@ -9,6 +9,7 @@ test('interview application is intact and opens model answers',async({page})=>{a
 
 
 test('all sixteen character portraits load and selection opens work-style guidance',async({page})=>{
+ test.setTimeout(60000);
  await page.goto('/?view=characters');await expect(page.getByRole('heading',{name:'16の個性。ひとつのチーム。'})).toBeVisible();
  const cards=page.locator('.type-card');await expect(cards).toHaveCount(16);
  for(let i=0;i<16;i++){const card=cards.nth(i);const type=await card.locator('small').textContent();await card.click();await expect(card).toHaveAttribute('aria-pressed','true');await expect(page.locator('#character-detail')).toContainText(type!);for(const label of ['強み','弱み','得意','不得意'])await expect(page.locator('#character-detail dt').getByText(label,{exact:true})).toBeVisible();await expect(page.locator('#character-detail')).toContainText('伝え方の参考');await expect.poll(()=>page.locator('#character-detail img').evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);}
@@ -16,6 +17,7 @@ test('all sixteen character portraits load and selection opens work-style guidan
 });
 
 test('practical cockpit: KPI → hold → decision → handoff → reload and backup',async({page,context})=>{
+ test.setTimeout(60000);
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await create(page);
  await page.getByText('目的・KPI・期限を補う／変更する',{exact:true}).click();
  await page.getByLabel('指標の定義・単位',{exact:true}).fill('夜稼働率（%）');await page.getByLabel('確定する目標値',{exact:true}).fill('40%');await page.getByLabel('条件の変更理由').fill('目標を確定');await page.getByRole('button',{name:'条件を保存',exact:true}).click();

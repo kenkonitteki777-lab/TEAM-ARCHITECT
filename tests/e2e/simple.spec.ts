@@ -6,5 +6,5 @@ test('mission opens short person-first instructions, offers complete details and
  const action=await card.locator('.short-command>p').first().innerText();await card.getByRole('button',{name:/への伝達文を作る/}).click();await expect(page.getByLabel('そのまま伝える文章')).toHaveValue(new RegExp(action));
  await card.getByText('指示の続きを見る').first().click();await expect(card.locator('details').first()).toContainText('完了条件');
  for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}
- await card.getByRole('button',{name:'指示・状態を編集'}).first().click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:'閉じる',exact:true}).click();await page.getByRole('tab',{name:'進捗・詳細'}).click();await expect(page.getByRole('region',{name:'成果と次回の改善'})).toBeVisible();
+ await card.getByRole('button',{name:'指示・状態を編集'}).first().click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByLabel('具体的行動（1行につき1項目）').fill('更新済みの現場記録を確認する');await page.getByRole('button',{name:'変更を保存',exact:true}).click();await expect(page.getByLabel('そのまま伝える文章')).toHaveValue(/更新済みの現場記録を確認する/);await page.getByRole('tab',{name:'進捗・詳細'}).click();await expect(page.getByRole('region',{name:'成果と次回の改善'})).toBeVisible();
 });
