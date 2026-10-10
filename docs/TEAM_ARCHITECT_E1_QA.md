@@ -24,10 +24,21 @@ Local typecheck/build passed. Domain tests 34, interview tests 25, and full desk
 
 React review: components are declared at module scope; hooks unconditional; form fields have labels; derived lists are computed without effect-driven state copies; existing modal focus/escape behavior reused. No new framework or runtime dependency; compressed JS remains about 106 kB.
 
-Public confirmation will be appended after deployment. User Android device and actual time savings remain unmeasured; do not claim proven business outcomes.
+User Android device and actual time savings remain unmeasured; do not claim proven business outcomes.
 
 ## Practical limits and next priorities
 
 This is the first operational review/reuse loop, not completion of all stage E/F requirements. Work counts are not working hours or staffing capacity. No model has been trained; initial analysis/commands remain rules. The application stores on this browser and does not authenticate the selected recorder or share team state across devices.
 
 Next improvements: actual availability and task effort, capability evidence/date/assessor, parallelizable work dependencies instead of overly serial default processes, category-specific command editing quality, and user-tested reductions in daily briefing/planning time. Preserve the same operating/data boundaries while making these changes.
+
+## Public confirmation — 2026-10-10
+
+- Implementation commit: `ee115599b12ad1eab79cb732b402a443f6ea1e88`.
+- [Pages workflow 38052018170](https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/38052018170): build and deploy both succeeded, including the startup/application workflow gate.
+- Verified public E1 at https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/?view=work&v=e1.1 using the cloud browser. Loaded entry script `./assets/team-architect.js?v=955611802454`.
+- Created a labelled public-operation test mission in the isolated browser, set deadline/checkpoint, started execution: daily board showed 1 ready command and 6 dependency waits. Owner filter and personal briefing produced the expected person's work. Opening the first work item opened its correct directive dialog. Reload retained the saved active mission.
+- Saved an evidence-based review, selected it from a same-category new mission, explicitly confirmed its condition and verified the source/evidence/condition attached to the new draft.
+- Public interview app: current approved portrait was present; model answer opened and next-question navigation succeeded.
+- A separate scratch Chromium attempt could not reach Pages (`ERR_EMPTY_RESPONSE`), so it was not counted as a public test pass. The public checks above used the working cloud browser. Its datetime fill required native keyboard adjustment to commit the input; local/CI Playwright date-input tests passed.
+- User Android startup and actual business/time-saving outcomes remain unmeasured.
