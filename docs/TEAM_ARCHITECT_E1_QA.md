@@ -95,3 +95,5 @@ Next improvements: actual availability and task effort, capability evidence/date
 - Limits: underlying generated plan still uses the complete rule-based workflow; actual effort/capacity and field/time-saving results remain unmeasured. This change reduces operating friction, not proof of complete product readiness.
 
 - Final local validation: typecheck/build passed; 40 domain + 25 interview + 42 desktop/mobile browser stories = 107 passing tests. Covers inline progress/audit, evidence append, correct consultation view, direct clipboard and denial fallback, quota input retention, default daily landing, responsive widths 360/390/430/1440, startup recovery, all 16 profiles, MBTI, legacy backup and interview. Shared memo has an explicit accessible label and checks the current textarea value.
+
+- Public E4 check discovered a legacy detail-screen prompt asking for a consultation reason again after quick consultation had already saved it. Both task and risk displays now read the open decision detail first, without changing stored data or completion evidence. The browser consultation test asserts the saved reason appears in both places and the re-entry prompt is absent.
