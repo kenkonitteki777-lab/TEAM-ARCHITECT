@@ -47,5 +47,6 @@ test('cached HTML entry and CSS URLs survive next build instead of disappearing'
  const data=await page.evaluate(()=>localStorage.getItem('team-architect-v2'));
  await page.goto('/recovery.html');await page.getByRole('link',{name:'最新版を開く'}).click();
  expect(await page.evaluate(()=>localStorage.getItem('team-architect-v2'))).toBe(data);
+ await page.getByRole('button',{name:'指示書一覧',exact:true}).click();
  await expect(page.getByRole('button',{name:/初稿.*夜稼働の改善/})).toBeVisible();
 });

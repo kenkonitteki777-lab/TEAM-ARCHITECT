@@ -1,0 +1,11 @@
+import {test,expect} from '@playwright/test';
+
+test('creation, saved instructions, daily work and backups have distinct destinations',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'指示書一覧',exact:true}).click();await expect(page.getByRole('heading',{name:'指示書はまだありません'})).toBeVisible();await page.getByRole('button',{name:'新しい指示書を作る',exact:true}).click();
+ for(const issue of ['育成の最初の指示書','接客の二つ目の指示書']){await page.getByLabel('解決したい課題').fill(issue);await page.getByRole('button',{name:'指示書を作る',exact:true}).click();await expect(page.getByRole('button',{name:'指示書一覧',exact:true})).toHaveAttribute('aria-current','page');await page.getByRole('button',{name:'指示書一覧へ戻る',exact:true}).click();await page.getByRole('button',{name:'新しい指示書',exact:true}).click();}
+ await page.getByLabel('解決したい課題').fill('まだ作成していない入力');await expect(page.locator('.mission-row')).toHaveCount(0);await expect(page.locator('.operative-card')).toHaveCount(0);const raw=await page.evaluate(()=>localStorage.getItem('team-architect-v2'));
+ await page.getByRole('button',{name:'指示書一覧',exact:true}).click();await expect(page.locator('.mission-row')).toHaveCount(2);await page.getByRole('button',{name:/初稿.*育成の最初の指示書/}).click();await expect(page.getByRole('heading',{name:'育成の最初の指示書',exact:true})).toBeVisible();await page.getByRole('button',{name:'指示書一覧へ戻る',exact:true}).click();await expect(page.locator('.mission-row')).toHaveCount(2);
+ await page.getByRole('button',{name:'バックアップ',exact:true}).click();await expect(page.getByRole('button',{name:'全データを書き出す'})).toBeVisible();await expect(page.locator('.mission-row')).toHaveCount(0);
+ await page.getByRole('button',{name:'今日の仕事',exact:true}).click();await expect(page.getByRole('heading',{name:'今日、誰が何を動かすか。'})).toBeVisible();await page.getByRole('button',{name:'新しい指示書',exact:true}).click();await expect(page.getByLabel('解決したい課題')).toHaveValue('まだ作成していない入力');expect(await page.evaluate(()=>localStorage.getItem('team-architect-v2'))).toBe(raw);
+ for(const width of [360,390,430,768,1440]){await page.setViewportSize({width,height:844});await page.getByRole('button',{name:'指示書一覧',exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}
+});
