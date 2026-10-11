@@ -28,7 +28,7 @@ function download(filename:string,content:string){const url=URL.createObjectURL(
 function initial(){try{return {store:loadStore(localStorage),error:''};}catch(e){return {store:{schemaVersion:2,missions:[],overrides:{},legacy:{history:null,capabilities:null}} as Store,error:'保存データを読み込めません。元データの上書きを止めています。 '+String(e)};}}
 export default function App(){
  const [loaded]=useState(initial);const [store,setStore]=useState(loaded.store);const [error,setError]=useState(loaded.error);const [notice,setNotice]=useState('');const [view,setView]=useState<View>(new URLSearchParams(location.search).get('view')==='characters'?'characters':new URLSearchParams(location.search).get('view')==='work'?'work':store.missions.some(m=>m.state==='active')?'work':'home');const [brief,setBriefState]=useState<Brief>({...blankBrief});const [selected,setSelected]=useState(store.missions[0]?.id||'');const [tab,setTab]=useState<'overview'|'commands'>('commands');const [editor,setEditor]=useState<Command|null>(null);const [member,setMember]=useState('matsuo');const [book,setBook]=useState('INTJ');const [focusType,setFocusType]=useState(false);const [notes,setNotes]=useState('');
- useEffect(()=>{window.scrollTo(0,0);},[view]);
+ useEffect(()=>{if(view!=='characters'||!focusType)window.scrollTo(0,0);},[view,focusType]);
  const [revisionReason,setRevisionReason]=useState('');const [revisionActor,setRevisionActor]=useState('maesaki');
  const [learningChoice,setLearningChoice]=useState<LearningChoice>(blankLearning);
  function setBrief(next:Brief){setBriefState(next);setLearningChoice(old=>next.issue!==brief.issue?blankLearning:{...old,confirmed:false});}
