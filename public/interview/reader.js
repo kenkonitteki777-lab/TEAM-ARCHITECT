@@ -1,3 +1,4 @@
+import {createVoicePlayer} from './voice-player.js?v=20261011-voice1';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
 import {QUESTIONS as Q} from './questions.js?v=20261007-profile2';
 import {emptyState,validateBackup,mergeBackup} from './engine.js';
@@ -9,15 +10,39 @@ function get(k){try{return localStorage.getItem(k)}catch{return null}}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500)}
 function modelText(q,n=null){return models.entries[n===null?q.id:q.id+':f'+n]?.text??(n===null?q.answer:q.followups[n].answer)}
 function answer(text){const filled=text.replace(/【要確認：([^】]+)】/g,(all,key)=>{const f=state.facts[key];return f?.value&&f.source&&f.date?f.value+'（本人登録・'+f.date+'）':all});return esc(filled).replace(/【要確認：[^】]+】/g,m=>`<span class="confirmation">${m}</span>`)}
+const VOICE_KEY='team_architect_interview_voice_v1';
+let voicePreferences={auto:false,department:'',president:'',rate:1};
+try{const v=JSON.parse(get(VOICE_KEY)||'null');if(v&&typeof v==='object')voicePreferences={auto:v.auto===true,department:typeof v.department==='string'?v.department:'',president:typeof v.president==='string'?v.president:'',rate:[.85,1,1.15].includes(v.rate)?v.rate:1}}catch{}
+const speech=createVoicePlayer({synth:window.speechSynthesis,Utterance:window.SpeechSynthesisUtterance,onError:toast,onChange:key=>{
+ $('readQuestion').setAttribute('aria-pressed',String(key==='question'));$('readQuestion').innerHTML=key==='question'?'<span aria-hidden="true">■</span> 読み上げ停止':'<span aria-hidden="true">▷</span> 質問を聞く';
+ $('readAnswer').setAttribute('aria-pressed',String(key==='answer'));$('readAnswer').textContent=key==='answer'?'停止する':'解答を聞く';
+ document.querySelectorAll('[data-read-followup]').forEach(b=>{const playing=key==='followup'+b.dataset.readFollowup;b.setAttribute('aria-pressed',String(playing));b.textContent=playing?'停止する':'追撃を聞く'});
+}});
+function voiceOptions(key){const role=pool[index].m==='pres'?'president':'department';return {key,role,voiceURI:voicePreferences[role],rate:voicePreferences.rate}}
+function saveVoice(){try{localStorage.setItem(VOICE_KEY,JSON.stringify(voicePreferences))}catch{toast('音声設定は今回のみ有効です。端末に保存できません。')}}
+function updateVoices(){const voices=speech.voices();for(const role of ['department','president']){$(role+'Voice').innerHTML='<option value="">端末の標準音声</option>'+voices.map(v=>`<option value="${esc(v.voiceURI)}">${esc(v.name)}</option>`).join('');$(role+'Voice').value=voices.some(v=>v.voiceURI===voicePreferences[role])?voicePreferences[role]:''}
+ $('voiceAvailability').textContent=speech.supported?(voices.length?'利用できる日本語音声：'+voices.length+'種類。音声の種類・品質は端末によって異なります。':'日本語音声の読み込み待ち、または未インストールです。端末の音声設定を確認してください。'):'このブラウザーでは読み上げを利用できません。';}
+$('readQuestion').disabled=!speech.supported;$('readAnswer').disabled=!speech.supported;$('autoVoice').disabled=!speech.supported;$('previewVoice').disabled=!speech.supported;
+$('autoVoice').checked=voicePreferences.auto;
+$('readQuestion').onclick=()=>speech.toggle(pool[index].q,voiceOptions('question'));
+$('readAnswer').onclick=()=>speech.toggle($('answer').textContent.replace(/【要確認：([^】]+)】/g,'要確認、$1'),voiceOptions('answer'));
+$('autoVoice').onchange=()=>{voicePreferences.auto=$('autoVoice').checked;saveVoice();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));else speech.stop()};
+$('openVoice').onclick=()=>{speech.stop();updateVoices();$('voiceRate').value=String(voicePreferences.rate);$('voiceSettings').showModal()};$('closeVoice').onclick=()=>$('voiceSettings').close();$('voiceSettings').addEventListener('close',()=>speech.stop());
+for(const role of ['department','president'])$(role+'Voice').onchange=()=>{speech.stop();voicePreferences[role]=$(role+'Voice').value;saveVoice()};
+$('voiceRate').onchange=()=>{speech.stop();voicePreferences.rate=Number($('voiceRate').value);saveVoice()};$('previewVoice').onclick=()=>speech.toggle(pool[index].q,voiceOptions('preview'));
+window.speechSynthesis?.addEventListener('voiceschanged',updateVoices);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)speech.stop()});window.addEventListener('pagehide',()=>speech.stop());
 function paintAnswer(){
  const q=pool[index];$('answer').innerHTML=answer(modelText(q));$('answerOrigin').textContent=models.entries[q.id]?'本人登録':'回答案';
- $('followups').innerHTML=q.followups.map((f,i)=>`<details><summary>追撃：${esc(f.q)}</summary><p>${answer(modelText(q,i))}</p><button class="edit-button" data-followup="${i}">この追撃回答を編集 ↗</button></details>`).join('');
+ $('followups').innerHTML=q.followups.map((f,i)=>`<details><summary>追撃：${esc(f.q)}</summary><p>${answer(modelText(q,i))}</p><button class="edit-button read-followup" data-read-followup="${i}" aria-pressed="false" ${speech.supported?'':'disabled'}>追撃を聞く</button><button class="edit-button" data-followup="${i}">この追撃回答を編集 ↗</button></details>`).join('');
+ $('followups').querySelectorAll('[data-read-followup]').forEach(b=>b.onclick=()=>speech.toggle(q.followups[Number(b.dataset.readFollowup)].q,voiceOptions('followup'+b.dataset.readFollowup)));
  $('followups').querySelectorAll('[data-followup]').forEach(b=>b.onclick=()=>openEditor(Number(b.dataset.followup)));
  $('answerCore').textContent='回答の核：'+q.core;$('answerIntent').textContent='確認される点：'+q.intent;
  $('provenance').textContent=models.entries[q.id]?'本人登録 · '+new Date(models.entries[q.id].updatedAt).toLocaleDateString('ja-JP'):q.status+' · '+q.src;
 }
-function toggleAnswer(value=!revealed){revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'<span class="action-label">解答を隠す<small aria-hidden="true">HIDE ANSWER</small></span><span aria-hidden="true">−</span>':'<span class="action-label">模範解答を見る<small aria-hidden="true">REVEAL ANSWER</small></span><span aria-hidden="true">＋</span>';}
+function toggleAnswer(value=!revealed){if(!value)speech.stop();revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'<span class="action-label">解答を隠す<small aria-hidden="true">HIDE ANSWER</small></span><span aria-hidden="true">−</span>':'<span class="action-label">模範解答を見る<small aria-hidden="true">REVEAL ANSWER</small></span><span aria-hidden="true">＋</span>';}
 function render(){
+ speech.stop();
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
  const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
  $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長面接のシルエット');
@@ -27,12 +52,12 @@ function render(){
  paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}
 }
 function selectInterviewer(mode){
- interviewFilter=mode;$('search').value='';$('categoryFilter').value='';pool=Q.filter(q=>mode==='president'?q.m==='pres':q.m!=='pres');const previous=get(POSITION+'_'+mode);index=Math.max(0,pool.findIndex(q=>q.id===previous));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));render();renderList();window.scrollTo({top:0,behavior:'instant'});
+ interviewFilter=mode;$('search').value='';$('categoryFilter').value='';pool=Q.filter(q=>mode==='president'?q.m==='pres':q.m!=='pres');const previous=get(POSITION+'_'+mode);index=Math.max(0,pool.findIndex(q=>q.id===previous));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));render();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));renderList();window.scrollTo({top:0,behavior:'instant'});
 }
 document.querySelectorAll('button[data-interviewer]').forEach(b=>b.onclick=()=>selectInterviewer(b.dataset.interviewer));
 $('profileContent').innerHTML=`<p class="profile-note">${esc(PRESIDENT_PROFILE.note)}</p><h3>公開発言で確認できる経営姿勢</h3>${PRESIDENT_PROFILE.evidence.map(e=>`<article class="profile-axis"><strong>${esc(e.axis)}</strong><p>${esc(e.detail)}</p><a href="${PRESIDENT_PROFILE.sources[e.source].url}" target="_blank" rel="noopener noreferrer">公式資料 ↗</a></article>`).join('')}<h3>あなたが指定した練習条件</h3><p>${esc(PRESIDENT_PROFILE.training)}</p><h3>問答への落とし込み</h3><p>${esc(PRESIDENT_PROFILE.inference)}</p><p class="muted">資料確認日：${PRESIDENT_PROFILE.checkedAt} · 本人登録の模範解答は優先して表示します。</p>`;
-$('openProfile').onclick=()=>$('profile').showModal();$('closeProfile').onclick=()=>$('profile').close();
-function move(step){if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();window.scrollTo({top:0,behavior:'instant'})}
+$('openProfile').onclick=()=>(speech.stop(),$('profile').showModal());$('closeProfile').onclick=()=>$('profile').close();
+function move(step){if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
 function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return Q.filter(q=>(interviewFilter==='all'||(interviewFilter==='president'?q.m==='pres':q.m!=='pres'))&&(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{interviewFilter=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===b)));renderList()});
 function renderList(){const list=filtered();$('resultCount').textContent=`${list.length}問`;$('questionList').innerHTML=list.length?list.map(q=>`<button class="question-row" data-id="${q.id}" aria-current="${q.id===pool[index].id}"><span class="index">${q.id.slice(1)}</span><span>${esc(q.q)}<small>${esc(q.category)}${models.entries[q.id]?' · 本人登録':''}</small></span></button>`).join(''):'<p class="muted">一致する質問がありません。</p>';$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{pool=list;index=pool.findIndex(q=>q.id===b.dataset.id);render();$('navigation').close();window.scrollTo({top:0,behavior:'instant'})})}
@@ -50,7 +75,7 @@ async function init(){
 }
 function openEditor(n=null){
  if(!ready){toast('保存データを読み込み中です。少しお待ちください。');return}
- const q=pool[index];editKey=n===null?q.id:q.id+':f'+n;$('editorQuestion').textContent=n===null?q.q:q.followups[n].q;$('modelText').value=modelDrafts[editKey]??modelText(q,n);$('draftStatus').textContent=Object.hasOwn(modelDrafts,editKey)?'編集中の下書きを復元':'元の回答案も保持されます';$('editChars').textContent=$('modelText').value.length+' / 12,000字';$('editor').showModal();
+ const q=pool[index];editKey=n===null?q.id:q.id+':f'+n;$('editorQuestion').textContent=n===null?q.q:q.followups[n].q;$('modelText').value=modelDrafts[editKey]??modelText(q,n);$('draftStatus').textContent=Object.hasOwn(modelDrafts,editKey)?'編集中の下書きを復元':'元の回答案も保持されます';$('editChars').textContent=$('modelText').value.length+' / 12,000字';speech.stop();$('editor').showModal();
 }
 $('modelText').oninput=()=>{modelDrafts[editKey]=$('modelText').value;try{localStorage.setItem(DRAFT_KEY,JSON.stringify(modelDrafts));$('draftStatus').textContent='下書き保存済み'}catch{$('draftStatus').textContent='下書き保存不可：保存またはコピーしてください'}$('editChars').textContent=$('modelText').value.length+' / 12,000字'};
 $('saveModel').onclick=async()=>{
@@ -66,13 +91,13 @@ $('saveModel').onclick=async()=>{
  }catch(e){toast('保存できません：'+(e.message||'コピーして保持してください。'))}finally{$('saveModel').disabled=false}
 };
 $('closeEditor').onclick=()=>$('editor').close();$('editAnswer').onclick=()=>openEditor();$('reveal').onclick=()=>toggleAnswer();$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);
-$('openMenu').onclick=()=>{renderList();history();$('navigation').showModal()};$('closeMenu').onclick=()=>$('navigation').close();
+$('openMenu').onclick=()=>{renderList();history();(speech.stop(),$('navigation').showModal())};$('closeMenu').onclick=()=>$('navigation').close();
 $('navigation').addEventListener('click',e=>{if(e.target===$('navigation')){const r=$('navigation').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('navigation').close()}});
 $('categoryFilter').innerHTML+=[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');['search','categoryFilter'].forEach(id=>$(id).oninput=renderList);
 window.addEventListener('keydown',e=>{
  if(e.isComposing||e.altKey)return;
  if($('editor').open){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('saveModel').click()}return}
- if($('navigation').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
+ if($('navigation').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
  if(e.key==='ArrowRight'){e.preventDefault();move(1)}if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}if(e.code==='Space'){e.preventDefault();toggleAnswer()}
 });
 window.addEventListener('storage',e=>{
