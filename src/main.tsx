@@ -6,6 +6,7 @@ import './command-room.css';
 import './components/execution.css';
 import './components/practical.css';
 import './components/mbti.css';
+import './components/typeGroups.css';
 
 class StartupBoundary extends Component<{children:ReactNode},{failed:boolean}> {
   state={failed:false};

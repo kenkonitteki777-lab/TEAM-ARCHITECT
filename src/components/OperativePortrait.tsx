@@ -4,13 +4,13 @@ import { TypePortrait, typeArtwork } from './TypePortrait';
 import { Crosshair, Gem, Layers3, Network, Radar, ShieldCheck, Zap } from 'lucide-react';
 
 const identities = {
- maesaki: { color: '#e8b46b', icon: ShieldCheck, cut: 'command', number: '01' },
- matsuo: { color: '#7db9d2', icon: Layers3, cut: 'strategy', number: '02' },
- yasaka: { color: '#b9a4dd', icon: Network, cut: 'engage', number: '03' },
- miyamoto: { color: '#79b8ae', icon: Zap, cut: 'field', number: '04' },
- hattori: { color: '#d29aa9', icon: Gem, cut: 'creative', number: '05' },
- tatsuno: { color: '#a2baa0', icon: Crosshair, cut: 'operate', number: '06' },
- asano: { color: '#c4ac7c', icon: Radar, cut: 'scout', number: '07' },
+ maesaki: { color: '#c4a5ed', icon: ShieldCheck, cut: 'command', number: '01' },
+ matsuo: { color: '#c4a5ed', icon: Layers3, cut: 'strategy', number: '02' },
+ yasaka: { color: '#85d3ab', icon: Network, cut: 'engage', number: '03' },
+ miyamoto: { color: '#85d3ab', icon: Zap, cut: 'field', number: '04' },
+ hattori: { color: '#85d3ab', icon: Gem, cut: 'creative', number: '05' },
+ tatsuno: { color: '#88c5ef', icon: Crosshair, cut: 'operate', number: '06' },
+ asano: { color: '#edce75', icon: Radar, cut: 'scout', number: '07' },
 } as const;
 
 export function RoleEmblem({ memberId }: { memberId: string }) {
