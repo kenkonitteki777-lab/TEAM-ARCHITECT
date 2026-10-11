@@ -16,3 +16,9 @@ Limits: no physical Android-device or workplace outcome measurement.
 - Public root rendered E6; all sixteen small portraits loaded in four group filters. Green ENFJ detail loaded the new large emerald outfit with green rim light; purple ENTP, blue ESFJ and yellow ESFP details also loaded. Detail/return/filter controls responded and updated the selected type. Visual inspection confirmed green clothes and green effects without purple glow.
 - Public interview model answer revealed successfully. No user mission/settings/history or database records modified or deleted during public inspection. No app-origin error observed; browser-extension metadata transport messages are outside the application.
 - Public verification browser was reconnected after an idle session reset; app itself continued to render and respond. Saved artwork and prompt set remain in repository.
+
+## E6.1 — sixteen-type alignment
+
+2026-10-11 JST. User reported a displaced final type in the People view. The selector used wrapping flex items (mobile basis 18%), producing incomplete rows. Replaced with four equal grid columns at every width (four complete rows, 44px minimum targets). The archive now stretches all cards to equal row heights; intermediate widths use two columns instead of three, keeping all sixteen and four-type groups in complete rows. No type labels clipped, artwork or saved records changed.
+
+Local typecheck/build passed. Existing 46 desktop/mobile UI tests passed; new two-project geometry regression passed at 360,390,430,768,1000,1440px: sixteen buttons, four equal columns, complete final row, equal archive row heights and no horizontal overflow. Initial test navigation assumed an unsupported members query and was corrected to use the real menu; no app routing change. Test browser was restored from the official package registry after temporary binary cleanup; no project dependency change. Public verification follows.

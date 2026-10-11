@@ -31,3 +31,10 @@
 @media(min-width:641px){.sidebar{overflow-y:auto}.sidebar-bottom{flex-shrink:0}.topbar .diagnosis-link{min-height:40px}}
 @media(max-width:640px){.sidebar nav .nav-diagnosis{display:none}.nav-full{display:none}.nav-short{display:inline}.sidebar nav button{font-size:10px;line-height:1.25}.topbar>div:first-child>span,.topbar-tools .mode{display:none}.topbar b{border:0;padding:0}.topbar .topbar-tools{gap:0}.topbar .diagnosis-link{padding:8px 10px;font-size:11px;min-height:44px}.group-filters{gap:6px}.group-filters button{padding:9px 10px;font-size:12px}.page-heading{gap:12px;flex-wrap:wrap}.lab-person .type-group-label{font-size:11px}}
 .topbar{position:sticky;top:0;z-index:25}.character-detail{scroll-margin-top:82px}
+
+/* Keep sixteen options in complete rows, including narrow phone screens. */
+.type-selector{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.type-selector button{width:100%;min-width:0;min-height:44px;padding:8px 4px}
+.character-gallery .type-card{display:flex;flex-direction:column;align-self:stretch}
+.character-gallery .type-card>div{flex:1}
+@media(min-width:701px) and (max-width:1000px){.character-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
