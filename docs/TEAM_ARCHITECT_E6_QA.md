@@ -9,3 +9,10 @@
 - Scope: TypePortrait mapping, footer E6, new image files and these documentation files only. No interview, Supabase, schema/storage key, mission logic, dependencies or AppDeploy change. Public verification follows after Pages deployment.
 
 Limits: no physical Android-device or workplace outcome measurement.
+
+## Public verification
+
+- Published commit 3cc3558a9f2cf3a8c19724b9eb8e99326ea3b04a. Pages run 38101664976: build and deploy both successful, including complete workflow tests.
+- Public root rendered E6; all sixteen small portraits loaded in four group filters. Green ENFJ detail loaded the new large emerald outfit with green rim light; purple ENTP, blue ESFJ and yellow ESFP details also loaded. Detail/return/filter controls responded and updated the selected type. Visual inspection confirmed green clothes and green effects without purple glow.
+- Public interview model answer revealed successfully. No user mission/settings/history or database records modified or deleted during public inspection. No app-origin error observed; browser-extension metadata transport messages are outside the application.
+- Public verification browser was reconnected after an idle session reset; app itself continued to render and respond. Saved artwork and prompt set remain in repository.
