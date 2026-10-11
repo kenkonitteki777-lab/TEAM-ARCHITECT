@@ -11,7 +11,7 @@ export type Assignment={memberId:string;role:'COMMANDER'|'LEADER'|'MEMBER';repor
 export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution;reviews?:Review[];learning?:LearningApplication};
 export const blankBrief:Brief={issue:'',goal:'',constraints:'',deadline:'',kpi:'',baseline:'',target:'',source:'',period:'',checkpoint:'',excluded:[]};
 export const kindLabels:Record<Kind,string>={sales:'稼働・営業改善',machine:'新台・入替',promo:'販促・集客',people:'育成・組織',service:'接客品質'};
-export const classify=(x:string):Kind=>/育成|スタッフ|人材|面談/.test(x)?'people':/接客|CS|クレーム/.test(x)?'service':/新台|入替|遊技機/.test(x)?'machine':/販促|POP|SNS|広告/.test(x)?'promo':'sales';
+export const classify=(x:string):Kind=>/育成|スタッフ|人材|面談|新人|OJT|研修|教育/i.test(x)?'people':/接客|CS|クレーム|ご案内|案内待ち|接遇/.test(x)?'service':/新台|入替|遊技機/.test(x)?'machine':/販促|POP|SNS|広告/.test(x)?'promo':'sales';
 export const specs:Record<FunctionKey,{name:string;abilities:number[];experts:string[];output:string;done:string}>= {
  ANALYZE:{name:'現状分析',abilities:[2,3,4],experts:['matsuo'],output:'比較表と主要論点（1ページ）',done:'比較期間・データ出所・不明事項が明記され、根拠付きの論点が3点以内に整理されている'},
  DESIGN:{name:'対策設計',abilities:[1,4,13,17],experts:['matsuo'],output:'対策3案の比較表と推奨案',done:'各案の効果仮説・必要資源・リスク・担当・期限を同じ軸で比較できる'},
