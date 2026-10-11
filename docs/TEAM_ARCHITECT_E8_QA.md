@@ -14,3 +14,9 @@ Changing screens preserves unsaved drafting input and does not write local stora
 Local typecheck/build, 40 domain and 25 interview regression cases passed. New desktop/mobile story checks empty list, two separate saved drafts, selecting the correct older draft, return, preserved input, unchanged raw stored data, and distinct backup/work screens. List geometry is checked at 360/390/430/768/1440px. Existing workflow tests now navigate through the real list rather than removed duplicate home/backup rows. Final browser and public verification are recorded after completion. Physical Android not tested.
 
 Local UI results: 50 cases passed in the full run; four reload/recovery cases still attempted the removed home list. Updated their navigation to 指示書一覧 and all four passed in a focused rerun. All 54 UI stories passed across these runs; combined with 65 domain/interview cases, 119 verified cases. Public CI runs the entire suite on the final revision.
+
+## Public verification
+
+2026-10-11 JST. Published app commit 1748b249f251c866a731053d6b9969e1a0d08a7f; Pages run 38125019633 build/deploy successful, including the full final test suite.
+
+Public root rendered E8 with 新しい指示書 / 指示書一覧 / 今日の仕事 / バックアップ as separate destinations. Verified creation → empty instruction list → backup → daily work → creation; temporary unsaved text remained intact on return. Creation has no duplicate roster/list; backup has no current instruction list. Public verification did not create, overwrite or remove saved missions or settings. Desktop visual inspection retained the original E6 portrait and compact entry. The separate public interview application loaded and revealed its model answer. No app-origin console error observed. Phone/list/data-retention coverage comes from the local and CI automated suites; no physical Android claim.
