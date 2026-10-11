@@ -125,3 +125,11 @@ React review: shared module-level components; unconditional hooks; one derived g
 Local typecheck/build and 40 domain + 25 interview tests passed. Standard Playwright CDN browser zip was truncated; used registry-distributed @sparticuz/chromium 153 binary without adding it as an app dependency. Full desktop/mobile UI and publication verification results follow.
 
 - Final local validation: 46 desktop/mobile UI stories passed, plus 40 domain + 25 interview = 111 passing tests. All 16 artwork files loaded, 360/390/430/1440 widths had no horizontal overflow, backup/startup/consultation flows passed. Diagnosis popup test stubs the external destination; actual public destination verification is separate.
+
+### E5 public verification
+
+- Published commit 499735bac1e2f1956b5ae5051c4c6770c7b2afad; Pages run 38099671249 build and deploy both succeeded, including full 111-test CI suite.
+- Cloud browser root https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/ rendered E5. Header/menu diagnosis link opened a separate tab at the Japanese 16Personalities test, with its title and first unanswered questions visible. No assessment answers, login, subscription or results submitted.
+- Public archive: green filter returned INFJ/INFP/ENFJ/ENFP; selected ENFP updated its strengths/weaknesses/suitable/unsuitable detail, scrolled/focused it and showed green border/label. Return focused the original ENFP card. Blue returned ISTJ/ISFJ/ESTJ/ESFJ; yellow ISTP/ISFP/ESTP/ESFP; purple INTJ/INTP/ENTJ/ENTP. Diagnosis link remained at the viewport top after long scrolling. Menu return to planning restored scrollY 0. All-types view restored. Original artwork remained intact.
+- No app-origin console errors observed. Public interview model answer revealed successfully; interview files/engine/backend unchanged. No user mission, settings, saved history, original localStorage key or database was edited/deleted during this public check. No screenshot deliverable created.
+- Limits: mobile flow verified through automated Chromium viewports/touch emulation, not the user's physical Android device. External site availability and test/results are controlled by 16Personalities; workplace usefulness/time-saving remains unmeasured.
