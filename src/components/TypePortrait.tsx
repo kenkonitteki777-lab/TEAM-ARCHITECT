@@ -1,4 +1,4 @@
-export const typeArtwork:Record<string,string>={ENTJ:'commander-v2',INTJ:'strategist-v2',ENFJ:'types/enfj-v1',INFP:'types/infp-v1',ESFJ:'types/esfj-v1',ISFP:'types/isfp-v1',INTP:'types/intp-v1',ENTP:'types/entp-v1',INFJ:'types/infj-v1',ENFP:'types/enfp-v1',ISTJ:'types/istj-v1',ISFJ:'types/isfj-v1',ESTJ:'types/estj-v1',ISTP:'types/istp-v1',ESTP:'types/estp-v1',ESFP:'types/esfp-v1'};
+export const typeArtwork:Record<string,string>={"INTJ":"types/intj-e6","INTP":"types/intp-e6","ENTJ":"types/entj-e6","ENTP":"types/entp-e6","INFJ":"types/infj-e6","INFP":"types/infp-e6","ENFJ":"types/enfj-e6","ENFP":"types/enfp-e6","ISTJ":"types/istj-e6","ISFJ":"types/isfj-e6","ESTJ":"types/estj-e6","ESFJ":"types/esfj-e6","ISTP":"types/istp-e6","ISFP":"types/isfp-e6","ESTP":"types/estp-e6","ESFP":"types/esfp-e6"};
 
 export function TypePortrait({type,large=false,eager=false}:{type:string;large?:boolean;eager?:boolean}){
  const artwork=typeArtwork[type];

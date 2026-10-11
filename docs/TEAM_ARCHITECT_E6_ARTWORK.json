@@ -1,0 +1,111 @@
+{
+  "method": "Built-in image_gen identity-preserve editing; ImageMagick resize/WebP encoding only",
+  "groups": {
+    "purple": [
+      "INTJ",
+      "INTP",
+      "ENTJ",
+      "ENTP"
+    ],
+    "green": [
+      "INFJ",
+      "INFP",
+      "ENFJ",
+      "ENFP"
+    ],
+    "blue": [
+      "ISTJ",
+      "ISFJ",
+      "ESTJ",
+      "ESFJ"
+    ],
+    "yellow": [
+      "ISTP",
+      "ISFP",
+      "ESTP",
+      "ESFP"
+    ]
+  },
+  "portraits": [
+    {
+      "type": "INTJ",
+      "asset": "public/operatives/types/intj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original INTJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: deep plum minimalist sharply tailored blazer, violet-black fine turtleneck, discreet geometric violet pin; restrained long-term strategist. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be purple. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "INTP",
+      "asset": "public/operatives/types/intp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original INTP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: relaxed aubergine textured research jacket, muted lavender fine knit turtleneck; curious analytical thinker, preserve metal puzzle. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be purple. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ENTJ",
+      "asset": "public/operatives/types/entj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ENTJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: structured royal-purple double-breasted executive suit, plum open-collar shirt, silver buttons and violet pocket square; confident decisive leader. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be purple. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ENTP",
+      "asset": "public/operatives/types/entp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ENTP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: creative asymmetrical violet tailored jacket, lavender satin blouse, slim charcoal belt; inventive witty debater, preserve geometric card. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be purple. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "INFJ",
+      "asset": "public/operatives/types/infj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original INFJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: forest-green elegant long coat, sage blouse and flowing emerald scarf; quietly insightful empathetic adviser, preserve journal. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be green. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "INFP",
+      "asset": "public/operatives/types/infp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original INFP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: soft moss-green relaxed jacket, sage open-collar shirt and textured emerald scarf, subtle leaf brooch; imaginative reflective idealist, preserve notebook and pen. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be green. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ENFJ",
+      "asset": "public/operatives/types/enfj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: attached ENFJ portrait for TEAM ARCHITECT character artwork. Preserve this exact person's face, hairstyle, age, body, welcoming hand gesture, notebook, realistic cinematic digital illustration style, framing, and transparent cutout silhouette. Change clothing into an elegant emerald-green tailored blazer and matching trousers, soft sage open-collar shirt, emerald pocket square, subtle silver network pin: an approachable inspiring mentor and coordinator. Clearly visible green clothing, not merely a tiny badge. Replace ALL purple, violet and orange coloured rim lights, glow and horizontal background accents with emerald/mint green illumination. Natural skin remains natural; charcoal/black neutral details allowed. No other group's purple, blue or yellow accent. Preserve transparent background and clean edges. Single person, 2:3 portrait composition same original; no text or watermark."
+    },
+    {
+      "type": "ENFP",
+      "asset": "public/operatives/types/enfp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ENFP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: lively emerald relaxed jacket with mint-green inner lining and rolled cuffs, bright leaf-green soft blouse; expressive enthusiastic idea generator, preserve welcoming gesture and papers. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be green. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ISTJ",
+      "asset": "public/operatives/types/istj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ISTJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: precise navy-blue classic suit, clear steel-blue shirt and medium-blue tie; disciplined dependable organiser, preserve document binder. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be blue. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ISFJ",
+      "asset": "public/operatives/types/isfj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ISFJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: soft cornflower-blue tailored jacket, pale-blue draped blouse, small silver crescent pin; gentle thoughtful practical supporter, preserve notebook. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be blue. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ESTJ",
+      "asset": "public/operatives/types/estj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ESTJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: structured cobalt-blue three-piece suit, pale-blue shirt and deep-blue tie, matching pocket square; organised assertive operations leader, preserve clipboard. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be blue. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ESFJ",
+      "asset": "public/operatives/types/esfj-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ESFJ portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: approachable medium-blue tailored suit and waistcoat, pale-blue shirt with sapphire patterned tie; sociable reliable coordinator, preserve notebook. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be blue. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ISTP",
+      "asset": "public/operatives/types/istp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ISTP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: practical ochre-yellow fitted utility leather jacket with functional pockets, charcoal shirt, rolled sleeves; quiet hands-on problem solver, preserve precision tool. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be yellow. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ISFP",
+      "asset": "public/operatives/types/isfp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ISFP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: soft mustard-yellow relaxed field jacket with cream inner lining, charcoal simple shirt; independent observant creator, preserve pocket sketch notebook. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be yellow. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ESTP",
+      "asset": "public/operatives/types/estp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ESTP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: athletic golden-ochre tailored field blazer, charcoal open-collar shirt, warm-yellow pocket square; decisive energetic on-site troubleshooter, preserve radio. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be yellow. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    },
+    {
+      "type": "ESFP",
+      "asset": "public/operatives/types/esfp-e6.webp",
+      "prompt": "Use case: identity-preserve. Edit target: the supplied original ESFP portrait for TEAM ARCHITECT. Preserve this exact person's facial identity, hairstyle, age, gender, natural skin, original body pose, hands and held objects, cinematic realistic digital illustration quality. Clothing design: expressive sunflower-yellow tailored jacket with soft champagne lapels, warm golden-yellow tied blouse; warm lively engaging host, preserve notebook and welcoming gesture. The dominant clothing colour and ALL coloured rim lighting/glow/background accents must be yellow. No purple/blue/green/yellow accent from other groups. Charcoal and silver neutral details allowed. Individual personality conveyed through garment silhouette and texture, not extra objects. Frame from hair top through upper thighs exactly like original, leave small head margin; single person, 2:3 portrait. Preserve clean cutout edges and transparent background. No text, letters, logo, watermark or extra people."
+    }
+  ]
+}
