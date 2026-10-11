@@ -1,11 +1,11 @@
 import {test,expect} from '@playwright/test';
 const first='夜稼働改善を検証する';
-async function create(page:import('@playwright/test').Page,issue=first){await page.getByLabel('解決したい課題').fill(issue);await page.getByText('目的・期限なども入力する（任意）',{exact:true}).click();await page.getByLabel('達成したい状態').fill('平日夜稼働を上げる');await page.getByLabel('ミッション期限（日本時間）',{exact:true}).fill('2026-10-15T22:00');await page.getByText('制約・KPI・参加メンバーを設定',{exact:true}).click();await page.getByLabel('次回チェックポイント（日本時間）',{exact:true}).fill('2026-10-13T12:00');await page.getByRole('button',{name:'指示書を作る'}).click();await page.getByRole('tab',{name:'進捗・詳細'}).click();}
+async function create(page:import('@playwright/test').Page,issue=first){await page.getByLabel('解決したい課題').fill(issue);await page.getByText('目的・期限なども入力する（任意）',{exact:true}).click();await page.getByLabel('達成したい状態').fill('平日夜稼働を上げる');await page.getByLabel('指示書の期限（日本時間）',{exact:true}).fill('2026-10-15T22:00');await page.getByText('制約・KPI・参加メンバーを設定',{exact:true}).click();await page.getByLabel('次回チェックポイント（日本時間）',{exact:true}).fill('2026-10-13T12:00');await page.getByRole('button',{name:'指示書を作る'}).click();await page.getByRole('tab',{name:'進捗・詳細'}).click();}
 test('daily work opens the right mission and directive, preserves waiting states and produces personal memo',async({page})=>{
  await page.goto('/');await create(page);await page.getByRole('button',{name:'確認して実行を開始'}).click();
  await page.getByRole('button',{name:'今日の仕事',exact:true}).click();const board=page.getByRole('region',{name:'全案件の仕事'}).or(page.locator('.work-board'));
  await expect(board).toContainText('着手可能 1');await expect(board).toContainText('先行待ち・保留 6');
- await page.getByLabel('仕事の担当').selectOption('matsuo');await page.getByRole('button',{name:'共有用の仕事メモを作る'}).click();await expect(page.getByLabel('共有用の仕事メモ',{exact:true})).toHaveValue(/仕事の共有メモ \/ 松尾/);
+ await page.getByLabel('仕事の担当').selectOption('matsuo');await page.getByRole('button',{name:'共有用の仕事メモを確認'}).click();await expect(page.getByLabel('共有用の仕事メモ',{exact:true})).toHaveValue(/仕事の共有メモ \/ 松尾/);
  await page.getByLabel('確認する仕事').selectOption('ready');await page.getByRole('button',{name:'指示を開く'}).first().click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.getByRole('dialog')).toContainText('現状分析');await page.getByRole('button',{name:'閉じる',exact:true}).click();
  await page.getByRole('button',{name:'今日の仕事',exact:true}).click();
  for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}

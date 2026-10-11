@@ -1,15 +1,11 @@
 import {test,expect} from '@playwright/test';
 const groups=[['analysts','紫 · 分析家',['INTJ','INTP','ENTJ','ENTP'],'rgb(196, 165, 237)'],['diplomats','緑 · 外交官',['INFJ','INFP','ENFJ','ENFP'],'rgb(133, 211, 171)'],['sentinels','青 · 番人',['ISTJ','ISFJ','ESTJ','ESFJ'],'rgb(136, 197, 239)'],['explorers','黄 · 探検家',['ISTP','ISFP','ESTP','ESFP'],'rgb(237, 206, 117)']] as const;
-test('sixteen people types form complete equal rows without a lone last option',async({page})=>{
+test('all sixteen archive types form complete equal rows at phone, tablet and desktop widths',async({page})=>{
  for(const width of [360,390,430,768,1000,1440]){
-  await page.setViewportSize({width,height:844});await page.goto('/');await page.getByRole('button',{name:'人材・MBTI',exact:true}).click();await expect(page.locator('.type-selector button')).toHaveCount(16);
-  const options=await page.locator('.type-selector button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};}));
-  expect(options).toHaveLength(16);
-  for(let row=0;row<4;row++){const cells=options.slice(row*4,row*4+4);expect(new Set(cells.map(c=>c.y)).size).toBe(1);expect(Math.max(...cells.map(c=>c.width))-Math.min(...cells.map(c=>c.width))).toBeLessThan(1);expect(Math.min(...cells.map(c=>c.height))).toBeGreaterThanOrEqual(44);}
-  expect(options[12].x).toBe(options[0].x);expect(options[15].x).toBe(options[3].x);
-  await page.goto('/?view=characters');await expect(page.locator('.type-card')).toHaveCount(16);const cards=await page.locator('.type-card').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{y:r.y,height:r.height};}));
-  const columns=width<=1000?2:4;for(let i=0;i<16;i+=columns){const row=cards.slice(i,i+columns);expect(new Set(row.map(c=>c.y)).size).toBe(1);expect(Math.max(...row.map(c=>c.height))-Math.min(...row.map(c=>c.height))).toBeLessThan(1);}
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+  await page.setViewportSize({width,height:844});await page.goto('/?view=characters');await expect(page.locator('.type-card')).toHaveCount(16);
+  const cards=await page.locator('.type-card').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};}));
+  const columns=width<=1000?2:4;for(let i=0;i<16;i+=columns){const row=cards.slice(i,i+columns);expect(new Set(row.map(c=>c.y)).size).toBe(1);expect(Math.max(...row.map(c=>c.height))-Math.min(...row.map(c=>c.height))).toBeLessThan(1);expect(Math.max(...row.map(c=>c.width))-Math.min(...row.map(c=>c.width))).toBeLessThan(1);}
+  expect(cards[16-columns].x).toBe(cards[0].x);expect(cards[15].x).toBe(cards[columns-1].x);expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
  }
 });
 test('all sixteen types share four group colours; filters and detail return retain the selected person',async({page})=>{

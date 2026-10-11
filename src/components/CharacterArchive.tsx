@@ -6,8 +6,8 @@ import { TypePortrait } from './TypePortrait';
 import { TypeTraits } from './TypeTraits';
 import { MbtiLab } from './MbtiLab';
 import { DiagnosisLink } from './DiagnosisLink';
-export function CharacterArchive({type,onSelect}:{type:string;onSelect:(type:string)=>void}){
- const [group,setGroup]=useState('all'),[request,setRequest]=useState(0);
+export function CharacterArchive({type,onSelect,focusDetail=false}:{type:string;onSelect:(type:string)=>void;focusDetail?:boolean}){
+ const [group,setGroup]=useState('all'),[request,setRequest]=useState(focusDetail?1:0);
  const detail=useRef<HTMLElement>(null),cards=useRef<HTMLDivElement>(null);
  const visible=typeBook.filter(t=>group==='all'||typeGroup(t.mbti)?.id===group);
  const chosen=typeBook.find(t=>t.mbti===type)!;
