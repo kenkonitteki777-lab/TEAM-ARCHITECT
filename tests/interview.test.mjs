@@ -47,3 +47,16 @@ function voiceFixture(available=[{voiceURI:'ja-test',lang:'ja-JP',name:'Japanese
 test('reading replaces queued questions and ignores stale completion callbacks',()=>{const f=voiceFixture();f.player.play('前の質問',{key:'question'});f.player.play('新しい質問',{key:'question'});f.spoken[0].onend();assert.equal(f.changes.at(-1),'question');f.spoken[1].onend();assert.equal(f.changes.at(-1),null);assert.equal(f.cancels,2)});
 test('interviewer reading tempo differs without claiming a cloned voice',()=>{const f=voiceFixture();f.player.play('部長',{role:'department'});f.player.play('社長',{role:'president'});assert.ok(f.spoken[0].rate<f.spoken[1].rate);assert.equal(f.spoken[0].pitch,1);assert.equal(f.spoken[1].voice.voiceURI,'ja-test');f.player.toggle('社長',{key:'question'});assert.equal(f.changes.at(-1),null)});
 test('missing Japanese voices and unsupported reading fail with useful feedback',()=>{const f=voiceFixture([{lang:'en-US'}]);assert.equal(f.player.play('質問'),false);assert.equal(f.spoken.length,0);assert.ok(f.errors[0].includes('日本語'));const errors=[];const p=createVoicePlayer({onError:e=>errors.push(e)});assert.equal(p.supported,false);assert.equal(p.play('質問'),false);assert.equal(errors.length,1)});
+
+import {recordOralPractice,weakQuestions,selectPracticeQuestion,weaknessSummary} from '../public/interview/rehearsal.js';
+test('oral practice preserves existing written answers and backup history',()=>{
+ const before=emptyState();before.records.q001={answer:'以前の本人回答',updatedAt:'2026-10-01T00:00:00Z'};before.history=[{id:'old',questionId:'q001',answer:'以前の本人回答',updatedAt:'2026-10-01T00:00:00Z'}];before.facts.profit={value:'本人の数字'};
+ const after=recordOralPractice(before,QUESTIONS[0],[{prompt:QUESTIONS[0].q,seconds:23.5},{prompt:QUESTIONS[0].followups[0].q,seconds:12}],['数字不足','数字不足','bad'],'2026-10-12T05:00:00Z','attempt');
+ assert.equal(before.history.length,1);assert.equal(after.records.q001.answer,'以前の本人回答');assert.equal(after.history[1].answer,'');assert.equal(after.history[2].kind,'followup');assert.deepEqual(after.records.q001.weaknesses,['数字不足']);assert.equal(after.history[1].seconds,24);
+ const recovered=validateBackup(JSON.parse(JSON.stringify(after)),QUESTIONS);assert.equal(recovered.history.length,3);assert.equal(recovered.records.q001.grade,'weak');assert.equal(recovered.records.q001.answer,'以前の本人回答');assert.equal(recovered.facts.profit.value,'本人の数字');
+});
+test('practice avoids repeating a question within a session and only reviews marked weaknesses',()=>{
+ let state=emptyState();state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:20}],['結論が遅い']);assert.deepEqual(weakQuestions(QUESTIONS,state).map(q=>q.id),['q001']);assert.notEqual(selectPracticeQuestion(QUESTIONS,state,['q001'],()=>0).id,'q001');assert.equal(selectPracticeQuestion([QUESTIONS[0]],state,['q001']),null);assert.deepEqual(weaknessSummary(state,QUESTIONS),[['結論が遅い',1]]);
+ state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:12}],[]);assert.equal(weakQuestions(QUESTIONS,state).length,0);assert.equal(state.history.length,2);
+});
+test('oral practice rejects broken timing data instead of saving a fabricated attempt',()=>{assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[],[]));assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[{prompt:'質問',seconds:NaN}],[]))});

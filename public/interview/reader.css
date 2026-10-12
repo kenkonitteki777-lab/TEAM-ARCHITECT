@@ -296,3 +296,28 @@ h1 { font-family: "Interview Serif JP", "Interview Sans JP", serif; font-weight:
 .read-followup { display:inline-flex;margin-top:8px; }
 #readAnswer[aria-pressed="true"] { border-color:#d6bd86;color:#d6bd86; }
 @media(max-width:600px) { .voice-tools {gap:4px 10px;margin-top:18px;} .voice-button {font-size:11px;} .answer-head {flex-wrap:wrap;} .answer-head > div {flex-wrap:wrap;gap:8px;} }
+.practice-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+.practice-start { color:var(--accent);background:#d6bd8612;border:1px solid #d6bd8640;font-size:11px; }
+.practice-panel { margin:0 0 24px;padding:22px 24px;border:1px solid #d6bd8630;border-radius:12px;background:linear-gradient(130deg,#d6bd860a,#0d0d0d); }
+.practice-panel[hidden],#practiceFeedback[hidden],#endPractice[hidden],#startPractice[hidden],#openProfile[hidden] { display:none; }
+.practice-meter { display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:#c9b98f; }
+.practice-meter > span:last-child { display:flex;align-items:center;gap:12px; }
+#practiceClock { font-family:Manrope,sans-serif;font-size:23px;font-weight:500;font-variant-numeric:tabular-nums;color:#eee5d4; }
+#practiceClock.over-goal {color:#e4b38b;}
+#practiceGoal {font-size:10px;color:#9b9486;}
+#practiceInstruction {font-size:12px;color:#aaa296;line-height:1.8;margin-bottom:0;}
+.practice-panel h2 {font-size:16px;font-weight:500;line-height:1.8;margin:20px 0 8px;}
+.weakness-choices {display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+.weakness-choices button {font-size:11px;min-height:44px;color:#b9b1a3;background:#ffffff04;border:1px solid #d6bd8625;padding:8px 12px;}
+.weakness-choices button[aria-pressed="true"] {border-color:#d6bd86;color:#f1d49c;background:#d6bd8618;}
+.practice-fix {font-size:13px;color:#e0cfaa;line-height:1.9;padding-left:12px;border-left:2px solid #d6bd86;}
+.practice-feedback-actions {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.summary-weakness {display:flex;justify-content:space-between;gap:16px;border-top:1px solid #d6bd8620;padding-top:12px;font-size:13px;color:#c1b69e;}
+.review-strip {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0;color:#bfb39b;font-size:12px;}
+.review-strip .secondary {font-size:11px;}
+body[data-practice="true"] .dock .nav-step {display:none;}
+body[data-practice="true"] .dock .primary {width:100%;max-width:none;}
+body[data-practice="true"] .question-stage {min-height:250px;padding:28px 0;}
+body[data-practice="true"] .keyhint {font-size:0;}
+body[data-practice="true"] .keyhint::after {content:'SPACE 次の操作へ';font-size:9px;}
+@media(max-width:600px){.practice-caption{align-items:flex-start;flex-wrap:wrap;gap:8px;}.practice-actions{gap:8px;}.practice-panel{padding:18px 16px;}body[data-practice="true"] .question-stage{min-height:180px;}.practice-panel .muted{font-size:11px;}.practice-meter>span:last-child{gap:8px;}#practiceClock{font-size:21px;}}
