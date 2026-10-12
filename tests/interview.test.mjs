@@ -60,3 +60,7 @@ test('practice avoids repeating a question within a session and only reviews mar
  state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:12}],[]);assert.equal(weakQuestions(QUESTIONS,state).length,0);assert.equal(state.history.length,2);
 });
 test('oral practice rejects broken timing data instead of saving a fabricated attempt',()=>{assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[],[]));assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[{prompt:'質問',seconds:NaN}],[]))});
+
+import {createCoachClient} from '../public/interview/ai-client.js';
+test('AI client requires explicit consent and a logged-in account without persisting credentials',async()=>{let calls=0;const client=createCoachClient({url:'https://example.supabase.co',publishableKey:'public',fetcher:async()=>{calls++;return Response.json({})}});await assert.rejects(()=>client.coach({consent:false,answer:'回答',question:QUESTIONS[0]}),/同意/);await assert.rejects(()=>client.status(''),/ログイン/);assert.equal(calls,0)});
+test('AI client retains failed attempts in caller control and validates quoted evidence',async()=>{const client=createCoachClient({url:'https://example.supabase.co',publishableKey:'public',fetcher:async()=>Response.json({quote:'捏造',nextFix:'具体化',followup:'何を変えますか？'})});const answer='利益を残します';await assert.rejects(()=>client.coach({token:'test',consent:true,answer,question:QUESTIONS[0],prompt:QUESTIONS[0].q}),/根拠/);assert.equal(answer,'利益を残します')});
