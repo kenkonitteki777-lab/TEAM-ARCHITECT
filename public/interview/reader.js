@@ -136,7 +136,7 @@ function startPractice(review=false){
  document.body.dataset.practice='true';$('startPractice').hidden=true;$('endPractice').hidden=false;$('openProfile').hidden=true;$('navigation').close();practiceTimer=setInterval(paintPracticeClock,250);resetPracticeQuestion();
 }
 function endPractice(){
- if(!practice)return;practice=null;clearInterval(practiceTimer);practiceTimer=null;document.body.dataset.practice='false';$('practicePanel').hidden=true;$('practiceSummary').hidden=true;$('startPractice').hidden=false;$('endPractice').hidden=true;$('openProfile').hidden=false;$('reveal').disabled=false;$('reveal').setAttribute('aria-controls','modelPanel');render();
+ if(!practice)return;const current=pool[index];practice=null;pool=Q.filter(q=>current.m==='pres'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===current.id));clearInterval(practiceTimer);practiceTimer=null;document.body.dataset.practice='false';$('practicePanel').hidden=true;$('practiceSummary').hidden=true;$('startPractice').hidden=false;$('endPractice').hidden=true;$('openProfile').hidden=false;$('reveal').disabled=false;$('reveal').setAttribute('aria-controls','modelPanel');render();
 }
 async function advancePractice(){
  if(!practice||savingPractice)return;
