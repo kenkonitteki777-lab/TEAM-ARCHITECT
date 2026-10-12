@@ -3,7 +3,7 @@
 ## 現在の状態
 
 通常の質問・模範解答と実戦5問は無料で公開中。
-AIのサーバー処理とブラウザー用クライアントを整備。AI画面への統合、音声回答の実機検証と本物の推論評価は未完了。
+AIのサーバー処理・ブラウザー用クライアント・AI実戦画面を統合。ログイン、音声入力、聞き取り修正、評価、追撃、再回答、回答と弱点の保存を実装。音声回答の実機検証と本物の推論評価は未完了。
 現在の面接AIの承認済み利用者は0名。外部AIは無効。
 
 ## 承認して接続する構成
@@ -26,7 +26,7 @@ GitHub Pages → 面接専用のSupabase Edge Function → Groq Free Plan。
 1. Groq Free Planアカウントを用意し、面接専用キーをSupabaseのEdge Function Secretsに登録。
 2. 本人が面接で使う認証アカウントを確認し、そのユーザーだけinterview_membersに登録する。
 3. 回答文をGroqへ送信する方式について本人承認を得る。
-4. AI画面の認証・音声回答・追撃・再回答・弱点保存を統合し、実機で日本語の聞き取りと本物の推論を検証。
+4. 統合したAI画面で、実機の日本語の聞き取りと本物の推論・保存・再出題を検証。
 
 公開画面はキーの入力を求めない。ログイン・明示同意・利用権限がなければAIを呼ばない。
 
@@ -43,3 +43,16 @@ GitHub Pages → 面接専用のSupabase Edge Function → Groq Free Plan。
 - https://console.groq.com/docs/structured-outputs
 - https://console.groq.com/docs/your-data
 - https://supabase.com/docs/guides/functions/secrets
+
+## 接続先を選ぶ理由と検証の区別
+
+- Geminiの日本向け無料サービスの規約は、入力・出力の改善利用と人による確認を説明し、個人情報・機密情報を送らないよう求めている。本人の経験・店舗数字を扱う無料用途には選ばない。
+- OpenAI APIはChatGPT Plusとは別請求。今回の追加課金なしという条件に使える契約・キーは確認できていない。
+- Groqは無料枠、GPT-OSS 120Bの提供、回答の保持を制御するZDR設定を公式に案内している。無料・プライバシー設定・応答速度の条件から第一候補。日本語の実際の面接評価の精度は、まだ比較実測していない。
+- 対応端末だけのローカルAIはキー不要だが、Androidでのモデル容量・待ち時間・日本語の評価精度が未検証。高速な日常利用の標準にはしない。
+- 新しい登録を頼む前に画面統合を完了し、未設定時には無理にログインさせず実戦5問へ案内する。
+
+比較資料（2026-10-12確認）：
+https://ai.google.dev/gemini-api/terms
+https://help.openai.com/en/articles/9039756-billing-settings-in-chatgpt-vs-platform
+https://console.groq.com/docs/models

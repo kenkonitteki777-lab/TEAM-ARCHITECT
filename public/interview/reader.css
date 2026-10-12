@@ -320,3 +320,27 @@ body[data-practice="true"] .dock .primary {width:100%;max-width:none;}
 body[data-practice="true"] .question-stage {min-height:250px;padding:28px 0;}
 
 @media(max-width:600px){.practice-caption{align-items:flex-start;flex-wrap:wrap;gap:8px;}.practice-actions{gap:8px;}.practice-panel{padding:18px 16px;}body[data-practice="true"] .question-stage{min-height:180px;}.practice-panel .muted{font-size:11px;}.practice-meter>span:last-child{gap:8px;}#practiceClock{font-size:21px;}}
+.ai-interview {max-width:760px;}
+.ai-interview [hidden] {display:none!important;}
+.ai-connection {font-size:11px;line-height:1.8;color:#d6bd86;border-bottom:1px solid #d6bd8625;padding-bottom:14px;}
+.ai-question-head {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;}
+.ai-prompt {font-family:'Interview Serif JP',serif;font-size:clamp(24px,4.5vw,34px);font-weight:500;line-height:1.7;color:#f1ece2;margin:24px 0;}
+.ai-input-actions {display:flex;align-items:center;gap:18px;}
+.ai-privacy {font-size:10px;line-height:1.8;color:#999285;margin:14px 0;}
+.ai-interview summary {font-size:12px;line-height:1.8;cursor:pointer;color:#cbbd9d;}
+.ai-interview textarea {width:100%;margin-top:14px;font-size:15px;}
+.ai-consent {display:flex;align-items:flex-start;gap:10px;font-size:11px;line-height:1.8;margin:22px 0;}
+.ai-consent input {accent-color:#d6bd86;width:18px;height:18px;flex:none;}
+.ai-message {font-size:12px;line-height:1.8;color:#dac39b;}
+.ai-feedback {border-top:1px solid #d6bd8640;margin-top:28px;padding-top:12px;}
+.ai-feedback h3 {font-size:15px;font-weight:500;color:#d6bd86;}
+.ai-feedback blockquote {margin:14px 0;padding-left:16px;border-left:2px solid #d6bd86;font-size:14px;line-height:1.9;color:#a89f8f;}
+#aiFix {font-size:16px;line-height:1.9;color:#ede3d0;}
+.ai-weakness {font-size:10px;border:1px solid #d6bd8630;border-radius:6px;color:#c5b58d;padding:7px 10px;}
+#aiAxes p {font-size:12px;line-height:1.9;color:#a69f91;}
+#aiLogin {display:grid;gap:10px;}
+#aiLogin label {font-size:12px;color:#cbbd9d;}
+#aiLogin input {width:100%;min-height:48px;padding:12px;background:#111;color:#eee;border:1px solid #d6bd8638;border-radius:8px;}
+.ai-interview .secondary,.practice-panel .secondary,.review-strip .secondary {background:#d6bd8610;color:#d8c6a0;border:1px solid #d6bd8638;}
+body[data-practice="true"] .dock .primary {max-width:none!important;}
+@media(max-width:600px){.ai-interview .practice-feedback-actions .primary{width:100%;}.ai-prompt{font-size:26px;}.ai-interview{padding:20px;}}

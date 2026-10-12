@@ -1,3 +1,4 @@
+import {mountAiInterview} from './ai-interview.js?v=20261012-aiui1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
 import {createVoicePlayer} from './voice-player.js?v=20261011-voice1';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
@@ -100,7 +101,7 @@ $('categoryFilter').innerHTML+=[...new Set(Q.map(q=>q.category))].map(c=>`<optio
 window.addEventListener('keydown',e=>{
  if(e.isComposing||e.altKey)return;
  if($('editor').open){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('saveModel').click()}return}
- if($('navigation').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
+ if($('navigation').open||$('aiInterview').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
  if(practice){if(e.code==='Space'&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();advancePractice()}return}
  if(e.code==='Space'&&document.activeElement?.tagName==='BUTTON')return;
  if(e.key==='ArrowRight'){e.preventDefault();move(1)}if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}if(e.code==='Space'){e.preventDefault();toggleAnswer()}
@@ -184,3 +185,11 @@ $('import').onchange=async e=>{
  }catch(error){paintAnswer();history();toast('読み込み未完了：'+(error.message||'保存容量を確認してください。'))}e.target.value='';
 };
 const saved=get(POSITION);interviewFilter=Q.find(q=>q.id===saved)?.m==='pres'?'president':'department';pool=Q.filter(q=>interviewFilter==='president'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===saved));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===interviewFilter)));render();init();
+
+mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{if(savingPractice)return false;endPractice();speech.stop();return true},nextQuestion:()=>move(1),startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
+ if(!ready)throw new Error('保存データを読み込み中です。回答は保持しています。');
+ let current=state;const raw=get(KEY);if(raw){try{current=mergeBackup(state,validateBackup(JSON.parse(raw),Q))}catch{localStorage.setItem(KEY+'_recovery_'+Date.now(),raw)}}
+ const next=structuredClone(current),now=new Date().toISOString(),weaknesses=feedback.weaknesses.filter(w=>WEAKNESSES.includes(w));
+ next.records[question.id]={answer,weaknesses,grade:weaknesses.length?'weak':'good',updatedAt:now};next.history.push({id:crypto.randomUUID(),questionId:question.id,prompt,answer,seconds,weaknesses,grade:weaknesses.length?'weak':'good',updatedAt:now,kind:followup?'followup':'answer',mode:question.m==='pres'?'pres':'take'});next.history=next.history.slice(-5000);next.savedAt=now;
+ localStorage.setItem(KEY,JSON.stringify(next));state=next;try{await snapshot('current',state)}catch{toast('回答は端末に保存済みです。バックアップを推奨します。')}history();
+}});
