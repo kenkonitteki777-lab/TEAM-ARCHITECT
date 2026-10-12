@@ -18,7 +18,7 @@ export function parseStore(raw:string):Store {
  for(const [k,v] of Object.entries(x.overrides)){const [id,n]=k.split(':');if(!people.some(p=>p.id===id)||!/^([1-9]|1[0-8])$/.test(n)||!levels.includes(String(v)))throw new Error('能力設定が不正です。');}
  const seen=new Set<string>();
  for(const m of x.missions){
- if(!object(m)||!strFields(m,['id','createdAt','updatedAt','notes'])||m.engine!=='rules-b1'||!Number.isInteger(m.version)||Number(m.version)<1||!['draft','active'].includes(String(m.state))||!['sales','machine','promo','people','service'].includes(String(m.kind))||!object(m.brief)||!object(m.analysis)||!Array.isArray(m.team)||!Array.isArray(m.commands))throw new Error('ミッションの形式が不正です。');
+ if(!object(m)||!strFields(m,['id','createdAt','updatedAt','notes'])||m.engine!=='rules-b1'||!Number.isInteger(m.version)||Number(m.version)<1||!['draft','active'].includes(String(m.state))||!['sales','machine','promo','people','service','general'].includes(String(m.kind))||!object(m.brief)||!object(m.analysis)||!Array.isArray(m.team)||!Array.isArray(m.commands))throw new Error('ミッションの形式が不正です。');
  if(seen.has(String(m.id)))throw new Error('ミッションIDが重複しています。');seen.add(String(m.id));
  if(!strFields(m.brief,['issue','goal','constraints','deadline','kpi','baseline','target','source','period','checkpoint'])||!strings(m.brief.excluded)||m.brief.excluded.some(id=>!people.some(p=>p.id===id))||!strFields(m.analysis,['hypothesis','success'])||!strings(m.analysis.unknowns)||!strings(m.analysis.risks))throw new Error('分析・入力の形式が不正です。');
  if(!m.team.length||!m.commands.length)throw new Error('組織・指示が空です。');

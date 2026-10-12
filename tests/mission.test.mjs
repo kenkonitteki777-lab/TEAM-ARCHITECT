@@ -31,3 +31,18 @@ test('mission and task state survive reload and JSON roundtrip',()=>{const m=cre
 test('corrupt saved data is never overwritten',()=>{const s=storage({[STORE_KEY]:'broken'});assert.throws(()=>loadStore(s));assert.throws(()=>saveStore(s,snapshot(createMission(complete))));assert.equal(s.getItem(STORE_KEY),'broken');});
 test('quota failure propagates and previous snapshot is retained',()=>{const old=JSON.stringify(snapshot(createMission(complete)));const s=storage({[STORE_KEY]:old,[BACKUP_KEY]:'{}'});s.setItem=()=>{throw new Error('quota')};assert.throws(()=>saveStore(s,snapshot(createMission(complete))),/quota/);assert.equal(s.getItem(STORE_KEY),old);});
 test('imports append missions, retain current assessments and reject duplicates',()=>{const a=snapshot(createMission(complete));a.overrides={'matsuo:3':'strong'};const b=snapshot(createMission(complete));b.overrides={'matsuo:3':'growth'};const x=mergeStore(a,b);assert.equal(x.missions.length,2);assert.equal(x.overrides['matsuo:3'],'strong');assert.throws(()=>mergeStore(a,a));});
+
+test('task-specific plans distinguish staff guide training, queues, cleaning and handover',()=>{
+ const training=createMission({...blankBrief,issue:'新人が一人でお客様をご案内できるようにしたい'});
+ assert.equal(training.kind,'people');assert.deepEqual(training.commands.map(c=>c.fn),['ANALYZE','COACH','OPERATE','REVIEW']);assert.match(training.commands.find(c=>c.fn==='COACH').actions.join(' '),/実際の案内手順/);assert.match(training.commands.find(c=>c.fn==='COACH').done,/実演/);
+ const queue=createMission({...blankBrief,issue:'スタッフがお客様の案内待ちを減らしたい'});assert.equal(queue.kind,'service');assert.match(queue.commands[0].actions[0],/案内開始の時刻/);assert.ok(queue.commands.some(c=>c.fn==='FIELD'));assert.ok(!queue.commands.some(c=>c.fn==='COACH'));
+ const cleaning=createMission({...blankBrief,issue:'トイレの清掃漏れをなくす'});assert.deepEqual(cleaning.commands.map(c=>c.fn),['FIELD','OPERATE','REVIEW']);assert.match(cleaning.commands[0].actions[0],/清掃・備品補充・終了点検/);assert.ok(!cleaning.commands.some(c=>c.fn==='CREATE'));
+ const handover=createMission({...blankBrief,issue:'スタッフ間の引継ぎ漏れをなくす'});assert.deepEqual(handover.commands.map(c=>c.fn),['TRANSLATE','OPERATE','REVIEW']);assert.match(handover.commands[0].actions.join(' '),/未完了事項/);
+ for(const m of [training,queue,cleaning,handover]){assert.deepEqual(validateMission(m),[]);assert.equal(m.brief.deadline,'');assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));}
+});
+test('unsupported goals get a confirmation plan, never an invented sales or advertising campaign',()=>{
+ const m=createMission({...blankBrief,issue:'会議を短くしたい',constraints:'追加予算なし、顧客対応を優先'});assert.equal(m.kind,'general');assert.match(m.analysis.hypothesis,/一致しません/);assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));assert.deepEqual(m.commands.map(c=>c.fn),['ANALYZE','DESIGN','OPERATE','REVIEW']);assert.ok(!m.commands.flatMap(c=>c.actions).join(' ').match(/稼働|POP|販促|売上/));assert.ok(m.commands.every(c=>c.discretion.includes(m.brief.constraints)));assert.ok(m.commands.find(c=>c.fn==='DESIGN').actions.includes('守る条件：追加予算なし、顧客対応を優先。条件と両立しない案は実行せず相談する'));assert.equal(m.brief.target,'');assert.deepEqual(validateMission(m),[]);
+});
+test('explicit goal helps select a template while source and user text remain intact',()=>{
+ const b={...blankBrief,issue:'今の課題を改善したい',goal:'新人の案内を一人でできるようにする',source:'本人と現場責任者の観察メモ'};const m=createMission(b);assert.equal(m.kind,'people');assert.equal(m.brief.issue,b.issue);assert.ok(m.commands[0].actions.some(a=>a.includes(b.source)));assert.ok(m.commands.every(c=>c.purpose===b.goal));assert.equal(m.analysis.success,b.goal);
+});

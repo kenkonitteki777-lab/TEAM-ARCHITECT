@@ -35,6 +35,6 @@ export function deliveryMessage(mission:Mission,commands:Command[],adapt=true){
   const context=adapt&&type?(type[1]==='N'?`目指すこと：${c.purpose}`:`今回の課題：${mission.brief.issue}`):'';
   const waiting=c.status!=='done'&&c.dependsOn.some(id=>mission.commands.find(x=>x.id===id)?.status!=='done');
   const invitation=c.status==='done'?'':c.status==='blocked'?'再開は相談してから決めましょう。':waiting?'確認したい点は先に共有してください。':adapt&&type?(type[0]==='I'?'一度読んでから、確認したい点を教えてください。':'確認したい点を短く話してから進めましょう。'):'';
-  return [`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`,context,c.actions[0],`仕上げるもの：${c.output}`,`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`,adapt&&type?(type[2]==='T'?`判断基準：${c.done}`:`気になる影響や相談事項：${c.consult}`):'',adapt&&type&&type[3]==='P'?`任せる範囲：${c.discretion}`:'',waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
+  return [`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`,context,adapt&&type?`確認の入口：${typeQuestions[type]}`:'',...c.actions.map((action,i)=>`${i+1}. ${action}`),`仕上げるもの：${c.output}`,`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`,`完了条件：${c.done}`,`報告：${c.reportWhen}`,`相談：${c.consult}`,`任せる範囲：${c.discretion}`,`即時報告：${c.immediate}`,waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
  }).join('\n\n');
 }
