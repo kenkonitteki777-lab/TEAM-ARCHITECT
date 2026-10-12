@@ -318,6 +318,5 @@ h1 { font-family: "Interview Serif JP", "Interview Sans JP", serif; font-weight:
 body[data-practice="true"] .dock .nav-step {display:none;}
 body[data-practice="true"] .dock .primary {width:100%;max-width:none;}
 body[data-practice="true"] .question-stage {min-height:250px;padding:28px 0;}
-body[data-practice="true"] .keyhint {font-size:0;}
-body[data-practice="true"] .keyhint::after {content:'SPACE 次の操作へ';font-size:9px;}
+
 @media(max-width:600px){.practice-caption{align-items:flex-start;flex-wrap:wrap;gap:8px;}.practice-actions{gap:8px;}.practice-panel{padding:18px 16px;}body[data-practice="true"] .question-stage{min-height:180px;}.practice-panel .muted{font-size:11px;}.practice-meter>span:last-child{gap:8px;}#practiceClock{font-size:21px;}}

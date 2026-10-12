@@ -133,10 +133,10 @@ function startPractice(review=false){
  // Preserve the currently displayed question on a normal start.
  if(!review){const saved=get(POSITION);index=Math.max(0,pool.findIndex(q=>q.id===saved))}
  practice={phase:'ready',stage:0,done:0,target:Math.min(5,pool.length),started:null,steps:[],tags:[],recent:[],weak:0,totalSeconds:0};
- document.body.dataset.practice='true';$('startPractice').hidden=true;$('endPractice').hidden=false;$('openProfile').hidden=true;$('navigation').close();practiceTimer=setInterval(paintPracticeClock,250);resetPracticeQuestion();
+ document.body.dataset.practice='true';document.querySelector('.keyhint').textContent='SPACE 次の操作へ';$('startPractice').hidden=true;$('endPractice').hidden=false;$('openProfile').hidden=true;$('navigation').close();practiceTimer=setInterval(paintPracticeClock,250);resetPracticeQuestion();
 }
 function endPractice(){
- if(!practice)return;const current=pool[index];practice=null;pool=Q.filter(q=>current.m==='pres'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===current.id));clearInterval(practiceTimer);practiceTimer=null;document.body.dataset.practice='false';$('practicePanel').hidden=true;$('practiceSummary').hidden=true;$('startPractice').hidden=false;$('endPractice').hidden=true;$('openProfile').hidden=false;$('reveal').disabled=false;$('reveal').setAttribute('aria-controls','modelPanel');render();
+ if(!practice)return;const current=pool[index];practice=null;pool=Q.filter(q=>current.m==='pres'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===current.id));clearInterval(practiceTimer);practiceTimer=null;document.body.dataset.practice='false';document.querySelector('.keyhint').innerHTML='← → 質問を移動 <span>SPACE 解答を表示</span>';$('practicePanel').hidden=true;$('practiceSummary').hidden=true;$('startPractice').hidden=false;$('endPractice').hidden=true;$('openProfile').hidden=false;$('reveal').disabled=false;$('reveal').setAttribute('aria-controls','modelPanel');render();
 }
 async function advancePractice(){
  if(!practice||savingPractice)return;
@@ -145,7 +145,7 @@ async function advancePractice(){
  if(practice.phase==='speaking'){
   practice.steps.push({prompt:practicePrompt(),seconds:(performance.now()-practice.started)/1000});practice.started=null;
   if(practice.stage<2){practice.stage++;practice.phase='ready';toggleAnswer(false);paintPractice();if(voicePreferences.auto)speech.play(practicePrompt(),voiceOptions('question'))}
-  else{practice.phase='feedback';paintPractice()}
+  else{practice.phase='feedback';paintPractice();$('practicePanel').scrollIntoView({block:'start',behavior:'instant'})}
   return;
  }
  savingPractice=true;$('reveal').disabled=true;
@@ -156,7 +156,7 @@ async function advancePractice(){
   practice.done++;practice.weak+=practice.tags.length?1:0;practice.totalSeconds+=practice.steps.reduce((sum,s)=>sum+s.seconds,0);practice.recent.push(pool[index].id);history();
   if(practice.done>=practice.target){
    practice.phase='complete';practice.started=null;toggleAnswer(false);paintPractice();$('practiceSummaryTitle').textContent=practice.target+'問完了';$('practiceResult').textContent='できた '+(practice.done-practice.weak)+'問 · 要復習 '+practice.weak+'問 · 回答合計 '+clockText(practice.totalSeconds)+'（手動計測）';
-   $('practiceSummaryWeaknesses').innerHTML=weaknessSummary(state,pool).slice(0,3).map(([w,n])=>`<p class="summary-weakness">${esc(w)} <span>${n}問</span></p>`).join('');$('reviewPractice').disabled=!weakQuestions(pool,state).length;practiceAction('通常画面に戻る','BACK TO QUESTIONS');$('position').textContent=practice.target+' / '+practice.target+'問';$('progressBar').style.width='100%';
+   $('practiceSummaryWeaknesses').innerHTML=weaknessSummary(state,pool).slice(0,3).map(([w,n])=>`<p class="summary-weakness">${esc(w)} <span>${n}問</span></p>`).join('');$('reviewPractice').disabled=!weakQuestions(pool,state).length;practiceAction('通常画面に戻る','BACK TO QUESTIONS');$('position').textContent=practice.target+' / '+practice.target+'問';$('progressBar').style.width='100%';$('practiceSummary').scrollIntoView({block:'start',behavior:'instant'});
   }else{const nextQuestion=selectPracticeQuestion(pool,state,practice.recent);index=pool.findIndex(q=>q.id===nextQuestion.id);resetPracticeQuestion()}
   if(!duplicate)toast('端末に保存済み。バックアップを書き出すと安心です。');
  }catch(e){toast('保存できません。次へ進まず、この画面を保持しています。'+(e.message||''))}finally{savingPractice=false;$('reveal').disabled=false}
