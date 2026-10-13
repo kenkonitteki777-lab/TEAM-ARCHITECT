@@ -32,3 +32,13 @@
 .mbti-work-tip summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--amber)}
 .mbti-work-tip p{padding:4px 0 10px}
 @media(max-width:640px){.mission-heading{gap:8px;margin-bottom:10px}.mission-heading h1{font-size:20px}.draft-guide.panel{padding:10px 12px}.draft-ready h2{font-size:14px}.simple-toolbar h2{font-size:17px}.mbti-work-tip{margin:0}.tabs{margin-bottom:12px}}
+
+/* E12: a complete draft is readable without opening each instruction. */
+.instruction-sheet .recipient-grid{grid-template-columns:1fr;gap:16px}
+.instruction-sheet .short-command{margin-top:12px;padding-top:12px}
+.instruction-sheet .short-command details[open] summary{color:var(--muted)}
+.instruction-sheet .short-command details p,.instruction-sheet .short-command details li{overflow-wrap:anywhere}
+.sheet-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.sheet-tools p{font-size:12px;color:var(--muted)}
+.sheet-tools button{flex-shrink:0}
+@media(max-width:640px){.sheet-tools{align-items:stretch;flex-direction:column}.sheet-tools p{font-size:11px}}
