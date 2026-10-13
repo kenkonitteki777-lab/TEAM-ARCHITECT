@@ -11,3 +11,5 @@ Local typecheck/build, 44 domain and 42 interview cases passed. Initial 68 brows
 No interview files, images, existing saved instructions, storage schema/keys, authority enforcement, database, paid provider or dependencies changed. This is still rule-based proposal generation. No real first-time human study or Android hardware verification claimed.
 
 Final focused local suite: all 20 desktop/mobile cases passed after the fixes and final action-first layout.
+
+First CI run 38441655694: 44 domain + 42 interview passed, 67/68 browser passed. Mobile action top was 721.24px under Japanese fonts versus the 720px requirement. Rather than weakening the check, moved the optional MBTI disclosure after the actual command. Typecheck/build and ten focused desktop/mobile creation/layout stories passed; rerun CI pending.
