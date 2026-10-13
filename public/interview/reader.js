@@ -1,4 +1,4 @@
-import {mountAiInterview} from './ai-interview.js?v=20261012-aiui1';
+import {mountAiInterview} from './ai-interview.js?v=20261013-draft1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
 import {createVoicePlayer} from './voice-player.js?v=20261011-voice1';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
