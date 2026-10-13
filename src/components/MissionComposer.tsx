@@ -1,11 +1,13 @@
 import type { FormEvent, ReactNode } from 'react';
 import { ArrowRight, ChevronDown, Clipboard, Target } from 'lucide-react';
 import { people } from '../core/data';
+import { clarificationFor } from '../core/workPlan';
 import type { Brief } from '../core/mission';
 import { OperativePortrait } from './OperativePortrait';
 
 const examples=[['夜稼働の改善','競合店のリニューアルに対抗して夜稼働を上げたい'],['スタッフ育成','スタッフ育成を進めたい'],['接客品質の改善','接客品質を改善したい']] as const;
 export function MissionComposer({brief,onChange,onSubmit,children,onExplore}:{brief:Brief;onChange:(b:Brief)=>void;onSubmit:(e:FormEvent)=>void;children:ReactNode;onExplore:()=>void}){
+ const question=clarificationFor(brief.issue);
  return <section className="mission-composer" aria-label="やりたいことから指示書を作る">
   <header className="composer-intro"><div><small>TEAM ARCHITECT / 新しい指示書</small><h1>やりたいことを、<br className="composer-break"/>チームの指示へ。</h1><p>一言入力するだけで、担当と「伝える文章」の初稿を整理します。</p></div><div className="composer-portrait" aria-hidden="true"><OperativePortrait memberId="matsuo"/></div></header>
   <div className="composer-layout"><section className="panel mission-input"><form onSubmit={onSubmit}>
@@ -13,6 +15,7 @@ export function MissionComposer({brief,onChange,onSubmit,children,onExplore}:{br
    <label className="field">解決したい課題<textarea required value={brief.issue} onChange={e=>onChange({...brief,issue:e.target.value})} placeholder="例：新人が一人でお客様をご案内できるようにしたい" rows={3} aria-describedby="composer-help"/></label>
    <p id="composer-help" className="composer-help">短くて大丈夫。困っていることでも、実現したいことでも。</p>
    <div className="preset-row" aria-label="入力例">{examples.map(([label,issue])=><button type="button" key={label} onClick={()=>onChange({...brief,issue})}>{label}</button>)}</div>
+   {question&&<section className="composer-question" aria-label="必要なことを一問だけ確認"><label className="field">{question}<input aria-label="場面と変えたいこと" value={brief.goal} onChange={e=>onChange({...brief,goal:e.target.value})} placeholder="例：新人が、お客様を一人で案内できるように"/></label><small>任意です。答えると、担当と手順の提案に反映します。未入力でも初稿を作れます。</small></section>}
    <div className="composer-submit"><button className="primary" type="submit">指示書を作る<ArrowRight size={18}/></button><small>作成後に確認・修正できます。まだ実行は始まりません。</small></div>
    <details className="brief-details composer-details"><summary>目的・期限なども入力する（任意）<ChevronDown size={16}/></summary>
     <div className="field-grid"><label className="field">達成したい状態<input value={brief.goal} onChange={e=>onChange({...brief,goal:e.target.value})} placeholder="例：案内の手順を一人で説明できる"/></label><label className="field">指示書の期限（日本時間）<input type="datetime-local" value={brief.deadline} onChange={e=>onChange({...brief,deadline:e.target.value})}/></label></div>

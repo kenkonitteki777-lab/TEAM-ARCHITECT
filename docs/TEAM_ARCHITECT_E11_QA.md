@@ -1,0 +1,13 @@
+# E11 — one optional clarification and action-first instructions
+
+2026-10-14 JST. Baseline f44f5282498a01d48d09a8ed78443b3f5e35f61e; recent independent interview AI/rehearsal work retained.
+
+For unclassified or explicitly broad preset topics, creation now asks one optional question: `どの場面を、どう変えたい？`. The answer updates the existing explicit goal, which the E10 planner already uses to select procedures and set command purpose. It is not a new stored field or an AI claim. Specific topics do not receive the question; creation without answering remains available. Navigation retains issue and goal. No deadline, KPI value or factual answer is inferred.
+
+Instruction cards appear before the draft/date setup, removing the intro panel from the path to the first action. Date confirmation remains inline below and the activation action still opens/focuses it when required. Spacing is condensed; minimum touch targets remain. Repeated issue prefixes are removed only from card display by exact-prefix matching; saved text and complete clipboard messages are unchanged. Custom edited actions are untouched. MBTI type-specific practical request guidance is available in an optional disclosure, prioritizing the recipient's preference and observed response rather than ability scores.
+
+Local typecheck/build, 44 domain and 42 interview cases passed. Initial 68 browser cases: 62 passed; six failures: four from fixed past checkpoint dates (legitimate checkpoint cards), and two from broad first-details selectors after adding the MBTI disclosure. Test dates now use future relative dates; instruction tests locate the command's own details. Four new desktop/mobile stories verify optional clarification, navigation retention, goal-based training plan, skipping unanswered clarification, specific-task direct creation, practical MBTI tip, unchanged copy facts and first action position under 720px. Final focused/CI/public results follow.
+
+No interview files, images, existing saved instructions, storage schema/keys, authority enforcement, database, paid provider or dependencies changed. This is still rule-based proposal generation. No real first-time human study or Android hardware verification claimed.
+
+Final focused local suite: all 20 desktop/mobile cases passed after the fixes and final action-first layout.

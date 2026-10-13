@@ -13,3 +13,22 @@
 .draft-setup{border-top:1px solid var(--border);margin-top:12px;padding-top:12px}.draft-setup summary{color:#edce75}.draft-setup form{margin-top:16px}.draft-setup form>small{display:block;margin:-8px 0 16px;font-size:12px}.draft-setup .field-grid{margin-top:12px}.draft-setup form>[role=alert]{margin-bottom:12px;color:#edb1a4}.draft-confirmed{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
 @media(max-width:800px){.composer-layout{grid-template-columns:1fr}.composer-outcome{display:none}.composer-intro h1{font-size:28px}}
 @media(max-width:640px){.composer-intro{margin-bottom:18px;gap:8px}.composer-intro h1{font-size:26px;letter-spacing:-.5px;margin:8px 0}.composer-intro p{font-size:12px;line-height:1.7}.composer-break{display:block}.composer-portrait{width:72px;height:120px}.composer-portrait .operative-portrait{height:132px}.mission-composer .mission-input{padding:18px}.mission-composer .preset-row{gap:6px}.mission-composer .preset-row button{font-size:11px;padding:8px}.composer-submit small{font-size:11px}.draft-guide{padding:18px}.draft-ready h2{font-size:17px}.draft-team li b,.draft-team li span{display:block}}
+
+/* E11: get to the recipient/action without a second page of introduction. */
+.composer-question{padding:14px;margin:0 0 16px;border:1px solid var(--border);border-radius:8px;background:#192430}
+.composer-question .field{margin-bottom:6px}
+.mission-heading{margin-bottom:12px;gap:12px}
+.mission-heading h1{font-size:clamp(20px,2vw,28px)}
+.mission-heading p{font-size:11px}
+.mission-back{margin-bottom:10px}
+.draft-guide.panel{padding:12px 16px;margin-bottom:16px}
+.draft-ready{gap:8px;margin-bottom:6px}
+.draft-ready h2{font-size:15px}
+.draft-ready p{display:none}
+.draft-guide>p.subtle{margin:6px 0;font-size:11px}
+.draft-team,.draft-setup{margin-top:4px}
+.draft-team summary,.draft-setup summary{padding:8px 0;min-height:44px}
+.mbti-work-tip{margin:8px 0;font-size:12px;color:var(--muted)}
+.mbti-work-tip summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--amber)}
+.mbti-work-tip p{padding:4px 0 10px}
+@media(max-width:640px){.mission-heading{gap:8px;margin-bottom:10px}.mission-heading h1{font-size:20px}.draft-guide.panel{padding:10px 12px}.draft-ready h2{font-size:14px}.simple-toolbar h2{font-size:17px}.mbti-work-tip{margin:0}.tabs{margin-bottom:12px}}

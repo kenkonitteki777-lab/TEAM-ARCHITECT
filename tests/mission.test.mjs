@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const dir=mkdtempSync(join(tmpdir(),'team-architect-test-'));
-buildSync({entryPoints:['src/core/mission.ts','src/core/storage.ts','src/core/data.ts'],bundle:true,platform:'node',format:'esm',outdir:dir});
+buildSync({entryPoints:['src/core/mission.ts','src/core/storage.ts','src/core/data.ts','src/core/workPlan.ts'],bundle:true,platform:'node',format:'esm',outdir:dir});
 const {createMission,blankBrief,validateMission,activationIssues,instructionStyle,classify,fit}=await import(pathToFileURL(join(dir,'mission.js')));
 const {loadStore,saveStore,parseStore,mergeStore,STORE_KEY,BACKUP_KEY}=await import(pathToFileURL(join(dir,'storage.js')));
 const {people,typeBook}=await import(pathToFileURL(join(dir,'data.js')));
@@ -45,4 +45,10 @@ test('unsupported goals get a confirmation plan, never an invented sales or adve
 });
 test('explicit goal helps select a template while source and user text remain intact',()=>{
  const b={...blankBrief,issue:'今の課題を改善したい',goal:'新人の案内を一人でできるようにする',source:'本人と現場責任者の観察メモ'};const m=createMission(b);assert.equal(m.kind,'people');assert.equal(m.brief.issue,b.issue);assert.ok(m.commands[0].actions.some(a=>a.includes(b.source)));assert.ok(m.commands.every(c=>c.purpose===b.goal));assert.equal(m.analysis.success,b.goal);
+});
+
+test('clarification is optional only for vague topics and never modifies supplied instructions',async()=>{
+ const {clarificationFor,shortAction}=await import(pathToFileURL(join(dir,'workPlan.js')));
+ assert.ok(clarificationFor('今の課題を改善したい'));assert.ok(clarificationFor('スタッフ育成を進めたい'));assert.equal(clarificationFor('新人が一人でお客様をご案内できるようにしたい'),'');assert.equal(clarificationFor('トイレの清掃漏れをなくす'),'');assert.equal(clarificationFor(''),'');
+ assert.equal(shortAction('「清掃漏れをなくす」：終了点検をする','清掃漏れをなくす'),'終了点検をする');assert.equal(shortAction('本人が書き直した指示','清掃漏れをなくす'),'本人が書き直した指示');
 });

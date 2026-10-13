@@ -37,3 +37,17 @@ export function workInstruction(fn:FunctionKey,b:Brief,p:Profile){
  };
  return map[fn];
 }
+
+// Optional clarification: no inferred answer, deadline or new persistent field.
+export function clarificationFor(issue:string):string {
+ if(!issue.trim())return '';
+ const p=workProfile({issue,goal:''});
+ if(p.id==='general'||/^(スタッフ育成を進めたい|接客品質を改善したい|チームを良くしたい)[。！!]?$/u.test(issue.trim()))return 'どの場面を、どう変えたい？';
+ return '';
+}
+export function shortAction(action:string,issue:string):string {
+ const prefix=`「${issue}」`;
+ if(action.startsWith(prefix+'の'))return action.slice(prefix.length+1);
+ if(action.startsWith(prefix+'：'))return action.slice(prefix.length+1);
+ return action;
+}
