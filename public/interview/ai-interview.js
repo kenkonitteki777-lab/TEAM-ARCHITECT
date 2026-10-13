@@ -1,5 +1,5 @@
 import {CLOUD} from './config.js';
-import {createCoachClient} from './ai-client.js?v=20261012-aiui1';
+import {createCoachClient} from './ai-client.js?v=20261014-auth1';
 import {createSpeechInput} from './speech-input.js?v=20261012-aiui1';
 const $=id=>document.getElementById(id),DRAFT='team_architect_ai_draft_v1';
 export function mountAiInterview({getQuestion,getModel,getFacts,beforeOpen,nextQuestion,startOral,saveAttempt,speak,stopSpeech}){
@@ -16,18 +16,18 @@ export function mountAiInterview({getQuestion,getModel,getFacts,beforeOpen,nextQ
  }
  function restore(){try{const v=JSON.parse(localStorage.getItem(DRAFT)||'null');if(v?.id===root.id&&typeof v.prompt==='string'&&v.prompt.length<=1000&&typeof v.answer==='string'&&v.answer.length<=2400&&Array.isArray(v.turns)&&v.turns.length<=6&&v.turns.every(t=>typeof t.prompt==='string'&&typeof t.answer==='string'&&t.prompt.length<=1000&&t.answer.length<=2400)){prompt=v.prompt;turns=v.turns;updatePrompt();$('aiAnswer').value=v.answer;seconds=Math.max(0,Math.min(3600,Number(v.seconds)||0));$('aiTranscript').open=Boolean(v.answer);paintChars()}}catch{}}
  async function check(){
-  abort();const id=epoch;controller=new AbortController();$('aiUnavailable').hidden=true;$('aiLogin').hidden=true;$('aiLive').hidden=true;$('aiConnection').textContent='接続状態を確認しています。';
+  abort();const id=epoch;controller=new AbortController();$('aiUnavailable').hidden=true;$('aiLogin').hidden=Boolean(token);$('aiLive').hidden=true;$('aiConnection').textContent='ログインできます。接続状態を確認しています。';
   try{const capabilities=await client.capabilities(AbortSignal.any([controller.signal,AbortSignal.timeout(12000)]));if(id!==epoch)return;
    if(capabilities.aiConfigured!==true){$('aiConnection').textContent='AI未接続 · 無料の実戦練習は利用できます';$('aiUnavailable').hidden=false;return}
-   if(token){const status=await client.status(token,controller.signal);if(id!==epoch)return;if(!status.aiEnabled)throw new Error('AI接続は準備中です。');$('aiLive').hidden=false;$('aiConnection').textContent='接続済み · 無料枠'}
+   if(token){const status=await client.status(token,AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]));if(id!==epoch)return;if(!status.aiEnabled)throw new Error('AI接続は準備中です。');$('aiLive').hidden=false;$('aiConnection').textContent='接続済み · 無料枠'}
    else{$('aiLogin').hidden=false;$('aiConnection').textContent='ログインして開始';}
-  }catch(e){if(id!==epoch)return;$('aiConnection').textContent='接続状態を確認できません。実戦5問は利用できます。';$('aiUnavailable').hidden=false}
+  }catch(e){if(id!==epoch)return;token='';$('aiLogin').hidden=false;$('aiConnection').textContent='接続状態を確認できません。ログインを試すか、実戦5問で練習できます。';$('aiUnavailable').hidden=false}
  }
  $('openAiInterview').onclick=()=>{if(beforeOpen()===false)return;draftWritable=false;root=getQuestion();prompt=root.q;turns=[];updatePrompt();restore();$('aiInterview').showModal();clock=setInterval(()=>{const s=Math.floor(seconds+(started===null?0:(performance.now()-started)/1000));$('aiElapsed').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},250);check()};
- $('closeAiInterview').onclick=()=>$('aiInterview').close();$('aiInterview').addEventListener('close',()=>{if(root)draft();abort();clearInterval(clock);clock=null;$('aiConsent').checked=false;$('aiPassword').value=''});
+ $('closeAiInterview').onclick=()=>$('aiInterview').close();$('aiInterview').addEventListener('close',()=>{if(root)draft();abort();clearInterval(clock);clock=null;$('aiConsent').checked=false;$('aiPassword').value='';$('aiPassword').type='password';$('aiPasswordToggle').textContent='パスワードを表示';$('aiPasswordToggle').setAttribute('aria-pressed','false')});
  $('aiFallback').onclick=()=>{$('aiInterview').close();startOral()};$('aiRecheck').onclick=check;
  $('aiLogin').onsubmit=async e=>{e.preventDefault();if(busy)return;busy=true;const id=++epoch;controller=new AbortController();$('aiLoginSubmit').disabled=true;$('aiConnection').textContent='ログインを確認しています。';
-  try{const r=await fetch(CLOUD.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:CLOUD.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({email:$('aiEmail').value.trim(),password:$('aiPassword').value}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});const auth=await r.json();if(id!==epoch)return;if(!r.ok||!auth.access_token)throw new Error('メールアドレス・パスワードを確認してください。');const status=await client.status(auth.access_token,controller.signal);if(id!==epoch)return;if(!status.aiEnabled)throw new Error('AI接続は準備中です。');token=auth.access_token;$('aiLogin').hidden=true;$('aiLive').hidden=false;$('aiConnection').textContent='接続済み · 無料枠';
+  try{const r=await fetch(CLOUD.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:CLOUD.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({email:$('aiEmail').value.trim(),password:$('aiPassword').value}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});const auth=await r.json();if(id!==epoch)return;if(!r.ok||!auth.access_token)throw new Error('メールアドレス・パスワードを確認してください。');const status=await client.status(auth.access_token,AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]));if(id!==epoch)return;if(!status.aiEnabled)throw new Error('AI接続は準備中です。');token=auth.access_token;$('aiLogin').hidden=true;$('aiLive').hidden=false;$('aiConnection').textContent='接続済み · 無料枠';
   }catch(e){if(id===epoch)$('aiConnection').textContent=e.message||'ログインできません。'}finally{if(id===epoch){busy=false;$('aiPassword').value='';$('aiLoginSubmit').disabled=false;paintChars()}}
  };
  $('aiAnswer').oninput=()=>{draftWritable=true;draft();paintChars()};$('aiConsent').onchange=paintChars;
@@ -47,5 +47,7 @@ export function mountAiInterview({getQuestion,getModel,getFacts,beforeOpen,nextQ
  $('aiRetry').onclick=()=>{if(busy)return;input.stop();updatePrompt();draftWritable=true;draft();$('aiInterview').scrollTo({top:0,behavior:'instant'})};
  $('aiNext').onclick=()=>{if(busy)return;input.stop();nextQuestion();root=getQuestion();prompt=root.q;turns=[];updatePrompt();draftWritable=true;draft();$('aiInterview').scrollTo({top:0,behavior:'instant'})};
  $('aiLogout').onclick=()=>{const old=token;token='';abort();$('aiConsent').checked=false;if(old)fetch(CLOUD.url+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:CLOUD.publishableKey,Authorization:'Bearer '+old}}).catch(()=>{});check()};
+ $('aiPasswordToggle').onclick=()=>{const visible=$('aiPassword').type==='password';$('aiPassword').type=visible?'text':'password';$('aiPasswordToggle').textContent=visible?'パスワードを隠す':'パスワードを表示';$('aiPasswordToggle').setAttribute('aria-pressed',String(visible))};
+ if(new URLSearchParams(window.location?.search||'').get('login')==='1')$('openAiInterview').click();
  document.addEventListener('visibilitychange',()=>{if(document.hidden)input.stop()});
 }

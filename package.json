@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/mission.test.mjs tests/execution.test.mjs tests/practical.test.mjs tests/mbti.test.mjs tests/quick.test.mjs",
     "test:e2e": "playwright test",
-    "test:interview": "node --test tests/interview.test.mjs tests/interview-backend.test.mjs tests/root-regression.test.mjs"
+    "test:interview": "node --test tests/interview.test.mjs tests/interview-backend.test.mjs tests/password-reset.test.mjs tests/root-regression.test.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

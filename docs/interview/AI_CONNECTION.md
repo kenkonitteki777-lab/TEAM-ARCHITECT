@@ -1,5 +1,7 @@
 # 面接AI接続準備（2026-10-12）
 
+ログイン・パスワード再設定・端末音声の2026-10-14の変更と必要なRedirect URLは [AUTH_VOICE_QA.md](./AUTH_VOICE_QA.md) を参照。
+
 2026-10-13の再開時の停止原因・修正・検証・未完了項目は [RESTART_HANDOFF.md](./RESTART_HANDOFF.md) を参照。AI画面統合を繰り返さない。
 
 ## 現在の状態
