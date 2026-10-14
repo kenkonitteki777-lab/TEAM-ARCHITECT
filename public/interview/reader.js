@@ -1,7 +1,7 @@
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
-import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-distinct1';
-import {VOICE_SAMPLE} from './voice-catalog.js?v=20261014-distinct1';
+import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-natural2';
+import {VOICE_SAMPLE} from './voice-catalog.js?v=20261014-natural2';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
 import {QUESTIONS as Q} from './questions.js?v=20261007-profile2';
 import {emptyState,validateBackup,mergeBackup,WEAKNESSES} from './engine.js';

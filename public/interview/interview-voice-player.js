@@ -1,5 +1,5 @@
 import {createVoicePlayer} from './voice-player.js';
-import {recordedVoice} from './voice-catalog.js';
+import {recordedVoice} from './voice-catalog.js?v=20261014-natural2';
 export function createInterviewVoicePlayer({Audio=globalThis.Audio,assetBase=new URL('./',import.meta.url),onChange=()=>{},onError=()=>{},...options}){
  let activeKey=null,audio=null,serial=0;
  const device=createVoicePlayer({...options,onError,onChange:key=>{activeKey=key;onChange(key)}});
