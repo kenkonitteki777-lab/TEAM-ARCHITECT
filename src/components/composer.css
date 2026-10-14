@@ -42,3 +42,7 @@
 .sheet-tools p{font-size:12px;color:var(--muted)}
 .sheet-tools button{flex-shrink:0}
 @media(max-width:640px){.sheet-tools{align-items:stretch;flex-direction:column}.sheet-tools p{font-size:11px}}
+
+/* Keep layout growth from dragging the newly created document away from its top. */
+.main-shell main{overflow-anchor:none}
+html{scroll-behavior:auto!important}
