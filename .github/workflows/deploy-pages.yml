@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .interview-audio/audio
-          key: interview-voicevox-0.25.2-${{ hashFiles('public/interview/questions.js', 'public/interview/voice-catalog.js', 'scripts/generate-interview-audio.py') }}
+          key: interview-voicevox-0.25.2-${{ hashFiles('public/interview/questions.js', 'public/interview/voice-catalog.js', 'scripts/generate-interview-audio.py', 'scripts/interview_prosody.py') }}
 
       - name: Generate distinct Japanese interviewer voices
         if: steps.interview-audio.outputs.cache-hit != 'true'

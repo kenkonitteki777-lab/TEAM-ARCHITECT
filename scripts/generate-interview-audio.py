@@ -1,4 +1,5 @@
 """Render only the public question catalog using a local, pinned VOICEVOX engine."""
+from interview_prosody import tune_query
 import argparse, concurrent.futures, io, json, math, pathlib, struct, subprocess, time, urllib.parse, urllib.request, wave
 
 parser=argparse.ArgumentParser()
@@ -32,7 +33,7 @@ def render(entry):
     profile=profiles[entry['role']]
     parameters=urllib.parse.urlencode({'speaker':profile['speaker_id'],'text':entry['text']})
     query=json.loads(request('/audio_query?'+parameters,{}))
-    query['speedScale']=profile['speed']
+    query=tune_query(query,entry['text'],profile)
     query['outputSamplingRate']=24000
     query['outputStereo']=False
     wav=request('/synthesis?speaker='+str(profile['speaker_id']),query)
@@ -52,7 +53,7 @@ def render(entry):
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
     files=list(pool.map(render,catalog['entries']))
-manifest={'version':1,'engine':'VOICEVOX 0.25.2','profiles':profiles,'files':files,'count':len(files),'bytes':sum(f['bytes'] for f in files)}
+manifest={'version':2,'revision':'natural2','engine':'VOICEVOX 0.25.2','profiles':profiles,'files':files,'count':len(files),'bytes':sum(f['bytes'] for f in files)}
 (output/'audio').mkdir(parents=True,exist_ok=True)
 (output/'audio'/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
 print(json.dumps({'generated_clips':len(files),'bytes':manifest['bytes'],'speakers':{role:p['name'] for role,p in profiles.items()}},ensure_ascii=False))
