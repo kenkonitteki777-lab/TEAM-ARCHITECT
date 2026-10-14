@@ -42,3 +42,13 @@ GitHub Pagesの既存ビルドで公式VOICEVOXエンジン0.25.2の固定ダイ
 - https://github.com/VOICEVOX/voicevox_engine
 
 本人入力のAI評価、認証、パスワード再設定は変更しない。AppDeployや有料TTSへの移行はしない。
+
+## 公開確認
+
+実VOICEVOX 0.25.2で128クリップを生成し、公開manifestで確認した。合計3,059,520バイト。部長は玄野武宏のノーマル・speaker_id=11、社長は麒ヶ島宗麟のノーマル・speaker_id=53で別話者。
+
+公開試聴は部長4.629秒、社長4.213秒。同じ文章で異なるMP3を配信。公開URLの390pxと1440pxの自動ブラウザーで、両方の音声を実Audioで読み込み、再生時刻が進むことを確認。ページ例外0件。端末TTSの代替応答を実音声と取り違えていない。
+
+公開コミット: `efc5f7ed95f00e5e2b8fb20d4bde80e0e751fc4c`。GitHub Pages公開成功: https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/38496576071
+
+本人のAndroid実機での声の好み・聞こえ方は未確認。自由なAI追撃・編集解答は引き続き端末音声。
