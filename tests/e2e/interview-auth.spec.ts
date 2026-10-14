@@ -35,6 +35,7 @@ test('interviewer voice presets are distinct and can be previewed and retained',
   const spoken:any[]=[];(window as any).testSpoken=spoken;
   Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{voiceURI:'ja-test',lang:'ja-JP',name:'Japanese',default:true}],cancel(){},speak(u:any){spoken.push({rate:u.rate,pitch:u.pitch,text:u.text})},addEventListener(){}}});
   Object.defineProperty(window,'SpeechSynthesisUtterance',{value:class{constructor(public text:string){}}});
+  Object.defineProperty(window,'Audio',{value:class{pause(){}load(){}play(){return Promise.reject(new Error('recordings unavailable in this device fallback test'))}}});
  });
  await page.goto('/interview/');await page.locator('#openVoice').click();await page.locator('#previewDepartment').click();await page.locator('#previewPresident').click();
  const spoken=await page.evaluate(()=>(window as any).testSpoken);expect(spoken[0].pitch).toBeLessThan(spoken[1].pitch);expect(spoken[0].rate).toBeLessThan(spoken[1].rate);

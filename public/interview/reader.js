@@ -1,6 +1,7 @@
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
-import {createVoicePlayer} from './voice-player.js?v=20261014-voice2';
+import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-distinct1';
+import {VOICE_SAMPLE} from './voice-catalog.js?v=20261014-distinct1';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
 import {QUESTIONS as Q} from './questions.js?v=20261007-profile2';
 import {emptyState,validateBackup,mergeBackup,WEAKNESSES} from './engine.js';
@@ -24,7 +25,7 @@ const speech=createVoicePlayer({synth:window.speechSynthesis,Utterance:window.Sp
 function voiceOptions(key){const role=pool[index].m==='pres'?'president':'department';return {key,role,voiceURI:voicePreferences[role],rate:voicePreferences.rate,pitch:voicePreferences[role+'Pitch']}}
 function saveVoice(){try{localStorage.setItem(VOICE_KEY,JSON.stringify(voicePreferences))}catch{toast('音声設定は今回のみ有効です。端末に保存できません。')}}
 function updateVoices(){const voices=speech.voices();for(const role of ['department','president']){$(role+'Voice').innerHTML='<option value="">端末の標準音声</option>'+voices.map(v=>`<option value="${esc(v.voiceURI)}">${esc(v.name)}</option>`).join('');$(role+'Voice').value=voices.some(v=>v.voiceURI===voicePreferences[role])?voicePreferences[role]:''}
- $('voiceAvailability').textContent=speech.supported?(voices.length?'利用できる日本語音声：'+voices.length+'種類。音声の種類・品質は端末によって異なります。':'日本語音声の読み込み待ち、または未インストールです。端末の音声設定を確認してください。'):'このブラウザーでは読み上げを利用できません。';}
+ $('voiceAvailability').textContent=speech.supported?(voices.length?'質問・想定追撃は面接官別の男性音声。自由なAI追撃・解答用の端末音声：'+voices.length+'種類。':'質問・想定追撃は専用音声で聞けます。自由なAI追撃・解答用の端末音声は読み込み待ち、または未インストールです。'):'このブラウザーでは読み上げを利用できません。';}
 $('readQuestion').disabled=!speech.supported;$('readAnswer').disabled=!speech.supported;$('autoVoice').disabled=!speech.supported;$('previewVoice').disabled=!speech.supported;
 $('autoVoice').checked=voicePreferences.auto;
 $('readQuestion').onclick=()=>speech.toggle($('question').textContent,voiceOptions('question'));
@@ -33,7 +34,7 @@ $('autoVoice').onchange=()=>{voicePreferences.auto=$('autoVoice').checked;saveVo
 $('openVoice').onclick=()=>{speech.stop();updateVoices();$('voiceRate').value=String(voicePreferences.rate);for(const role of ['department','president'])$(role+'Pitch').value=String(voicePreferences[role+'Pitch']);$('voiceSettings').showModal()};$('closeVoice').onclick=()=>$('voiceSettings').close();$('voiceSettings').addEventListener('close',()=>speech.stop());
 for(const role of ['department','president'])$(role+'Voice').onchange=()=>{speech.stop();voicePreferences[role]=$(role+'Voice').value;saveVoice()};
 $('voiceRate').onchange=()=>{speech.stop();voicePreferences.rate=Number($('voiceRate').value);saveVoice()};$('previewVoice').onclick=()=>speech.toggle(pool[index].q,voiceOptions('preview'));
-for(const role of ['department','president']){$(role+'Pitch').onchange=()=>{speech.stop();voicePreferences[role+'Pitch']=Number($(role+'Pitch').value);saveVoice()};$('preview'+(role==='department'?'Department':'President')).onclick=()=>speech.toggle(role==='department'?'具体的に、あなたは何をしましたか。スタッフに、どう関わりましたか。':'結論からお願いします。利益を、どう残しますか。',{key:'preview-'+role,role,voiceURI:voicePreferences[role],rate:voicePreferences.rate,pitch:voicePreferences[role+'Pitch']})}
+for(const role of ['department','president']){$(role+'Pitch').onchange=()=>{speech.stop();voicePreferences[role+'Pitch']=Number($(role+'Pitch').value);saveVoice()};$('preview'+(role==='department'?'Department':'President')).onclick=()=>speech.toggle(VOICE_SAMPLE,{key:'preview-'+role,role,voiceURI:voicePreferences[role],rate:voicePreferences.rate,pitch:voicePreferences[role+'Pitch']})}
 window.speechSynthesis?.addEventListener('voiceschanged',updateVoices);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)speech.stop()});window.addEventListener('pagehide',()=>speech.stop());
 function paintAnswer(){

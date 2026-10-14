@@ -38,6 +38,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Cache distinct interview audio
+        id: interview-audio
+        uses: actions/cache@v4
+        with:
+          path: .interview-audio/audio
+          key: interview-voicevox-0.25.2-${{ hashFiles('public/interview/questions.js', 'public/interview/voice-catalog.js', 'scripts/generate-interview-audio.py') }}
+
+      - name: Generate distinct Japanese interviewer voices
+        if: steps.interview-audio.outputs.cache-hit != 'true'
+        timeout-minutes: 15
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          docker run -d --name interview-voicevox -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-0.25.2@sha256:eb8c7f46a7d01217d1ff2b6f018261faedeceded3cc756b4fbbf371791ad6c90
+          node scripts/export-interview-audio.mjs > /tmp/interview-voice-catalog.json
+          python3 scripts/generate-interview-audio.py --catalog /tmp/interview-voice-catalog.json --output .interview-audio
+          docker stop interview-voicevox
+
+      - name: Include generated interview audio
+        run: cp -R .interview-audio/audio dist/interview/audio
+
       - name: Install test browser
         run: npx playwright install --with-deps chromium
 
