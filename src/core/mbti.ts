@@ -1,3 +1,4 @@
+import { sharedRules, ruleKeys, ruleLabels } from './commandRules';
 import { people, typeBook } from './data';
 import { nameOf, specs, type Command, type Mission } from './mission';
 export type Scene='request'|'conflict'|'support';
@@ -30,11 +31,13 @@ export function pairReading(from:string,to:string,scene:Scene){
 }
 export function deliveryMessage(mission:Mission,commands:Command[],adapt=true){
  const statusNames={todo:'未着手',doing:'進行中',blocked:'要相談',done:'完了'};
- return commands.map(c=>{
+ const common=sharedRules(commands);
+ const body=commands.map(c=>{
   const type=people.find(p=>p.id===c.owner)?.mbti;
   const context=adapt&&type?(type[1]==='N'?`目指すこと：${c.purpose}`:`今回の課題：${mission.brief.issue}`):'';
   const waiting=c.status!=='done'&&c.dependsOn.some(id=>mission.commands.find(x=>x.id===id)?.status!=='done');
   const invitation=c.status==='done'?'':c.status==='blocked'?'再開は相談してから決めましょう。':waiting?'確認したい点は先に共有してください。':adapt&&type?(type[0]==='I'?'一度読んでから、確認したい点を教えてください。':'確認したい点を短く話してから進めましょう。'):'';
-  return [`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`,context,adapt&&type?`確認の入口：${typeQuestions[type]}`:'',...c.actions.map((action,i)=>`${i+1}. ${action}`),`仕上げるもの：${c.output}`,`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`,`完了条件：${c.done}`,`報告：${c.reportWhen}`,`相談：${c.consult}`,`任せる範囲：${c.discretion}`,`即時報告：${c.immediate}`,waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
+  return [`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`,context,adapt&&type?`確認の入口：${typeQuestions[type]}`:'',...c.actions.map((action,i)=>`${i+1}. ${action}`),`仕上げるもの：${c.output}`,`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`,`完了条件：${c.done}`,...ruleKeys.filter(key=>!common.includes(key)).map(key=>`${ruleLabels[key]}：${c[key]}`),waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
  }).join('\n\n');
+ return body+(common.length?'\n\n【上記の指示に共通するルール】\n'+common.map(key=>`${ruleLabels[key]}：${commands[0][key]}`).join('\n'):'');
 }
