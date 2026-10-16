@@ -1,3 +1,5 @@
+> 最新の使い勝手改善（2026-10-16夜）：過去問の一括取り込み・トップのモードと範囲選択は [IMPORT_UX.md](IMPORT_UX.md) を参照。
+
 > 最新機能（2026-10-16）：本人用の質問・回答追加編集、年月日による過去問検索は [QUESTION_LIBRARY.md](QUESTION_LIBRARY.md) を参照。以下の古い接続状況は当時の記録です。現状確認には AI_CONNECTION.md / AUTH_VOICE_QA.md / DISTINCT_VOICES.md も参照。
 
 # 面接対策 — 再開・停止原因・検証記録

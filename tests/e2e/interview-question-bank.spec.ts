@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 async function openBank(page:any){await page.locator('#openMenu').click();await page.locator('#openQuestionBank').click();await expect(page.locator('#questionBank')).toBeVisible()}
 async function addQuestion(page:any,date='2026-10-16'){
- await page.locator('#bankAdd').click();await page.locator('#bankQuestion').fill('部下の成長をどう支援しましたか？');await page.locator('#bankAnswer').fill('対話で課題を確かめ、実践と振り返りを支援しました。');await page.locator('#bankEditDate').fill(date);await page.locator('#bankCategory').fill('育成');await page.locator('#bankSource').fill('本人の面接メモ');await page.locator('#bankSave').click();await expect(page.locator('#bankStatus')).toContainText('保存しました');
+ await page.locator('#bankAdd').click();await page.locator('#bankQuestion').fill('部下の成長をどう支援しましたか？');await page.locator('#bankAnswer').fill('対話で課題を確かめ、実践と振り返りを支援しました。');await page.locator('#bankMetadata summary').click();await page.locator('#bankEditDate').fill(date);await page.locator('#bankCategory').fill('育成');await page.locator('#bankSource').fill('本人の面接メモ');await page.locator('#bankSave').click();await expect(page.locator('#bankStatus')).toContainText('保存しました');
 }
 test('dated question creation, year/month/day lookup, edits, reload and practice work without losing answers',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/interview/');await expect(page.locator('#saveModel')).toBeEnabled();await openBank(page);await addQuestion(page);
