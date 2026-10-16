@@ -1,3 +1,4 @@
+import { concreteInstruction } from './concreteInstructions';
 import type { Brief, FunctionKey, Kind } from './mission';
 
 type Profile={id:string;label:string;kind:Kind;functions:FunctionKey[];focus:string;observe:string;trial:string;field:string;result:string;done:string};
@@ -24,6 +25,8 @@ export function workProfile(b:Pick<Brief,'issue'|'goal'>):Profile {
  return plan('general','内容を確認して進める課題','general',['ANALYZE','DESIGN','OPERATE','REVIEW'],'入力した課題','起きている事実・対象・困っている場面・希望する結果','実施できる小さな一手を一つ提案し、対象・成果物・守る条件を責任者と確認する','合意した一手を対象範囲で実施し、結果を記録する','実施案・成果物・守る条件・確認事項のメモ','対象・最初の一手・成果物・守る条件が確認され、未確認事項が区別されている');
 }
 export function workInstruction(fn:FunctionKey,b:Brief,p:Profile){
+ const concrete=concreteInstruction(fn,b,p);
+ if(concrete)return concrete;
  const topic=`「${b.issue}」`;
  const rules=b.constraints.trim()?`守る条件：${b.constraints.trim()}。条件と両立しない案は実行せず相談する`:'追加予算・配置・営業方針の変更は承認を受ける';
  const map:Record<FunctionKey,{actions:string[];output:string;done:string}>={
@@ -37,10 +40,6 @@ export function workInstruction(fn:FunctionKey,b:Brief,p:Profile){
  REVIEW:{actions:[`${topic}の実施前後を、同じ確認条件で比較する`,'目標・実績・実施記録を照合する。未測定の効果は未確認とする','継続・修正・中止の提案と根拠を最終判断者へ共有する'],output:`${p.focus}の結果と次の一手`,done:'実施した内容・確認できた結果・未確認事項・次の一手を根拠付きで説明できる'},
  COACH:{actions:[`${topic}：${p.field}`,p.trial,'できた点・つまずいた点を本人と振り返り、次の行動と確認日時を合意する'],output:p.result,done:p.done}
  };
- if(p.functions.length===2){
-  if(fn==='COACH')return {...map.COACH,actions:[map.COACH.actions[0],`練習前に${p.observe}を本人と確かめる。${b.source.trim()?`確認する記録：${b.source.trim()}。`:""}${p.trial}`,map.COACH.actions[2]]};
-  if(fn==='REVIEW')return {actions:[`${topic}：${p.id==='training'?'本人に案内手順と困った時の相談先を説明・実演してもらう':'点検表と対象箇所を照合し、清掃・備品補充・終了点検の結果を確認する'}`,'できた点・残った問題・未確認事項を記録する。確認していない成果は完了扱いにしない','残った問題の担当と次回確認日時を決め、報告先へ共有する'],output:`${p.focus}のできた点・残った問題・次回確認のメモ`,done:p.done};
- }
  return map[fn];
 }
 

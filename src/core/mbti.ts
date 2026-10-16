@@ -37,7 +37,15 @@ export function deliveryMessage(mission:Mission,commands:Command[],adapt=true){
   const context=adapt&&type?(type[1]==='N'?`目指すこと：${c.purpose}`:`今回の課題：${mission.brief.issue}`):'';
   const waiting=c.status!=='done'&&c.dependsOn.some(id=>mission.commands.find(x=>x.id===id)?.status!=='done');
   const invitation=c.status==='done'?'':c.status==='blocked'?'再開は相談してから決めましょう。':waiting?'確認したい点は先に共有してください。':adapt&&type?(type[0]==='I'?'一度読んでから、確認したい点を教えてください。':'確認したい点を短く話してから進めましょう。'):'';
-  return [`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`,context,adapt&&type?`確認の入口：${typeQuestions[type]}`:'',...c.actions.map((action,i)=>`${i+1}. ${action}`),`仕上げるもの：${c.output}`,`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`,`完了条件：${c.done}`,...ruleKeys.filter(key=>!common.includes(key)).map(key=>`${ruleLabels[key]}：${c[key]}`),waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
+  const title=`${nameOf(c.owner)}さんへ｜${specs[c.fn].name}（${statusNames[c.status]}）`;
+  const actions=c.actions.map((action,i)=>`${i+1}. ${action}`);
+  const deadline=`期限：${c.due?c.due.replace('T',' ')+' JST':'未設定'} / 報告先：${nameOf(c.reportTo)}`;
+  const output=`仕上げるもの：${c.output}`,done=`完了条件：${c.done}`;
+  const rules=ruleKeys.filter(key=>!common.includes(key)).map(key=>`${ruleLabels[key]}：${c[key]}`);
+  // Keep every task fact. Adapt information order instead of inserting abstract personality questions.
+  const opening=adapt&&type?[...(type[1]==='N'?[context]:[]),...(type[3]==='J'?[deadline]:[output]),...(type[2]==='T'?[done]:[])]:[];
+  const remaining=adapt&&type?[...(type[1]==='S'?[context]:[]),...(type[3]==='P'?[deadline]:[output]),...(type[2]==='F'?[done]:[])]:[output,deadline,done];
+  return [title,...opening,...actions,...remaining,...rules,waiting?'先行作業の完了後に着手してください。':'',invitation].filter(Boolean).join('\n');
  }).join('\n\n');
  return body+(common.length?'\n\n【上記の指示に共通するルール】\n'+common.map(key=>`${ruleLabels[key]}：${commands[0][key]}`).join('\n'):'');
 }

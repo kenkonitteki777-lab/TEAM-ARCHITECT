@@ -9,3 +9,9 @@ test('shared delivery agreements appear once while custom rules and all operatio
  for(const adapt of [true,false]){const text=deliveryMessage(m,m.commands,adapt);for(const key of ['reportWhen','consult','immediate','discretion'])assert.equal(text.split(m.commands[0][key]).length-1,1);for(const c of m.commands)for(const fact of [...c.actions,c.output,c.done,nameOf(c.reportTo)])assert.ok(text.includes(fact));}
  const custom=m.commands.map((c,i)=>i===1?{...c,consult:'この担当だけは実演前に店長へ相談'}:c);const text=deliveryMessage(m,custom);assert.ok(text.includes(custom[1].consult));assert.equal(text.split(custom[0].consult).length-1,custom.length-1);assert.equal(deliveryMessage(m,[]),'');assert.equal(JSON.stringify(m),before);
 });
+test('recipient adaptation changes useful information order without personality filler or lost facts',()=>{
+ const m=createMission({...blankBrief,issue:'新人の案内練習',goal:'案内を自力でできる'});const c={...m.commands[0],owner:'matsuo'};const before=JSON.stringify(m);
+ const strategic=deliveryMessage(m,[c]);const procedural=deliveryMessage(m,[{...c,owner:'tatsuno'}]);const plain=deliveryMessage(m,[c],false);
+ assert.ok(strategic.indexOf('目指すこと：')<strategic.indexOf('1. '));assert.ok(strategic.indexOf('完了条件：')<strategic.indexOf('1. '));assert.ok(procedural.indexOf('期限：')<procedural.indexOf('1. '));assert.ok(procedural.indexOf('今回の課題：')>procedural.indexOf('1. '));assert.ok(plain.indexOf('1. ')<plain.indexOf('期限：'));
+ for(const text of [strategic,procedural,plain]){assert.ok(!text.includes('確認の入口：'));for(const fact of [...c.actions,c.output,c.done,c.reportWhen,c.consult,c.discretion,c.immediate])assert.ok(text.includes(fact));}assert.equal(JSON.stringify(m),before);
+});

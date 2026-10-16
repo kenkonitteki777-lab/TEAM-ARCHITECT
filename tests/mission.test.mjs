@@ -36,7 +36,7 @@ test('task-specific plans distinguish staff guide training, queues, cleaning and
  const training=createMission({...blankBrief,issue:'新人が一人でお客様をご案内できるようにしたい'});
  assert.equal(training.kind,'people');assert.deepEqual(training.commands.map(c=>c.fn),['COACH','REVIEW']);assert.match(training.commands.find(c=>c.fn==='COACH').actions.join(' '),/実際の案内手順/);assert.match(training.commands.find(c=>c.fn==='COACH').done,/実演/);
  const queue=createMission({...blankBrief,issue:'スタッフがお客様の案内待ちを減らしたい'});assert.equal(queue.kind,'service');assert.match(queue.commands[0].actions[0],/案内開始の時刻/);assert.ok(queue.commands.some(c=>c.fn==='FIELD'));assert.ok(!queue.commands.some(c=>c.fn==='COACH'));
- const cleaning=createMission({...blankBrief,issue:'トイレの清掃漏れをなくす'});assert.deepEqual(cleaning.commands.map(c=>c.fn),['FIELD','REVIEW']);assert.match(cleaning.commands[0].actions[0],/清掃・備品補充・終了点検/);assert.ok(!cleaning.commands.some(c=>c.fn==='CREATE'));
+ const cleaning=createMission({...blankBrief,issue:'トイレの清掃漏れをなくす'});assert.deepEqual(cleaning.commands.map(c=>c.fn),['FIELD','REVIEW']);assert.match(cleaning.commands[0].actions[0],/便器周辺・洗面台・床/);assert.match(cleaning.commands[0].actions.join(' '),/清掃・備品補充・終了点検/);assert.ok(!cleaning.commands.some(c=>c.fn==='CREATE'));
  const handover=createMission({...blankBrief,issue:'スタッフ間の引継ぎ漏れをなくす'});assert.deepEqual(handover.commands.map(c=>c.fn),['TRANSLATE','OPERATE','REVIEW']);assert.match(handover.commands[0].actions.join(' '),/未完了事項/);
  for(const m of [training,queue,cleaning,handover]){assert.deepEqual(validateMission(m),[]);assert.equal(m.brief.deadline,'');assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));}
 });
@@ -65,3 +65,17 @@ test('two-step routine plans retain conditions and checks while broad work keeps
  for(const issue of ['トイレ清掃の人員配置を見直したい','複数箇所の清掃計画','清掃業務を改善したい'])assert.equal(createMission({...blankBrief,issue}).commands.length,3);
 });
 test('loading a saved four-step training plan never regenerates it as a routine',()=>{const old=createMission({...blankBrief,issue:'新人の案内研修の全体計画'});old.brief.issue='新人の案内練習';old.commands[0].evidence='既存の観察記録';const data=snapshot(old);const loaded=parseStore(JSON.stringify(data));assert.deepEqual(loaded,data);assert.equal(loaded.missions[0].commands.length,4);});
+test('directives name observable work and submission fields instead of only asking for coordination',()=>{
+ const training=createMission({...blankBrief,issue:'新人の案内練習'});assert.match(training.commands[0].actions.join(' '),/お客様役|声かけ→行き先の確認→案内/);assert.match(training.commands[0].output,/自力でできたこと.*助けが必要なこと/);
+ const cleaning=createMission({...blankBrief,issue:'トイレ清掃'});assert.match(cleaning.commands[0].actions[0],/便器周辺・洗面台・床/);assert.match(cleaning.commands[0].output,/終了時刻.*残った問題/);
+ const sales=createMission({...blankBrief,issue:'朝稼働の改善',source:'社内の日別実績表',period:'10月1日〜7日',constraints:'追加予算なし'});assert.match(sales.commands[0].actions.join(' '),/社内の日別実績表.*10月1日〜7日/);assert.match(sales.commands[0].output,/曜日.*時間帯.*今回実績.*比較実績.*出所/);assert.match(sales.commands[1].output,/人手・費用/);assert.match(sales.commands[1].actions.join(' '),/追加予算なし/);assert.ok(!sales.commands[0].actions[0].includes('夜'));
+ const handover=createMission({...blankBrief,issue:'引継ぎ漏れ'});assert.match(handover.commands[0].output,/次の担当.*期限.*相談先.*受領確認/);
+ for(const m of [training,cleaning,sales,handover]){assert.deepEqual(validateMission(m),[]);assert.equal(m.brief.deadline,'');assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));}
+});
+test('capability changes alter selection and add support without judging ability from MBTI',()=>{
+ const b={...blankBrief,issue:'新人の案内練習'};const override=Object.fromEntries(people.filter(p=>p.id!=='maesaki').flatMap(p=>Array.from({length:18},(_,i)=>[p.id+':'+(i+1),'growth'])));
+ const supported=createMission(b,override);assert.ok(supported.commands.every(c=>c.actions.some(a=>a.includes('支援前提の能力項目'))));
+ for(let n=1;n<=18;n++)override['miyamoto:'+n]='strong';const skilled=createMission(b,override);assert.equal(skilled.commands.find(c=>c.fn==='COACH').owner,'miyamoto');assert.ok(skilled.commands.every(c=>!c.actions.some(a=>a.includes('支援前提の能力項目'))));
+ const unknown=Object.fromEntries(Object.keys(override).map(key=>[key,'unknown']));assert.ok(createMission(b,unknown).commands.every(c=>c.actions.some(a=>a.includes('未評価の項目'))));
+ const p=people.find(p=>p.id==='miyamoto');assert.equal(fit({...p,mbti:'INTJ'},'COACH',override),fit({...p,mbti:'ESFP'},'COACH',override));assert.deepEqual(validateMission(supported),[]);
+});
