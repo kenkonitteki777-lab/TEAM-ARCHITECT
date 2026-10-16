@@ -34,9 +34,9 @@ test('imports append missions, retain current assessments and reject duplicates'
 
 test('task-specific plans distinguish staff guide training, queues, cleaning and handover',()=>{
  const training=createMission({...blankBrief,issue:'新人が一人でお客様をご案内できるようにしたい'});
- assert.equal(training.kind,'people');assert.deepEqual(training.commands.map(c=>c.fn),['ANALYZE','COACH','OPERATE','REVIEW']);assert.match(training.commands.find(c=>c.fn==='COACH').actions.join(' '),/実際の案内手順/);assert.match(training.commands.find(c=>c.fn==='COACH').done,/実演/);
+ assert.equal(training.kind,'people');assert.deepEqual(training.commands.map(c=>c.fn),['COACH','REVIEW']);assert.match(training.commands.find(c=>c.fn==='COACH').actions.join(' '),/実際の案内手順/);assert.match(training.commands.find(c=>c.fn==='COACH').done,/実演/);
  const queue=createMission({...blankBrief,issue:'スタッフがお客様の案内待ちを減らしたい'});assert.equal(queue.kind,'service');assert.match(queue.commands[0].actions[0],/案内開始の時刻/);assert.ok(queue.commands.some(c=>c.fn==='FIELD'));assert.ok(!queue.commands.some(c=>c.fn==='COACH'));
- const cleaning=createMission({...blankBrief,issue:'トイレの清掃漏れをなくす'});assert.deepEqual(cleaning.commands.map(c=>c.fn),['FIELD','OPERATE','REVIEW']);assert.match(cleaning.commands[0].actions[0],/清掃・備品補充・終了点検/);assert.ok(!cleaning.commands.some(c=>c.fn==='CREATE'));
+ const cleaning=createMission({...blankBrief,issue:'トイレの清掃漏れをなくす'});assert.deepEqual(cleaning.commands.map(c=>c.fn),['FIELD','REVIEW']);assert.match(cleaning.commands[0].actions[0],/清掃・備品補充・終了点検/);assert.ok(!cleaning.commands.some(c=>c.fn==='CREATE'));
  const handover=createMission({...blankBrief,issue:'スタッフ間の引継ぎ漏れをなくす'});assert.deepEqual(handover.commands.map(c=>c.fn),['TRANSLATE','OPERATE','REVIEW']);assert.match(handover.commands[0].actions.join(' '),/未完了事項/);
  for(const m of [training,queue,cleaning,handover]){assert.deepEqual(validateMission(m),[]);assert.equal(m.brief.deadline,'');assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));}
 });
@@ -52,3 +52,16 @@ test('clarification is optional only for vague topics and never modifies supplie
  assert.ok(clarificationFor('今の課題を改善したい'));assert.ok(clarificationFor('スタッフ育成を進めたい'));assert.equal(clarificationFor('新人が一人でお客様をご案内できるようにしたい'),'');assert.equal(clarificationFor('トイレの清掃漏れをなくす'),'');assert.equal(clarificationFor(''),'');
  assert.equal(shortAction('「清掃漏れをなくす」：終了点検をする','清掃漏れをなくす'),'終了点検をする');assert.equal(shortAction('本人が書き直した指示','清掃漏れをなくす'),'本人が書き直した指示');
 });
+
+test('two-step routine plans retain conditions and checks while broad work keeps coordination',()=>{
+ for(const issue of ['新人の案内練習','トイレの清掃漏れをなくす']){
+  const m=createMission({...blankBrief,issue,goal:'本人と実施結果を確認する',constraints:'追加予算なし',deadline:'2026-11-01T18:00',checkpoint:'2026-10-31T12:00'});
+  assert.equal(m.commands.length,2);assert.equal(m.commands[0].dependsOn.length,0);assert.deepEqual(m.commands[1].dependsOn,[m.commands[0].id]);assert.deepEqual(validateMission(m),[]);
+  assert.match(m.analysis.hypothesis,/2工程/);assert.ok(!m.commands.some(c=>c.fn==='OPERATE'));assert.match(m.commands[1].actions.join(' '),/未確認|確認していない/);
+  for(const c of m.commands){assert.equal(c.due,m.brief.deadline);assert.match(c.discretion,/追加予算なし/);assert.ok(c.reportWhen.includes(m.brief.checkpoint));assert.ok(c.done&&c.consult&&c.immediate);}
+  assert.deepEqual(parseStore(JSON.stringify(snapshot(m))),snapshot(m));
+ }
+ for(const issue of ['新人の接客研修の全体計画','スタッフ育成','新人の案内手順を分析したい'])assert.equal(createMission({...blankBrief,issue}).commands.length,4);
+ for(const issue of ['トイレ清掃の人員配置を見直したい','複数箇所の清掃計画','清掃業務を改善したい'])assert.equal(createMission({...blankBrief,issue}).commands.length,3);
+});
+test('loading a saved four-step training plan never regenerates it as a routine',()=>{const old=createMission({...blankBrief,issue:'新人の案内研修の全体計画'});old.brief.issue='新人の案内練習';old.commands[0].evidence='既存の観察記録';const data=snapshot(old);const loaded=parseStore(JSON.stringify(data));assert.deepEqual(loaded,data);assert.equal(loaded.missions[0].commands.length,4);});

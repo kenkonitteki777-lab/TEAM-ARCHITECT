@@ -4,12 +4,14 @@ type Profile={id:string;label:string;kind:Kind;functions:FunctionKey[];focus:str
 // Transparent editorial templates. Matching is a candidate, not free-text AI understanding.
 export function workProfile(b:Pick<Brief,'issue'|'goal'>):Profile {
  const x=b.issue+' '+b.goal;
+ // Conservative scope heuristic: only concrete routines, never an inferred duration or staffing fact.
+ const broader=/全体|全員|全店|複数|制度|体系|設計|仕組み|計画|分析|予算|人員|採用|評価|改革|一新|見直し/.test(x);
  const plan=(id:string,label:string,kind:Kind,functions:FunctionKey[],focus:string,observe:string,trial:string,field:string,result:string,done:string):Profile=>({id,label,kind,functions,focus,observe,trial,field,result,done});
  if(/引き継|引継|申し送り|申送り|伝達漏れ/.test(x))return plan('handover','引継ぎ','people',['TRANSLATE','OPERATE','REVIEW'],'交代時の引継ぎ','未完了の仕事・注意事項・判断待ち・次の担当','担当・期限・相談先を一つの引継ぎメモにまとめる','交代する相手に未完了事項を説明し、受け取った内容を確認する','未完了事項・次の担当・期限・相談先の引継ぎメモ','次の担当が残作業と相談先を説明でき、受領が確認できる');
- if(/清掃|掃除|汚れ|トイレ/.test(x))return plan('cleaning','清掃・点検','service',['FIELD','OPERATE','REVIEW'],'清掃・点検の対象箇所','箇所別の汚れ・備品不足・利用への支障','優先箇所と担当を決め、通常業務への影響を確認する','対象箇所を確認し、店舗の手順に沿って清掃・備品補充・終了点検を行う','箇所・担当・確認時刻・残った問題の点検表','対象箇所の終了点検と残った問題・対応担当が記録されている');
+ if(/清掃|掃除|汚れ|トイレ/.test(x))return plan('cleaning','清掃・点検','service',!broader&&/トイレ|入口|出入口|通路|カウンター|休憩室|喫煙所/.test(x)?['FIELD','REVIEW']:['FIELD','OPERATE','REVIEW'],'清掃・点検の対象箇所','箇所別の汚れ・備品不足・利用への支障','優先箇所と担当を決め、通常業務への影響を確認する','対象箇所を確認し、店舗の手順に沿って清掃・備品補充・終了点検を行う','箇所・担当・確認時刻・残った問題の点検表','対象箇所の終了点検と残った問題・対応担当が記録されている');
  if(/育成|人材|面談|新人|OJT|研修|教育/i.test(x)){
   const guide=/案内|接客|接遇/.test(x);
-  return plan('training',guide?'新人の案内練習':'スタッフ育成','people',['ANALYZE','COACH','OPERATE','REVIEW'],guide?'対象者のご案内手順':'対象者に身につけてほしい行動',guide?'声かけ・要望の確認・案内・困った時の相談':'できている行動・つまずく場面・本人の希望','一度に練習する行動を一つ選び、実演→本人の練習→振り返りで確認する',guide?'実際の案内手順を見せ、対象者に同じ場面を練習してもらう':'期待する行動を実演し、対象者に練習してもらう','観察した行動・練習した内容・本人の次の行動・確認日のOJTメモ','本人が手順と困った時の相談先を説明・実演でき、次回の確認日が合意されている');
+  return plan('training',guide?'新人の案内練習':'スタッフ育成','people',guide&&!broader?['COACH','REVIEW']:['ANALYZE','COACH','OPERATE','REVIEW'],guide?'対象者のご案内手順':'対象者に身につけてほしい行動',guide?'声かけ・要望の確認・案内・困った時の相談':'できている行動・つまずく場面・本人の希望','一度に練習する行動を一つ選び、実演→本人の練習→振り返りで確認する',guide?'実際の案内手順を見せ、対象者に同じ場面を練習してもらう':'期待する行動を実演し、対象者に練習してもらう','観察した行動・練習した内容・本人の次の行動・確認日のOJTメモ','本人が手順と困った時の相談先を説明・実演でき、次回の確認日が合意されている');
  }
  if(/接客|CS|クレーム|案内待ち|ご案内|接遇|待ち時間/.test(x)){
   const wait=/待ち|呼出|呼び出し/.test(x);
@@ -35,6 +37,10 @@ export function workInstruction(fn:FunctionKey,b:Brief,p:Profile){
  REVIEW:{actions:[`${topic}の実施前後を、同じ確認条件で比較する`,'目標・実績・実施記録を照合する。未測定の効果は未確認とする','継続・修正・中止の提案と根拠を最終判断者へ共有する'],output:`${p.focus}の結果と次の一手`,done:'実施した内容・確認できた結果・未確認事項・次の一手を根拠付きで説明できる'},
  COACH:{actions:[`${topic}：${p.field}`,p.trial,'できた点・つまずいた点を本人と振り返り、次の行動と確認日時を合意する'],output:p.result,done:p.done}
  };
+ if(p.functions.length===2){
+  if(fn==='COACH')return {...map.COACH,actions:[map.COACH.actions[0],`練習前に${p.observe}を本人と確かめる。${b.source.trim()?`確認する記録：${b.source.trim()}。`:""}${p.trial}`,map.COACH.actions[2]]};
+  if(fn==='REVIEW')return {actions:[`${topic}：${p.id==='training'?'本人に案内手順と困った時の相談先を説明・実演してもらう':'点検表と対象箇所を照合し、清掃・備品補充・終了点検の結果を確認する'}`,'できた点・残った問題・未確認事項を記録する。確認していない成果は完了扱いにしない','残った問題の担当と次回確認日時を決め、報告先へ共有する'],output:`${p.focus}のできた点・残った問題・次回確認のメモ`,done:p.done};
+ }
  return map[fn];
 }
 
