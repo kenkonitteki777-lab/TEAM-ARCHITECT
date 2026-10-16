@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/mission.test.mjs tests/execution.test.mjs tests/practical.test.mjs tests/mbti.test.mjs tests/quick.test.mjs",
     "test:e2e": "playwright test",
-    "test:interview": "node --test tests/interview.test.mjs tests/interview-backend.test.mjs tests/password-reset.test.mjs tests/recorded-voice.test.mjs tests/root-regression.test.mjs && python3 -m unittest discover -s tests -p 'test_interview_prosody.py'"
+    "test:interview": "node --test tests/interview.test.mjs tests/interview-backend.test.mjs tests/password-reset.test.mjs tests/recorded-voice.test.mjs tests/question-library.test.mjs tests/root-regression.test.mjs && python3 -m unittest discover -s tests -p 'test_interview_prosody.py'"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

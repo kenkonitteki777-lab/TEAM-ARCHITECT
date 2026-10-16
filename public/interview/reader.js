@@ -1,18 +1,23 @@
+import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions} from './question-library.js?v=20261016-bank1';
+import {mountQuestionLibrary} from './question-library-ui.js?v=20261016-bank1';
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
 import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-natural2';
 import {VOICE_SAMPLE} from './voice-catalog.js?v=20261014-natural2';
 import {PRESIDENT_PROFILE} from './interviewer-profile.js';
-import {QUESTIONS as Q} from './questions.js?v=20261007-profile2';
+import {QUESTIONS as BASE_QUESTIONS} from './questions.js?v=20261007-profile2';
 import {emptyState,validateBackup,mergeBackup,WEAKNESSES} from './engine.js';
 import {MODEL_KEY,DRAFT_KEY,emptyModels,validateModels,mergeModels,setModel,persistModels} from './model-store.js';
+let questionLibrary=emptyLibrary(),libraryDamaged=false;
+try{const raw=localStorage.getItem(QUESTION_KEY);if(raw)questionLibrary=validateLibrary(JSON.parse(raw),BASE_QUESTIONS)}catch{libraryDamaged=true}
+const Q=materializeQuestions(BASE_QUESTIONS,questionLibrary);
 const $=id=>document.getElementById(id),KEY='team_architect_interview_v3',POSITION='team_architect_reader_question';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let practice=null,practiceTimer=null,savingPractice=false;
 let state=emptyState(),models=emptyModels(),idb=null,index=0,pool=Q,toastTimer,revealed=false,ready=false,editKey=null,modelDrafts={},damagedModels=null,interviewFilter='all';
 function get(k){try{return localStorage.getItem(k)}catch{return null}}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500)}
-function modelText(q,n=null){return models.entries[n===null?q.id:q.id+':f'+n]?.text??(n===null?q.answer:q.followups[n].answer)}
+function modelText(q,n=null){const entry=models.entries[n===null?q.id:q.id+':f'+n];return n===null&&q.personal&&(!entry||Date.parse(q.updatedAt)>Date.parse(entry.updatedAt))?q.answer:(entry?.text??(n===null?q.answer:q.followups[n].answer))}
 function answer(text){const filled=text.replace(/【要確認：([^】]+)】/g,(all,key)=>{const f=state.facts[key];return f?.value&&f.source&&f.date?f.value+'（本人登録・'+f.date+'）':all});return esc(filled).replace(/【要確認：[^】]+】/g,m=>`<span class="confirmation">${m}</span>`)}
 const VOICE_KEY='team_architect_interview_voice_v1';
 let voicePreferences={auto:false,department:'',president:'',rate:1,departmentPitch:.86,presidentPitch:.96};
@@ -38,17 +43,18 @@ for(const role of ['department','president']){$(role+'Pitch').onchange=()=>{spee
 window.speechSynthesis?.addEventListener('voiceschanged',updateVoices);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)speech.stop()});window.addEventListener('pagehide',()=>speech.stop());
 function paintAnswer(){
- const q=pool[index];$('answer').innerHTML=answer(modelText(q));$('answerOrigin').textContent=models.entries[q.id]?'本人登録':'回答案';
+ const q=pool[index];$('answer').innerHTML=answer(modelText(q)||'回答はまだ登録されていません。「編集する」から追加できます。');$('answerOrigin').textContent=models.entries[q.id]||q.personal?'本人登録':'回答案';
  $('followups').innerHTML=q.followups.map((f,i)=>`<details><summary>追撃：${esc(f.q)}</summary><p>${answer(modelText(q,i))}</p><button class="edit-button read-followup" data-read-followup="${i}" aria-pressed="false" ${speech.supported?'':'disabled'}>追撃を聞く</button><button class="edit-button" data-followup="${i}">この追撃回答を編集 ↗</button></details>`).join('');
  $('followups').querySelectorAll('[data-read-followup]').forEach(b=>b.onclick=()=>speech.toggle(q.followups[Number(b.dataset.readFollowup)].q,voiceOptions('followup'+b.dataset.readFollowup)));
  $('followups').querySelectorAll('[data-followup]').forEach(b=>b.onclick=()=>openEditor(Number(b.dataset.followup)));
  $('answerCore').textContent='回答の核：'+q.core;$('answerIntent').textContent='確認される点：'+q.intent;
  $('provenance').textContent=models.entries[q.id]?'本人登録 · '+new Date(models.entries[q.id].updatedAt).toLocaleDateString('ja-JP'):q.status+' · '+q.src;
+ $('provenance').textContent+=' · 出題日：'+(q.askedOn||'不明');
 }
 function toggleAnswer(value=!revealed){if(!value)speech.stop();revealed=value;$('modelPanel').hidden=!revealed;$('recallHint').hidden=revealed;$('reveal').setAttribute('aria-expanded',String(revealed));$('reveal').innerHTML=revealed?'<span class="action-label">解答を隠す<small aria-hidden="true">HIDE ANSWER</small></span><span aria-hidden="true">−</span>':'<span class="action-label">模範解答を見る<small aria-hidden="true">REVEAL ANSWER</small></span><span aria-hidden="true">＋</span>';}
 function render(){
  speech.stop();$('stageLabel').innerHTML='QUESTION <span id="questionId"></span>';
- const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=q.id.slice(1);$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
+ const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=(q.id.startsWith('u-')?'追加':q.id.slice(1));$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
  const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
  $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長面接のシルエット');
  const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-noir-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
@@ -66,17 +72,18 @@ $('openProfile').onclick=()=>(speech.stop(),$('profile').showModal());$('closePr
 function move(step){if(practice)return;if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
 function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return Q.filter(q=>(interviewFilter==='all'||(interviewFilter==='president'?q.m==='pres':q.m!=='pres'))&&(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{interviewFilter=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===b)));renderList()});
-function renderList(){const weak=weakQuestions(Q,state);$('weakCount').textContent='苦手 '+weak.length+'問';$('startReview').disabled=!weak.length;const list=filtered();$('resultCount').textContent=`${list.length}問`;$('questionList').innerHTML=list.length?list.map(q=>`<button class="question-row" data-id="${q.id}" aria-current="${q.id===pool[index].id}"><span class="index">${q.id.slice(1)}</span><span>${esc(q.q)}<small>${esc(q.category)}${models.entries[q.id]?' · 本人登録':''}${state.records[q.id]?.grade==='weak'?' · 要復習':''}</small></span></button>`).join(''):'<p class="muted">一致する質問がありません。</p>';$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{endPractice();pool=list;index=pool.findIndex(q=>q.id===b.dataset.id);render();$('navigation').close();window.scrollTo({top:0,behavior:'instant'})})}
-function history(){$('storageDetail').textContent=`本人登録 ${Object.keys(models.entries).length}件 · 過去の回答履歴 ${state.history.length}件。バックアップには編集した模範解答も含まれます。`;$('history').innerHTML=state.history.length?state.history.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))}</small><h3>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h3><p>${r.answer?esc(r.answer):'口頭練習 · 自己評価：'+(r.grade==='good'?'できた':esc((r.weaknesses||[]).join('・')))+' · '+r.seconds+'秒（手動計測）'}</p></article>`).join(''):'<p class="muted">保存された回答履歴はありません。</p>'}
+function renderList(){const weak=weakQuestions(Q,state);$('weakCount').textContent='苦手 '+weak.length+'問';$('startReview').disabled=!weak.length;const list=filtered();$('resultCount').textContent=`${list.length}問`;$('questionList').innerHTML=list.length?list.map(q=>`<button class="question-row" data-id="${q.id}" aria-current="${q.id===pool[index].id}"><span class="index">${(q.id.startsWith('u-')?'追加':q.id.slice(1))}</span><span>${esc(q.q)}<small>${esc(q.category)} · ${esc(q.askedOn||'日付不明')}${models.entries[q.id]?' · 本人登録':''}${state.records[q.id]?.grade==='weak'?' · 要復習':''}</small></span></button>`).join(''):'<p class="muted">一致する質問がありません。</p>';$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{endPractice();pool=list;index=pool.findIndex(q=>q.id===b.dataset.id);render();$('navigation').close();window.scrollTo({top:0,behavior:'instant'})})}
+function history(){$('storageDetail').textContent=`登録・編集した質問 ${Object.keys(questionLibrary.entries).length}件 · 本人回答 ${Object.keys(models.entries).length}件 · 過去の回答履歴 ${state.history.length}件。バックアップには編集した模範解答も含まれます。`;$('history').innerHTML=state.history.length?state.history.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))}</small><h3>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h3><p>${r.answer?esc(r.answer):'口頭練習 · 自己評価：'+(r.grade==='good'?'できた':esc((r.weaknesses||[]).join('・')))+' · '+r.seconds+'秒（手動計測）'}</p></article>`).join(''):'<p class="muted">保存された回答履歴はありません。</p>'}
 function snapshot(key,value){return new Promise((resolve,reject)=>{if(!idb){resolve();return}const tx=idb.transaction('snapshots','readwrite');tx.objectStore('snapshots').put(structuredClone(value),key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
 function readSnapshot(key){return new Promise((resolve,reject)=>{const r=idb.transaction('snapshots','readonly').objectStore('snapshots').get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function init(){
  try{const raw=get(KEY);if(raw)state=validateBackup(JSON.parse(raw),Q)}catch{toast('既存履歴を読み取れません。保存内容はそのまま保持しています。')}
  for(const q of Q){const a=get('interview_actual_'+q.q),g=get('interview_grade_'+q.q);if((a||g)&&!state.records[q.id]){const now=new Date(0).toISOString();state.records[q.id]={answer:a||'',grade:g||null,weaknesses:[],updatedAt:now};if(a)state.history.push({id:'legacy-'+q.id,questionId:q.id,prompt:q.q,answer:a,mode:q.m,seconds:0,updatedAt:now,kind:'answer',weaknesses:[]})}}
  try{const raw=get(MODEL_KEY);if(raw)models=validateModels(JSON.parse(raw),Q)}catch{damagedModels=get(MODEL_KEY);toast('模範解答の保存データを読み取れません。元データを保持しています。')}
- try{const raw=JSON.parse(get(DRAFT_KEY)||'{}');if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const [k,v]of Object.entries(raw))if(/^q\d{3}(?::f\d)?$/.test(k)&&typeof v==='string'&&v.length<=12000)modelDrafts[k]=v}catch{}
+ try{const raw=JSON.parse(get(DRAFT_KEY)||'{}');if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const [k,v]of Object.entries(raw))if(Q.some(q=>k===q.id||q.followups.some((_,i)=>k===q.id+':f'+i))&&typeof v==='string'&&v.length<=12000)modelDrafts[k]=v}catch{}
  paintAnswer();history();
- try{idb=await new Promise((resolve,reject)=>{const r=indexedDB.open('team-architect-interview',1);r.onupgradeneeded=()=>r.result.createObjectStore('snapshots');r.onerror=()=>reject(r.error);r.onsuccess=()=>resolve(r.result)});const copies=await Promise.allSettled([readSnapshot('current'),readSnapshot('modelAnswers')]);try{if(copies[0].status==='fulfilled'&&copies[0].value)state=mergeBackup(state,validateBackup(copies[0].value,Q))}catch{}try{if(copies[1].status==='fulfilled'&&copies[1].value)models=mergeModels(models,validateModels(copies[1].value,Q))}catch{}}catch{}
+ try{idb=await new Promise((resolve,reject)=>{const r=indexedDB.open('team-architect-interview',1);r.onupgradeneeded=()=>r.result.createObjectStore('snapshots');r.onerror=()=>reject(r.error);r.onsuccess=()=>resolve(r.result)});const copies=await Promise.allSettled([readSnapshot('current'),readSnapshot('modelAnswers'),readSnapshot('questionLibrary')]);try{if(copies[2].status==='fulfilled'&&copies[2].value){questionLibrary=mergeLibraries(questionLibrary,validateLibrary(copies[2].value,BASE_QUESTIONS));reloadQuestions();const savedState=get(KEY),savedModels=get(MODEL_KEY);if(savedState)state=mergeBackup(state,validateBackup(JSON.parse(savedState),Q));if(savedModels)models=mergeModels(models,validateModels(JSON.parse(savedModels),Q))}}catch{}try{if(copies[0].status==='fulfilled'&&copies[0].value)state=mergeBackup(state,validateBackup(copies[0].value,Q))}catch{}try{if(copies[1].status==='fulfilled'&&copies[1].value)models=mergeModels(models,validateModels(copies[1].value,Q))}catch{}}catch{}
+ if(libraryDamaged)toast('追加質問の保存データを読み取れません。元のデータは保持しています。');
  ready=true;$('saveModel').disabled=false;paintAnswer();history();
 }
 function openEditor(n=null){
@@ -103,7 +110,7 @@ $('categoryFilter').innerHTML+=[...new Set(Q.map(q=>q.category))].map(c=>`<optio
 window.addEventListener('keydown',e=>{
  if(e.isComposing||e.altKey)return;
  if($('editor').open){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('saveModel').click()}return}
- if($('navigation').open||$('aiInterview').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
+ if($('questionBank')?.open||$('navigation').open||$('aiInterview').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
  if(practice){if(e.code==='Space'&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();advancePractice()}return}
  if(e.code==='Space'&&document.activeElement?.tagName==='BUTTON')return;
  if(e.key==='ArrowRight'){e.preventDefault();move(1)}if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}if(e.code==='Space'){e.preventDefault();toggleAnswer()}
@@ -115,12 +122,12 @@ function practiceAction(label,english){$('reveal').removeAttribute('aria-control
 function paintPractice(){
  if(!practice)return;
  speech.stop();$('practicePanel').hidden=practice.phase==='complete';$('practiceSummary').hidden=practice.phase!=='complete';$('practiceFeedback').hidden=practice.phase!=='feedback';
- $('stageLabel').innerHTML=practice.stage===0?'QUESTION <span id="questionId">'+pool[index].id.slice(1)+'</span>':'FOLLOW-UP <span id="questionId">'+practice.stage+' / 2</span>';
+ $('stageLabel').innerHTML=practice.stage===0?'QUESTION <span id="questionId">'+(pool[index].id.startsWith('u-')?'追加':pool[index].id.slice(1))+'</span>':'FOLLOW-UP <span id="questionId">'+practice.stage+' / '+pool[index].followups.length+'</span>';
  $('question').textContent=practicePrompt();$('position').textContent=(practice.done+1)+' / '+practice.target+'問';$('progressBar').style.width=(practice.done/practice.target*100)+'%';
- $('practiceStep').textContent=practice.stage===0?'本質問':('想定追撃 '+practice.stage+' / 2');$('practiceGoal').textContent=practice.phase==='feedback'?'3回答の合計':'目安 '+(pool[index].m==='pres'?30:60)+'秒';
+ $('practiceStep').textContent=practice.stage===0?'本質問':('想定追撃 '+practice.stage+' / '+pool[index].followups.length);$('practiceGoal').textContent=practice.phase==='feedback'?(1+pool[index].followups.length)+'回答の合計':'目安 '+(pool[index].m==='pres'?30:60)+'秒';
  $('practiceInstruction').textContent=practice.phase==='ready'?'解答を見ず、声に出して答える。':practice.phase==='speaking'?'回答が終わったら、下のボタンで進む。':'本質問と追撃を振り返る。録音・回答本文の保存はしません。';
  if(practice.phase==='ready')practiceAction('回答を始める','START ANSWER');
- if(practice.phase==='speaking')practiceAction(practice.stage<2?'追撃へ':'振り返る',practice.stage<2?'FOLLOW-UP':'REVIEW');
+ if(practice.phase==='speaking')practiceAction(practice.stage<pool[index].followups.length?'追撃へ':'振り返る',practice.stage<pool[index].followups.length?'FOLLOW-UP':'REVIEW');
  if(practice.phase==='feedback'){
   practiceAction(practice.tags.length?'保存して次へ':'できた・次へ','SAVE & NEXT');
   $('practiceFix').textContent=practice.tags.length?'次に直す一つ：'+FIXES[practice.tags[0]]:'結論・根拠・行動を言えたら、そのまま次へ。';
@@ -147,7 +154,7 @@ async function advancePractice(){
  if(practice.phase==='ready'){speech.stop();practice.phase='speaking';practice.started=performance.now();paintPractice();return}
  if(practice.phase==='speaking'){
   practice.steps.push({prompt:practicePrompt(),seconds:(performance.now()-practice.started)/1000});practice.started=null;
-  if(practice.stage<2){practice.stage++;practice.phase='ready';toggleAnswer(false);paintPractice();if(voicePreferences.auto)speech.play(practicePrompt(),voiceOptions('question'))}
+  if(practice.stage<pool[index].followups.length){practice.stage++;practice.phase='ready';toggleAnswer(false);paintPractice();if(voicePreferences.auto)speech.play(practicePrompt(),voiceOptions('question'))}
   else{practice.phase='feedback';paintPractice();$('practicePanel').scrollIntoView({block:'start',behavior:'instant'})}
   return;
  }
@@ -168,27 +175,46 @@ $('weaknessChoices').innerHTML=WEAKNESSES.map(w=>`<button type="button" aria-pre
 $('weaknessChoices').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!practice||savingPractice)return;const w=b.dataset.weakness;practice.tags=practice.tags.includes(w)?practice.tags.filter(t=>t!==w):[...practice.tags,w];b.setAttribute('aria-pressed',String(practice.tags.includes(w)));paintPractice()});
 $('startPractice').onclick=()=>startPractice();$('endPractice').onclick=()=>{if(!savingPractice)endPractice()};$('retryPractice').onclick=()=>{if(!savingPractice)resetPracticeQuestion()};$('practiceModel').onclick=()=>{toggleAnswer();paintPractice()};$('startReview').onclick=()=>startPractice(true);$('restartPractice').onclick=()=>startPractice();$('reviewPractice').onclick=()=>startPractice(true);
 window.addEventListener('storage',e=>{
- try{if(e.key===KEY&&e.newValue){state=mergeBackup(state,validateBackup(JSON.parse(e.newValue),Q));paintAnswer();history()}
+ try{if(e.key===QUESTION_KEY&&e.newValue){questionLibrary=mergeLibraries(questionLibrary,validateLibrary(JSON.parse(e.newValue),BASE_QUESTIONS));reloadQuestions();bank.refresh()}
+ if(e.key===KEY&&e.newValue){state=mergeBackup(state,validateBackup(JSON.parse(e.newValue),Q));paintAnswer();history()}
  if(e.key===MODEL_KEY&&e.newValue){models=mergeModels(models,validateModels(JSON.parse(e.newValue),Q));paintAnswer();history();if($('editor').open)toast('別タブの更新を反映しました。編集中の文章は保持しています。')}}catch{}
 });
-$('export').onclick=()=>{if(!ready){toast('保存データの読み込み中です。');return}const url=URL.createObjectURL(new Blob([JSON.stringify({...state,modelAnswers:models},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`team-architect-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('模範解答を含むバックアップを書き出しました。')};
+$('export').onclick=()=>{if(!ready){toast('保存データの読み込み中です。');return}const url=URL.createObjectURL(new Blob([JSON.stringify({...state,modelAnswers:models,questionLibrary},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`team-architect-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('追加質問・模範解答を含むバックアップを書き出しました。')};
 $('import').onchange=async e=>{
  const file=e.target.files[0];if(!file)return;if(!ready){toast('保存データの読み込み中です。');e.target.value='';return}
  try{
   if(file.size>10*1024*1024)throw new Error('10MB以内のファイルを選んでください。');
-  const raw=JSON.parse(await file.text()),incoming=validateBackup(raw,Q),incomingModels=raw.modelAnswers?validateModels(raw.modelAnswers,Q):emptyModels();
+  const raw=JSON.parse(await file.text()),incomingLibrary=raw.questionLibrary?validateLibrary(raw.questionLibrary,BASE_QUESTIONS):emptyLibrary();
+  const mergedLibrary=mergeLibraries(questionLibrary,incomingLibrary),incomingQuestions=materializeQuestions(BASE_QUESTIONS,mergedLibrary);
+  const incoming=validateBackup(raw,incomingQuestions),incomingModels=raw.modelAnswers?validateModels(raw.modelAnswers,incomingQuestions):emptyModels();
   const merged=mergeBackup(state,incoming),mergedModels=mergeModels(models,incomingModels);merged.savedAt=new Date().toISOString();
-  // Write answers first; no success is reported unless both primary snapshots persist.
+  // Persist the catalog before answers so custom IDs survive interrupted imports.
   if(damagedModels)localStorage.setItem(MODEL_KEY+'_recovery_'+Date.now(),damagedModels);
+  if(libraryDamaged){const damaged=get(QUESTION_KEY);if(damaged)localStorage.setItem(QUESTION_KEY+'_recovery_'+Date.now(),damaged)}
+  localStorage.setItem(QUESTION_KEY,JSON.stringify(mergedLibrary));questionLibrary=mergedLibrary;libraryDamaged=false;reloadQuestions();
   persistModels(localStorage,mergedModels);models=mergedModels;damagedModels=null;
   const old=get(KEY);if(old){try{validateBackup(JSON.parse(old),Q)}catch{localStorage.setItem(KEY+'_recovery_'+Date.now(),old)}}
   localStorage.setItem(KEY,JSON.stringify(merged));state=merged;
-  await snapshot('modelAnswers',models);await snapshot('current',state);paintAnswer();history();toast('既存の回答と模範解答を保持して統合しました。');
+  await snapshot('questionLibrary',questionLibrary);await snapshot('modelAnswers',models);await snapshot('current',state);paintAnswer();history();toast('既存の回答と模範解答を保持して統合しました。');
  }catch(error){paintAnswer();history();toast('読み込み未完了：'+(error.message||'保存容量を確認してください。'))}e.target.value='';
 };
+function reloadQuestions(preferredId=pool[index]?.id){
+ if(practice)endPractice();
+ Q.splice(0,Q.length,...materializeQuestions(BASE_QUESTIONS,questionLibrary));
+ const chosen=Q.find(q=>q.id===preferredId)||Q[0];interviewFilter=chosen.m==='pres'?'president':'department';pool=Q.filter(q=>interviewFilter==='president'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===chosen.id));
+ const category=$('categoryFilter').value;$('categoryFilter').innerHTML='<option value="">すべてのカテゴリー</option>'+[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('categoryFilter').value=category;
+ render();renderList();history();
+}
+const bank=mountQuestionLibrary({getQuestions:()=>Q,getAnswer:q=>modelText(q),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;endPractice();speech.stop();$('navigation').close();return true},select:id=>{reloadQuestions(id);window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
+ if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
+ let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
+ const next=putQuestion(latest,BASE_QUESTIONS,id,fields);localStorage.setItem(QUESTION_KEY,JSON.stringify(next));questionLibrary=next;reloadQuestions(id);
+ try{await snapshot('questionLibrary',questionLibrary)}catch{return 'この端末に保存しました。追加保存に失敗したためバックアップを推奨します。'}return '質問と回答を保存しました。';
+}});
+$('openQuestionBank').onclick=()=>bank.open();$('editQuestion').onclick=()=>bank.open(pool[index].id);
 const saved=get(POSITION);interviewFilter=Q.find(q=>q.id===saved)?.m==='pres'?'president':'department';pool=Q.filter(q=>interviewFilter==='president'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===saved));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===interviewFilter)));render();init();
 
-mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{if(savingPractice)return false;endPractice();speech.stop();return true},nextQuestion:()=>move(1),startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
+mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{const q=pool[index],original=BASE_QUESTIONS.find(b=>b.id===q.id);if(!original||original.q!==q.q||original.m!==q.m){toast('追加・編集した質問は実戦5問で練習できます。AI面接は元の質問でご利用ください。');return false}if(savingPractice)return false;endPractice();speech.stop();return true},nextQuestion:()=>move(1),startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
  if(!ready)throw new Error('保存データを読み込み中です。回答は保持しています。');
  let current=state;const raw=get(KEY);if(raw){try{current=mergeBackup(state,validateBackup(JSON.parse(raw),Q))}catch{localStorage.setItem(KEY+'_recovery_'+Date.now(),raw)}}
  const next=structuredClone(current),now=new Date().toISOString(),weaknesses=feedback.weaknesses.filter(w=>WEAKNESSES.includes(w));

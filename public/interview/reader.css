@@ -344,3 +344,19 @@ body[data-practice="true"] .question-stage {min-height:250px;padding:28px 0;}
 .ai-interview .secondary,.practice-panel .secondary,.review-strip .secondary {background:#d6bd8610;color:#d8c6a0;border:1px solid #d6bd8638;}
 body[data-practice="true"] .dock .primary {max-width:none!important;}
 @media(max-width:600px){.ai-interview .practice-feedback-actions .primary{width:100%;}.ai-prompt{font-size:26px;}.ai-interview{padding:20px;}}
+
+/* Personal past-question manager */
+#questionBank {width:min(760px,calc(100% - 24px));max-height:90dvh;overflow:auto}
+.bank-filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+#questionBank label {display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--muted);margin:12px 0}
+#questionBank input,#questionBank select,#questionBank textarea {width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;background:#17191d;color:var(--text);padding:12px}
+#questionBank textarea {resize:vertical;line-height:1.8}
+.bank-row {border-bottom:1px solid var(--line);padding:16px 0;overflow-wrap:anywhere}
+.bank-row p {line-height:1.7;margin:0 0 8px}.bank-row small {color:var(--muted);line-height:1.7}
+.bank-date {color:var(--accent);font-size:15px;margin:28px 0 0}.bank-row .practice-feedback-actions {margin-top:12px;flex-wrap:wrap}
+#openQuestionBank {width:100%;margin:8px 0 16px}#editQuestion {margin-bottom:12px}
+@media(max-width:480px){.bank-filters{gap:8px}#questionBank{padding:18px}.bank-row .practice-feedback-actions{display:flex;flex-direction:column;align-items:stretch}}
+#questionBank select {max-width:100%;font-size:15px}
+#questionBank input {font-size:16px}
+#questionBank #bankQuestion {min-height:110px}
+#questionBank #bankAnswer {min-height:190px}
