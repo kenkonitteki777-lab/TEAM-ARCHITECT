@@ -16,7 +16,7 @@ test('unavailable entry never leaves a blank page and retry preserves URL state'
 test('storage access denied still opens UI and explains saving failure',async({page})=>{
  await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new DOMException('denied','SecurityError');}}));
  await page.goto('/');
- await expect(page.getByRole('heading',{name:/やりたいことを、.*チームの指示へ。/})).toBeVisible();
+ await expect(page.getByRole('heading',{name:/現場の課題を、.*チームで解く。/})).toBeVisible();
  await expect(page.getByRole('alert')).toContainText('元データの上書きを止め');
  await expect(page.locator('#startup')).toBeHidden();
 });
@@ -41,7 +41,7 @@ test('diagnostic works without application JS and does not mutate either app dat
 test('cached HTML entry and CSS URLs survive next build instead of disappearing',async({page,request})=>{
  const html=await (await request.get('/')).text();
  expect(html).toContain('./assets/team-architect.js');expect(html).toContain('./assets/team-architect.css');
- await page.goto('/');await expect(page.getByRole('heading',{name:/やりたいことを、.*チームの指示へ。/})).toBeVisible();
+ await page.goto('/');await expect(page.getByRole('heading',{name:/現場の課題を、.*チームで解く。/})).toBeVisible();
  await page.getByLabel('解決したい課題').fill('夜稼働の改善');
  await page.getByRole('button',{name:'指示書を作る'}).click();
  const data=await page.evaluate(()=>localStorage.getItem('team-architect-v2'));

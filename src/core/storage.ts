@@ -1,3 +1,5 @@
+import { validateOrganization, type Organization } from './organization';
+import { validateIssues, type Issue } from './issues';
 import { validateExecution } from './execution';
 import { validateReview } from './review';
 import { people, type Level } from './data';
@@ -5,7 +7,7 @@ import { specs, validateMission, type Mission, type Overrides } from './mission'
 export const STORE_KEY='team-architect-v2';
 export const BACKUP_KEY='team-architect-legacy-backup-v1';
 export type Legacy={history:string|null;capabilities:string|null};
-export type Store={schemaVersion:2;missions:Mission[];overrides:Overrides;legacy:Legacy};
+export type Store={schemaVersion:2;missions:Mission[];overrides:Overrides;legacy:Legacy;issues?:Issue[];organization?:Organization};
 export type StorageLike=Pick<Storage,'getItem'|'setItem'>;
 const levels=['strong','standard','growth','unknown'];
 const object=(x:unknown):x is Record<string,unknown>=>!!x&&typeof x==='object'&&!Array.isArray(x);
@@ -26,6 +28,8 @@ export function parseStore(raw:string):Store {
  for(const c of m.commands){if(!object(c)||!strFields(c,['id','fn','owner','issuer','reportTo','purpose','due','done','output','reportWhen','discretion','consult','immediate','priority','status','evidence','style','reason','alternative'])||!Object.prototype.hasOwnProperty.call(specs,String(c.fn))||!strings(c.actions)||!strings(c.dependsOn)||!['todo','doing','blocked','done'].includes(String(c.status))||!Number.isInteger(c.version)||Number(c.version)<1)throw new Error('指示の形式が不正です。');}
  const errors=[...validateMission(m as unknown as Mission),...validateExecution(m as unknown as Mission),...validateReview(m as unknown as Mission)];if(errors.length)throw new Error(errors.join('／'));
  }
+ if(x.issues!==undefined)validateIssues(x.issues,x.missions as Mission[]);
+ if(x.organization!==undefined){const errors=validateOrganization(x.organization);if(errors.length)throw new Error(errors.join('／'));}
  return x as unknown as Store;
 }
 export function loadStore(storage:StorageLike):Store {
@@ -45,8 +49,10 @@ export function saveStore(storage:StorageLike,store:Store):void {
 export function mergeStore(current:Store,incoming:Store):Store {
  const ids=new Set(current.missions.map(m=>m.id));
  if(incoming.missions.some(m=>ids.has(m.id)))throw new Error('同じミッションが既にあります。既存データを上書きしないため読込みを中止しました。');
+ const issueIds=new Set((current.issues||[]).map(x=>x.id));
+ if(incoming.issues?.some(x=>issueIds.has(x.id)))throw new Error('同じ課題が既にあります。既存データを上書きせず読込みを中止しました。');
  // Existing capability settings take priority; incoming missions are appended.
- const merged={...current,missions:[...incoming.missions,...current.missions],overrides:{...incoming.overrides,...current.overrides},legacy:{history:current.legacy.history??incoming.legacy.history,capabilities:current.legacy.capabilities??incoming.legacy.capabilities}};
+ const merged={...current,...(incoming.issues||current.issues?{issues:[...(incoming.issues||[]),...(current.issues||[])]}:{}),...(current.organization||incoming.organization?{organization:current.organization||incoming.organization}:{}),missions:[...incoming.missions,...current.missions],overrides:{...incoming.overrides,...current.overrides},legacy:{history:current.legacy.history??incoming.legacy.history,capabilities:current.legacy.capabilities??incoming.legacy.capabilities}};
  return parseStore(JSON.stringify(merged));
 }
 

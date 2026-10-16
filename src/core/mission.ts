@@ -1,3 +1,4 @@
+import { reportingPath, validateOrganization, type Organization } from './organization';
 import { workProfile, workInstruction } from './workPlan';
 import type { Execution } from './execution';
 import type { LearningApplication, Review } from './review';
@@ -9,7 +10,7 @@ export type Brief={issue:string;goal:string;constraints:string;deadline:string;k
 export type Overrides=Record<string,Level>;
 export type Command={id:string;fn:FunctionKey;owner:string;issuer:string;reportTo:string;purpose:string;actions:string[];due:string;done:string;output:string;reportWhen:string;discretion:string;consult:string;immediate:string;dependsOn:string[];priority:string;status:Status;evidence:string;style:string;reason:string;alternative:string;version:number};
 export type Assignment={memberId:string;role:'COMMANDER'|'LEADER'|'MEMBER';reportsTo:string|null;functions:FunctionKey[]};
-export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution;reviews?:Review[];learning?:LearningApplication};
+export type Mission={id:string;version:number;engine:'rules-b1';createdAt:string;updatedAt:string;state:'draft'|'active';kind:Kind;brief:Brief;analysis:{hypothesis:string;success:string;unknowns:string[];risks:string[]};team:Assignment[];commands:Command[];notes:string;execution?:Execution;reviews?:Review[];learning?:LearningApplication;authorityMode?:'unconfirmed'|'formal';organization?:Organization};
 export const blankBrief:Brief={issue:'',goal:'',constraints:'',deadline:'',kpi:'',baseline:'',target:'',source:'',period:'',checkpoint:'',excluded:[]};
 export const kindLabels:Record<Kind,string>={sales:'稼働・営業改善',machine:'新台・入替',promo:'販促・集客',people:'育成・組織',service:'接客品質',general:'その他・内容確認'};
 export const classify=(x:string):Kind=>workProfile({issue:x,goal:''}).kind;
@@ -36,7 +37,7 @@ export function instructionStyle(issuerType:string,receiverType:string):string {
  if(issuerType[1]!==recipient[1])parts.push('具体例と全体像をセットにする');
  return parts.join('。')+'。本人の希望を優先する。';
 }
-export function createMission(brief:Brief,overrides:Overrides={},now=new Date(),existingLoad:Record<string,number>={}):Mission {
+export function createMission(brief:Brief,overrides:Overrides={},now=new Date(),existingLoad:Record<string,number>={},organization?:Organization):Mission {
  if(!brief.issue.trim())throw new Error('ミッションを入力してください。');
  if(brief.excluded.includes('maesaki'))throw new Error('店長不在時の代理決裁権限は未設定です。店長を最終判断者として残し、実行担当のみ調整してください。');
  const b={...brief,issue:brief.issue.trim(),excluded:[...brief.excluded]};
@@ -45,7 +46,8 @@ export function createMission(brief:Brief,overrides:Overrides={},now=new Date(),
  const count:Record<string,number>={...existingLoad};
  if(Object.values(count).some(n=>!Number.isInteger(n)||n<0))throw new Error('担当件数が不正です。');
  const assigned=fns.map(fn=>{
- const ranked=[...candidates].sort((a,b)=> (fit(b,fn,overrides)-(count[b.id]||0)*2)-(fit(a,fn,overrides)-(count[a.id]||0)*2));
+ const coaches=fn==='COACH'&&organization?candidates.filter(p=>organization[p.id]?.coach):[];
+ const ranked=[...(coaches.length?coaches:candidates)].sort((a,b)=> (fit(b,fn,overrides)-(count[b.id]||0)*2)-(fit(a,fn,overrides)-(count[a.id]||0)*2));
  const owner=ranked[0];count[owner.id]=(count[owner.id]||0)+1;return {fn,owner,alternative:ranked[1]};
  });
  const assignedIds=[...new Set(assigned.map(x=>x.owner.id))];
@@ -65,8 +67,19 @@ export function createMission(brief:Brief,overrides:Overrides={},now=new Date(),
  const unknowns=[!b.goal&&'最終的に達成したい状態',!b.deadline&&'具体的な期限',!b.kpi&&'KPIの定義・単位',!b.baseline&&'KPIの現状値',!b.target&&'KPIの目標値',!b.source&&'データ取得元',!b.period&&'観測期間',!b.checkpoint&&'次回チェックポイント','メンバーの実際の稼働余力と関連実績'].filter((x):x is string=>!!x);
  return {id,version:1,engine:'rules-b1',createdAt:now.toISOString(),updatedAt:now.toISOString(),state:'draft',kind,brief:b,team,commands,analysis:{hypothesis:`${profile.label}の手順候補（ルールE15）。${profile.functions.length===2?'対象の実施と確認を2工程に整理しています。':''}${profile.id==='general'?'既存の仕事分類に一致しません。入力内容を具体化し、対象と最初の一手を確認してください。':'入力語に基づくルールの提案です。課題に合うか確認してください。'}`,success:b.goal||'成功条件は未設定。目的・KPI目標・期限を開始前に確定してください。',unknowns,risks:['データ不足のまま対策を決める','担当集中と実際の稼働余力の未確認','期限・予算・営業方針の認識違い']},notes:''};
 }
+export function applyOrganization(m:Mission,org:Organization):Mission {
+ if(m.state==='active')throw new Error('実行中の指示系統は自動変更できません。新しい初稿で確認してください。');
+ const errors=validateOrganization(org);if(errors.length)throw new Error(errors.join('／'));
+ const ids=new Set<string>(['maesaki']);for(const c of m.commands){const path=reportingPath(org,c.owner);if(!path.length)throw new Error(nameOf(c.owner)+'の役職と店長までの直属上司を設定してください。');path.forEach(id=>ids.add(id));}
+ const team:Assignment[]=[...ids].map(memberId=>({memberId,role:memberId==='maesaki'?'COMMANDER':org[memberId].grade==='manager'?'LEADER':'MEMBER',reportsTo:org[memberId].reportsTo,functions:m.commands.filter(c=>c.owner===memberId).map(c=>c.fn)}));
+ return {...m,authorityMode:'formal',organization:structuredClone(org),team,commands:m.commands.map(c=>{const issuer=org[c.owner].reportsTo!;return {...c,issuer,reportTo:issuer,style:instructionStyle(people.find(p=>p.id===issuer)!.mbti,people.find(p=>p.id===c.owner)!.mbti)};})};
+}
 export function validateMission(m:Mission):string[] {
  const issues:string[]=[];const ids=new Set(people.map(p=>p.id));
+ if(m.authorityMode!==undefined&&!['unconfirmed','formal'].includes(m.authorityMode))issues.push('指示系統の確認状態が不正です');
+ if(m.organization!==undefined){issues.push(...validateOrganization(m.organization));if(!issues.length)for(const t of m.team)if(!m.organization[t.memberId]||t.reportsTo!==m.organization[t.memberId].reportsTo||!reportingPath(m.organization,t.memberId).length)issues.push('指示系統が保存された正式組織と一致しません');}
+ if(m.state==='active'&&m.authorityMode==='unconfirmed')issues.push('指示系統を確認するまで実行できません');
+ if(m.authorityMode==='formal'&&!m.organization)issues.push('正式組織の記録がありません');
  const teamIds=m.team.map(t=>t.memberId);if(new Set(teamIds).size!==teamIds.length)issues.push('組織に重複した人物があります');
  const commanders=m.team.filter(x=>x.role==='COMMANDER');if(commanders.length!==1)issues.push('最終判断者は1名必要です');
  for(const t of m.team){if(!ids.has(t.memberId))issues.push('未登録人物があります');if(t.role==='COMMANDER'&&t.reportsTo!==null)issues.push('最終判断者に報告先は設定できません');if(t.role!=='COMMANDER'&&(!t.reportsTo||!teamIds.includes(t.reportsTo)))issues.push('報告先が不明です');const visited=new Set<string>();let current:Assignment|undefined=t;while(current){if(visited.has(current.memberId)){issues.push('指揮系統に循環があります');break;}visited.add(current.memberId);current=m.team.find(x=>x.memberId===current?.reportsTo);}}
@@ -75,7 +88,7 @@ export function validateMission(m:Mission):string[] {
  for(const c of m.commands){const walk=(id:string,path:Set<string>):boolean=>{if(path.has(id))return true;const next=new Set(path).add(id);return (m.commands.find(x=>x.id===id)?.dependsOn||[]).some(x=>walk(x,next));};if(walk(c.id,new Set())){issues.push('工程依存に循環があります');break;}}
  return [...new Set(issues)];
 }
-export function activationIssues(m:Mission):string[]{return [...validateMission(m),...(!m.brief.goal?['目的を設定してください']:[]),...(!m.brief.deadline||m.commands.some(c=>!c.due)?['期限を設定してください']:[]),...(!m.brief.checkpoint?['チェックポイントを設定してください']:[])];}
+export function activationIssues(m:Mission):string[]{return [...validateMission(m),...(m.authorityMode==='unconfirmed'?['人材画面で役職・直属上司を設定し、この初稿に指示系統を反映してください']:[]),...(!m.brief.goal?['目的を設定してください']:[]),...(!m.brief.deadline||m.commands.some(c=>!c.due)?['期限を設定してください']:[]),...(!m.brief.checkpoint?['チェックポイントを設定してください']:[])];}
 export const nameOf=(id:string)=>people.find(p=>p.id===id)?.name||'未設定';
 export function commandText(c:Command):string {return `${nameOf(c.issuer)} → ${nameOf(c.owner)}｜${specs[c.fn].name}\n目的：${c.purpose}\n${c.actions.map((x,i)=>`${i+1}. ${x}`).join('\n')}\n期限：${c.due||'未設定'}（日本時間）\n完了条件：${c.done}\n成果物：${c.output}\n報告先：${nameOf(c.reportTo)}\n報告：${c.reportWhen}\n裁量：${c.discretion}\n相談：${c.consult}\n即時報告：${c.immediate}\n伝え方：${c.style}`;}
 

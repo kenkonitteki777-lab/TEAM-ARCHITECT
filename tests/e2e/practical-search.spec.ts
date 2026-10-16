@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test('saved instructions can be found by topic, purpose and owner without changing saved data',async({page})=>{
  await page.goto('/');
  for(const [issue,goal] of [['新人の接客研修','ひとりでご案内できる'],['トイレ清掃の改善','備品切れをなくす']]){
-  await page.getByLabel('解決したい課題',{exact:true}).fill(issue);await page.getByText('目的・期限なども入力する（任意）',{exact:true}).click();await page.getByLabel('達成したい状態',{exact:true}).fill(goal);await page.getByRole('button',{name:'指示書を作る',exact:true}).click();await page.getByRole('button',{name:'新しい指示書',exact:true}).click();
+  await page.getByLabel('解決したい課題',{exact:true}).fill(issue);await page.getByText('目的・期限なども入力する（任意）',{exact:true}).click();await page.getByLabel('達成したい状態',{exact:true}).fill(goal);await page.getByRole('button',{name:'指示書を作る',exact:true}).click();await page.getByRole('button',{name:'課題・指示書',exact:true}).click();
  }
  const raw=await page.evaluate(()=>localStorage.getItem('team-architect-v2'));const missions=JSON.parse(raw!).missions;
  await page.getByRole('button',{name:'指示書一覧',exact:true}).click();const input=page.getByRole('searchbox',{name:'指示書を検索'});

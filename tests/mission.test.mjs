@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const dir=mkdtempSync(join(tmpdir(),'team-architect-test-'));
-buildSync({entryPoints:['src/core/mission.ts','src/core/storage.ts','src/core/data.ts','src/core/workPlan.ts'],bundle:true,platform:'node',format:'esm',outdir:dir});
+buildSync({entryPoints:['src/core/mission.ts','src/core/storage.ts','src/core/data.ts','src/core/workPlan.ts','src/core/organization.ts','src/core/issues.ts'],bundle:true,platform:'node',format:'esm',outdir:dir});
 const {createMission,blankBrief,validateMission,activationIssues,instructionStyle,classify,fit}=await import(pathToFileURL(join(dir,'mission.js')));
 const {loadStore,saveStore,parseStore,mergeStore,STORE_KEY,BACKUP_KEY}=await import(pathToFileURL(join(dir,'storage.js')));
 const {people,typeBook}=await import(pathToFileURL(join(dir,'data.js')));
@@ -78,4 +78,32 @@ test('capability changes alter selection and add support without judging ability
  for(let n=1;n<=18;n++)override['miyamoto:'+n]='strong';const skilled=createMission(b,override);assert.equal(skilled.commands.find(c=>c.fn==='COACH').owner,'miyamoto');assert.ok(skilled.commands.every(c=>!c.actions.some(a=>a.includes('支援前提の能力項目'))));
  const unknown=Object.fromEntries(Object.keys(override).map(key=>[key,'unknown']));assert.ok(createMission(b,unknown).commands.every(c=>c.actions.some(a=>a.includes('未評価の項目'))));
  const p=people.find(p=>p.id==='miyamoto');assert.equal(fit({...p,mbti:'INTJ'},'COACH',override),fit({...p,mbti:'ESFP'},'COACH',override));assert.deepEqual(validateMission(supported),[]);
+});
+
+test('issues and formal organization preserve old backups and reject unsafe hierarchy',async()=>{
+ const {defaultOrganization,validateOrganization}=await import(pathToFileURL(join(dir,'organization.js')));
+ const {newIssue,issueStage}=await import(pathToFileURL(join(dir,'issues.js')));
+ const {applyOrganization}=await import(pathToFileURL(join(dir,'mission.js')));
+ const old=snapshot(createMission(complete));assert.deepEqual(parseStore(JSON.stringify(old)),old);
+ const org=defaultOrganization();for(const p of people.filter(p=>p.id!=='maesaki'))org[p.id]={grade:p.id==='matsuo'?'manager':'employee',coach:p.id==='miyamoto',hallMaster:p.id==='tatsuno',reportsTo:p.id==='matsuo'?'maesaki':'matsuo'};
+ const m=applyOrganization({...old.missions[0],authorityMode:'unconfirmed'},org);assert.deepEqual(activationIssues(m),[]);assert.ok(m.commands.every(c=>c.issuer===org[c.owner].reportsTo));assert.deepEqual(m.commands.map(c=>c.actions),old.missions[0].commands.map(c=>c.actions));
+ org.miyamoto.coach=false;org.miyamoto.reportsTo='maesaki';assert.equal(m.organization.miyamoto.reportsTo,'matsuo');assert.equal(m.organization.miyamoto.coach,true);
+ const issue={...newIssue(complete),missionId:m.id};const store={...old,missions:[m],issues:[issue],organization:org};assert.deepEqual(parseStore(JSON.stringify(store)),store);assert.equal(issueStage(issue,[m]),'指示書の確認待ち');const done={...m,commands:m.commands.map(c=>({...c,status:'done',evidence:'確認済'}))};assert.equal(issueStage(issue,[done]),'結果待ち');
+ assert.throws(()=>parseStore(JSON.stringify({...store,issues:[{...issue,state:'resolved'}]})),/確認結果/);
+ assert.throws(()=>parseStore(JSON.stringify({...store,issues:[{...issue,missionId:'missing'}]})),/見つかりません/);
+ assert.throws(()=>mergeStore(store,store));
+ org.asano={grade:'cs',coach:true,hallMaster:false,reportsTo:'matsuo'};assert.deepEqual(validateOrganization(org),[]);org.asano.hallMaster=true;assert.ok(validateOrganization(org).some(x=>x.includes('ホールマスター')));org.asano.hallMaster=false;org.matsuo.reportsTo='asano';assert.ok(validateOrganization(org).some(x=>x.includes('循環')));
+ const noAuthority={...createMission(complete),authorityMode:'unconfirmed'};assert.ok(activationIssues(noAuthority).some(x=>x.includes('役職')));
+ const partial=defaultOrganization();assert.throws(()=>applyOrganization(old.missions[0],partial),/役職/);
+});
+test('issue-only imports and organization use existing settings without losing either issue list',async()=>{
+ const {newIssue}=await import(pathToFileURL(join(dir,'issues.js')));const {defaultOrganization}=await import(pathToFileURL(join(dir,'organization.js')));
+ const a={...snapshot(createMission(complete)),issues:[newIssue(complete)],organization:defaultOrganization()};const b={...snapshot(createMission(complete)),issues:[newIssue({...complete,issue:'清掃漏れ'})],organization:defaultOrganization()};b.organization.asano={grade:'cs',coach:true,hallMaster:false,reportsTo:'maesaki'};
+ const x=mergeStore(a,b);assert.equal(x.issues.length,2);assert.deepEqual(x.organization,a.organization);assert.equal(x.missions.length,2);
+});
+test('development is person-specific evidence, and appointed coaches guide new coaching plans only',async()=>{
+ const {newIssue}=await import(pathToFileURL(join(dir,'issues.js')));const {defaultOrganization}=await import(pathToFileURL(join(dir,'organization.js')));
+ const org=defaultOrganization();for(const p of people.filter(p=>p.id!=='maesaki'))org[p.id]={grade:'employee',coach:p.id==='yasaka',hallMaster:false,reportsTo:'maesaki'};
+ const training={...complete,issue:'新人の案内練習'};const m=createMission(training,{},new Date(),{},org);assert.equal(m.commands.find(c=>c.fn==='COACH').owner,'yasaka');
+ const issue={...newIssue(training),development:{memberId:'asano',supporterId:'miyamoto',ability:8,goal:'案内先を一人で説明する',observation:'例外対応は支援が必要',nextCheck:'2026-11-01T12:00'}};const store={...snapshot(m),issues:[issue],organization:org};assert.deepEqual(parseStore(JSON.stringify(store)),store);assert.throws(()=>parseStore(JSON.stringify({...store,issues:[{...issue,development:{...issue.development,memberId:'missing'}}]})),/育成記録/);assert.throws(()=>parseStore(JSON.stringify({...store,issues:[{...issue,development:{...issue.development,supporterId:'asano'}}]})),/育成記録/);
 });

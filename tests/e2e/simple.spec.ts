@@ -1,3 +1,4 @@
+import {confirmTestOrganization} from './organization.fixture';
 import {test,expect} from '@playwright/test';
 test('mission opens short person-first instructions, offers complete details and copyable message',async({page})=>{
  await page.goto('/');await page.getByLabel('解決したい課題').fill('朝の接客品質を改善したい');await page.getByRole('button',{name:'指示書を作る'}).click();
@@ -10,10 +11,10 @@ test('mission opens short person-first instructions, offers complete details and
 });
 
 test('first-time user creates from one sentence, confirms dates inline and starts without advanced screens',async({page})=>{
- await page.goto('/');await expect(page.getByRole('heading',{name:/やりたいことを、.*チームの指示へ。/})).toBeVisible();const advanced=page.locator('.composer-details');await expect(advanced).not.toHaveAttribute('open','');await expect(page.getByLabel('達成したい状態')).not.toBeVisible();
+ await page.goto('/');await expect(page.getByRole('heading',{name:/現場の課題を、.*チームで解く。/})).toBeVisible();const advanced=page.locator('.composer-details');await expect(advanced).not.toHaveAttribute('open','');await expect(page.getByLabel('達成したい状態')).not.toBeVisible();
  await page.getByLabel('解決したい課題').fill('新人が一人でお客様をご案内できるようにしたい');await page.getByRole('button',{name:'指示書を作る',exact:true}).click();await expect(page.getByRole('heading',{name:'指示書の初稿ができました。'})).toBeVisible();await expect(page.getByRole('heading',{name:'誰に、何を伝える？'})).toBeVisible();
  let data=await page.evaluate(()=>JSON.parse(localStorage.getItem('team-architect-v2')!));expect(data.missions[0].kind).toBe('people');expect(data.missions[0].state).toBe('draft');expect(data.missions[0].brief.goal).toBe('');expect(data.missions[0].brief.deadline).toBe('');
- await page.locator('.draft-team summary').click();await expect(page.locator('.draft-team ol')).toContainText('育成支援');await page.locator('.draft-setup summary').click();await page.getByLabel('この指示で目指すこと').fill('案内の手順を一人で説明できる');await page.getByLabel('いつまでに終える？（日本時間）').fill('2026-10-20T18:00');await page.getByLabel('いつ状況を確認する？（日本時間）').fill('2026-10-18T12:00');await page.getByRole('button',{name:'目的と日時を保存',exact:true}).click();await expect(page.locator('.draft-confirmed')).toBeVisible();await page.getByRole('button',{name:'確認して実行を開始'}).click();await expect(page.getByText('承認した指示を実行中')).toBeVisible();
+ await page.locator('.draft-team summary').click();await expect(page.locator('.draft-team ol')).toContainText('育成支援');await page.locator('.draft-setup summary').click();await page.getByLabel('この指示で目指すこと').fill('案内の手順を一人で説明できる');await page.getByLabel('いつまでに終える？（日本時間）').fill('2026-10-20T18:00');await page.getByLabel('いつ状況を確認する？（日本時間）').fill('2026-10-18T12:00');await page.getByRole('button',{name:'目的と日時を保存',exact:true}).click();await confirmTestOrganization(page);await expect(page.locator('.draft-confirmed')).toBeVisible();await page.getByRole('button',{name:'確認して実行を開始'}).click();await expect(page.getByText('承認した指示を実行中')).toBeVisible();
  data=await page.evaluate(()=>JSON.parse(localStorage.getItem('team-architect-v2')!));expect(data.missions[0].state).toBe('active');expect(data.missions[0].commands.every((c:{due:string;purpose:string})=>c.due==='2026-10-20T18:00'&&c.purpose==='案内の手順を一人で説明できる')).toBe(true);await page.reload();await expect(page.getByRole('heading',{name:'今日、誰が何を動かすか。'})).toBeVisible();
 });
 
