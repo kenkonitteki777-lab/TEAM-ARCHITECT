@@ -1,5 +1,5 @@
-import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions} from './question-library.js?v=20261016-bank1';
-import {mountQuestionLibrary} from './question-library-ui.js?v=20261016-bank1';
+import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions} from './question-library.js?v=20261016-bank2';
+import {mountQuestionLibrary} from './question-library-ui.js?v=20261016-bank2';
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
 import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-natural2';
@@ -214,7 +214,9 @@ const bank=mountQuestionLibrary({getQuestions:()=>Q,getAnswer:q=>modelText(q),be
 $('openQuestionBank').onclick=()=>bank.open();$('editQuestion').onclick=()=>bank.open(pool[index].id);
 const saved=get(POSITION);interviewFilter=Q.find(q=>q.id===saved)?.m==='pres'?'president':'department';pool=Q.filter(q=>interviewFilter==='president'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===saved));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===interviewFilter)));render();init();
 
-mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{const q=pool[index],original=BASE_QUESTIONS.find(b=>b.id===q.id);if(!original||original.q!==q.q||original.m!==q.m){toast('追加・編集した質問は実戦5問で練習できます。AI面接は元の質問でご利用ください。');return false}if(savingPractice)return false;endPractice();speech.stop();return true},nextQuestion:()=>move(1),startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
+function aiSupported(q){const original=BASE_QUESTIONS.find(b=>b.id===q.id);return !!original&&original.q===q.q&&original.m===q.m}
+function nextAiQuestion(){for(let step=1;step<=pool.length;step++){const candidate=(index+step)%pool.length;if(aiSupported(pool[candidate])){index=candidate;render();return}}}
+mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{if(!aiSupported(pool[index])){toast('追加・編集した質問は実戦5問で練習できます。AI面接は元の質問でご利用ください。');return false}if(savingPractice)return false;endPractice();speech.stop();return true},nextQuestion:nextAiQuestion,startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
  if(!ready)throw new Error('保存データを読み込み中です。回答は保持しています。');
  let current=state;const raw=get(KEY);if(raw){try{current=mergeBackup(state,validateBackup(JSON.parse(raw),Q))}catch{localStorage.setItem(KEY+'_recovery_'+Date.now(),raw)}}
  const next=structuredClone(current),now=new Date().toISOString(),weaknesses=feedback.weaknesses.filter(w=>WEAKNESSES.includes(w));
