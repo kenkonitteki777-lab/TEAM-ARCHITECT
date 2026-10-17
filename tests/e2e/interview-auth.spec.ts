@@ -1,3 +1,4 @@
+import {resume,method,role,scope,library,settings} from './interview-helpers';
 import {test,expect} from '@playwright/test';
 test('login opens immediately even when AI readiness fails and password reset is reachable',async({page})=>{
  await page.route('**/functions/v1/interview-coach',route=>route.abort());
@@ -37,8 +38,8 @@ test('interviewer voice presets are distinct and can be previewed and retained',
   Object.defineProperty(window,'SpeechSynthesisUtterance',{value:class{constructor(public text:string){}}});
   Object.defineProperty(window,'Audio',{value:class{pause(){}load(){}play(){return Promise.reject(new Error('recordings unavailable in this device fallback test'))}}});
  });
- await page.goto('/interview/');await page.locator('#openVoice').click();await page.locator('#previewDepartment').click();await page.locator('#previewPresident').click();
+ await page.goto('/interview/');await resume(page);await page.locator('#openVoice').click();await page.locator('#previewDepartment').click();await page.locator('#previewPresident').click();
  const spoken=await page.evaluate(()=>(window as any).testSpoken);expect(spoken[0].pitch).toBeLessThan(spoken[1].pitch);expect(spoken[0].rate).toBeLessThan(spoken[1].rate);
- await page.locator('#departmentPitch').selectOption('0.96');await page.reload();await page.locator('#openVoice').click();await expect(page.locator('#departmentPitch')).toHaveValue('0.96');
+ await page.locator('#departmentPitch').selectOption('0.96');await page.reload();await resume(page);await page.locator('#openVoice').click();await expect(page.locator('#departmentPitch')).toHaveValue('0.96');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

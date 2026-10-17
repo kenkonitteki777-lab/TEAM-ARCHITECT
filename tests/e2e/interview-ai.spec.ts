@@ -1,11 +1,12 @@
+import {resume,method,role,scope,library,settings} from './interview-helpers';
 import {test,expect} from '@playwright/test';
 import {AXES} from '../../public/interview/engine.js';
 
 const draftKey='team_architect_ai_draft_v1';
 const endpoint='**/functions/v1/interview-coach';
 test('unconfigured AI and connection failures preserve an existing answer draft',async({page})=>{
- await page.goto('/interview/');
- await page.locator('#openAiInterview').click();
+ await page.goto('/interview/');await resume(page);
+ await method(page,'openAiInterview');
  await page.locator('#closeAiInterview').click();
  const draft=await page.evaluate(key=>{
   const id=localStorage.getItem('team_architect_reader_question');
@@ -13,14 +14,14 @@ test('unconfigured AI and connection failures preserve an existing answer draft'
   localStorage.setItem(key,JSON.stringify(value));return JSON.stringify(value);
  },draftKey);
  await page.route(endpoint,route=>route.fulfill({json:{aiConfigured:false}}));
- await page.locator('#openAiInterview').click();
+ await method(page,'openAiInterview');
  await expect(page.locator('#aiUnavailable')).toBeVisible();
  await expect(page.locator('#aiAnswer')).toHaveValue('スタッフ育成を優先して実行します。');
  await page.locator('#closeAiInterview').click();
  expect(await page.evaluate(key=>localStorage.getItem(key),draftKey)).toBe(draft);
  await page.unroute(endpoint);
  await page.route(endpoint,route=>route.abort());
- await page.locator('#openAiInterview').click();
+ await method(page,'openAiInterview');
  await expect(page.locator('#aiConnection')).toContainText('接続状態を確認できません');
  await page.locator('#aiFallback').click();
  await expect(page.locator('#practicePanel')).toBeVisible();
@@ -28,13 +29,13 @@ test('unconfigured AI and connection failures preserve an existing answer draft'
 });
 
 test('opening another question does not overwrite a previous question draft',async({page})=>{
- await page.goto('/interview/');
+ await page.goto('/interview/');await resume(page);
  const original=await page.evaluate(key=>{
   const value=JSON.stringify({id:'other-question',prompt:'以前の質問',answer:'保持する回答',turns:[],seconds:10});
   localStorage.setItem(key,value);return value;
  },draftKey);
  await page.route(endpoint,route=>route.fulfill({json:{aiConfigured:false}}));
- await page.locator('#openAiInterview').click();
+ await method(page,'openAiInterview');
  await expect(page.locator('#aiUnavailable')).toBeVisible();
  await page.locator('#closeAiInterview').click();
  expect(await page.evaluate(key=>localStorage.getItem(key),draftKey)).toBe(original);
@@ -52,8 +53,8 @@ test('AI dialog saves reviewed text, follows up, restores it, and retains it aft
   if(fail)return route.fulfill({status:429,json:{error:'無料枠に達しました。'}});
   return route.fulfill({json:{axes:AXES.map(name=>({name,score:null,evidence:'練習用の応答'})),weaknesses:['具体例不足'],feedback:'実例を補いましょう。',quote:body.answer,nextFix:'自分が実行した行動を一つ伝える。',followup:'実際に何をしましたか？'}});
  });
- await page.goto('/interview/');
- await page.locator('#openAiInterview').click();
+ await page.goto('/interview/');await resume(page);
+ await method(page,'openAiInterview');
  await page.locator('#aiEmail').fill('test@example.com');
  await page.locator('#aiPassword').fill('test-password');
  await page.locator('#aiLoginSubmit').click();
@@ -73,7 +74,7 @@ test('AI dialog saves reviewed text, follows up, restores it, and retains it aft
  await page.locator('#aiTranscript summary').click();
  await page.locator('#aiAnswer').fill('毎日の振り返りを行いました。');
  await page.locator('#closeAiInterview').click();
- await page.locator('#openAiInterview').click();
+ await method(page,'openAiInterview');
  await expect(page.locator('#aiLive')).toBeVisible();
  await expect(page.locator('#aiAnswer')).toHaveValue('毎日の振り返りを行いました。');
  await expect(page.locator('#aiConsent')).not.toBeChecked();

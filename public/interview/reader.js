@@ -1,8 +1,10 @@
+import {mountInterviewShell} from './app-shell.js?v=20261018-shell1';
+import {APP_PREF_KEY,SESSION_KEY,BACKUP_DATE_KEY,defaultAppPreferences,validateAppPreferences,resolveSession} from './app-preferences.js?v=20261018-shell1';
 import {mountQuestionImport} from './question-import-ui.js?v=20261016-ux1';
 import {applyQuestionImport} from './question-import.js?v=20261016-ux1';
 import {scopedQuestions} from './study-scope.js?v=20261016-ux1';
 import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions} from './question-library.js?v=20261016-bank2';
-import {mountQuestionLibrary} from './question-library-ui.js?v=20261016-ux1';
+import {mountQuestionLibrary} from './question-library-ui.js?v=20261018-shell1';
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261012-practice1';
 import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261014-natural2';
@@ -20,6 +22,13 @@ let practice=null,practiceTimer=null,savingPractice=false,studyScope={type:'all'
 let state=emptyState(),models=emptyModels(),idb=null,index=0,pool=Q,toastTimer,revealed=false,ready=false,editKey=null,modelDrafts={},damagedModels=null,interviewFilter='all';
 function get(k){try{return localStorage.getItem(k)}catch{return null}}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500)}
+let appPreferences=defaultAppPreferences(),preferredMethod='read',hadPrevious=!!get(POSITION),savedSession=null,bank;
+try{const raw=get(APP_PREF_KEY);if(raw)appPreferences=validateAppPreferences(JSON.parse(raw))}catch{}
+try{savedSession=JSON.parse(get(SESSION_KEY)||'null')}catch{}
+document.documentElement.dataset.textSize=appPreferences.textSize;
+function checkpoint(){if(!ready)return;hadPrevious=true;try{localStorage.setItem(SESSION_KEY,JSON.stringify({version:1,method:preferredMethod,role:pool[index].m==='pres'?'president':'department',questionId:pool[index].id,scope:studyScope}))}catch{}shell.refresh()}
+function pausePractice(paused){speech.stop();if(!practice||practice.started===null)return;if(paused&&!practice.pausedAt)practice.pausedAt=performance.now();if(!paused&&practice.pausedAt){practice.started+=performance.now()-practice.pausedAt;delete practice.pausedAt}}
+const shell=mountInterviewShell({getInfo:()=>({method:preferredMethod,scope:studyScope,hasPrevious:hadPrevious,question:pool[index],questionCount:Q.length,weakCount:weakQuestions(Q,state).length,historyCount:state.history.length,ready,preferences:appPreferences,lastBackup:get(BACKUP_DATE_KEY)}),canLeave:()=>!savingPractice&&(shell?.view!=='library'||!bank||bank.canLeave()),onPause:pausePractice,onSettings:()=>{updateVoices();$('voiceRate').value=String(voicePreferences.rate);for(const role of ['department','president'])$(role+'Pitch').value=String(voicePreferences[role+'Pitch'])},onHome:()=>{endPractice();speech.stop()},onFirst:()=>{const oral=!!practice;endPractice();index=0;render();shell.openSession();if(oral)startPractice()},onLibrary:()=>bank.open(),onResume:()=>{if(!ready)return;shell.openSession();if(preferredMethod==='oral')startPractice();else if(preferredMethod==='ai')$('openAiInterview').click();else{endPractice();studyMode='read';render()}checkpoint()},onPreferences:next=>{try{const checked=validateAppPreferences(next);localStorage.setItem(APP_PREF_KEY,JSON.stringify(checked));appPreferences=checked;document.documentElement.dataset.textSize=checked.textSize;$('settingsStatus').textContent='設定を保存しました。次の練習から適用します。'}catch{$('settingsStatus').textContent='保存できませんでした。以前の設定を保持しています。'}shell.refresh()}});
 function modelText(q,n=null){const entry=models.entries[n===null?q.id:q.id+':f'+n];return n===null&&q.personal&&(!entry||Date.parse(q.updatedAt)>Date.parse(entry.updatedAt))?q.answer:(entry?.text??(n===null?q.answer:q.followups[n].answer))}
 function answer(text){const filled=text.replace(/【要確認：([^】]+)】/g,(all,key)=>{const f=state.facts[key];return f?.value&&f.source&&f.date?f.value+'（本人登録・'+f.date+'）':all});return esc(filled).replace(/【要確認：[^】]+】/g,m=>`<span class="confirmation">${m}</span>`)}
 const VOICE_KEY='team_architect_interview_voice_v1';
@@ -38,8 +47,8 @@ $('readQuestion').disabled=!speech.supported;$('readAnswer').disabled=!speech.su
 $('autoVoice').checked=voicePreferences.auto;
 $('readQuestion').onclick=()=>speech.toggle($('question').textContent,voiceOptions('question'));
 $('readAnswer').onclick=()=>speech.toggle($('answer').textContent.replace(/【要確認：([^】]+)】/g,'要確認、$1'),voiceOptions('answer'));
-$('autoVoice').onchange=()=>{voicePreferences.auto=$('autoVoice').checked;saveVoice();if(voicePreferences.auto)speech.play($('question').textContent,voiceOptions('question'));else speech.stop()};
-$('openVoice').onclick=()=>{speech.stop();updateVoices();$('voiceRate').value=String(voicePreferences.rate);for(const role of ['department','president'])$(role+'Pitch').value=String(voicePreferences[role+'Pitch']);$('voiceSettings').showModal()};$('closeVoice').onclick=()=>$('voiceSettings').close();$('voiceSettings').addEventListener('close',()=>speech.stop());
+$('autoVoice').onchange=()=>{voicePreferences.auto=$('autoVoice').checked;saveVoice();if(voicePreferences.auto&&shell.inSession&&shell.view==='practice'&&!$('sessionOptions').open)speech.play($('question').textContent,voiceOptions('question'));else speech.stop()};
+$('openVoice').onclick=()=>{speech.stop();updateVoices();$('voiceRate').value=String(voicePreferences.rate);for(const role of ['department','president'])$(role+'Pitch').value=String(voicePreferences[role+'Pitch']);shell.show('settings');$('soundCard').scrollIntoView({block:'start'})};$('closeVoice').onclick=()=>shell.show('practice');$('voiceSettings').addEventListener('close',()=>speech.stop());
 for(const role of ['department','president'])$(role+'Voice').onchange=()=>{speech.stop();voicePreferences[role]=$(role+'Voice').value;saveVoice()};
 $('voiceRate').onchange=()=>{speech.stop();voicePreferences.rate=Number($('voiceRate').value);saveVoice()};$('previewVoice').onclick=()=>speech.toggle(pool[index].q,voiceOptions('preview'));
 for(const role of ['department','president']){$(role+'Pitch').onchange=()=>{speech.stop();voicePreferences[role+'Pitch']=Number($(role+'Pitch').value);saveVoice()};$('preview'+(role==='department'?'Department':'President')).onclick=()=>speech.toggle(VOICE_SAMPLE,{key:'preview-'+role,role,voiceURI:voicePreferences[role],rate:voicePreferences.rate,pitch:voicePreferences[role+'Pitch']})}
@@ -63,21 +72,21 @@ function render(){
  const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-noir-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
  $('coachImage').alt=president?'社長を参考にしたイメージイラスト':'部長面接のシルエット';
  $('coachRole').textContent=president?'PRESIDENT':'DIRECTOR';$('coachName').textContent=president?'社長':'部長';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'部長面接の練習用シルエット';
- paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}
+ paintAnswer();toggleAnswer(false);$('prev').disabled=index===0;$('next').setAttribute('aria-label',index===pool.length-1?'最初の質問へ':'次の質問');$('next').innerHTML=index===pool.length-1?'<span>最初へ</span><span aria-hidden="true">↻</span>':'<span>次へ</span><span aria-hidden="true">→</span>';try{localStorage.setItem(POSITION,q.id);localStorage.setItem(POSITION+'_'+(president?'president':'department'),q.id)}catch{}checkpoint();
 }
 function selectInterviewer(mode){
  if(savingPractice)return;endPractice();
  if(!scopedQuestions(Q,studyScope,state,mode).length){toast('この出題範囲には、その面接官の質問がありません。範囲を「すべての質問」に変更できます。');return}
- interviewFilter=mode;$('search').value='';$('categoryFilter').value='';pool=scopedQuestions(Q,studyScope,state,mode);const previous=get(POSITION+'_'+mode);index=Math.max(0,pool.findIndex(q=>q.id===previous));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));render();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));renderList();window.scrollTo({top:0,behavior:'instant'});
+ interviewFilter=mode;$('search').value='';$('categoryFilter').value='';pool=scopedQuestions(Q,studyScope,state,mode);const previous=get(POSITION+'_'+mode);index=Math.max(0,pool.findIndex(q=>q.id===previous));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));render();if(voicePreferences.auto&&shell.inSession&&shell.view==='practice'&&!$('sessionOptions').open)speech.play(pool[index].q,voiceOptions('question'));renderList();window.scrollTo({top:0,behavior:'instant'});
 }
 document.querySelectorAll('button[data-interviewer]').forEach(b=>b.onclick=()=>selectInterviewer(b.dataset.interviewer));
 $('profileContent').innerHTML=`<p class="profile-note">${esc(PRESIDENT_PROFILE.note)}</p><h3>公開発言で確認できる経営姿勢</h3>${PRESIDENT_PROFILE.evidence.map(e=>`<article class="profile-axis"><strong>${esc(e.axis)}</strong><p>${esc(e.detail)}</p><a href="${PRESIDENT_PROFILE.sources[e.source].url}" target="_blank" rel="noopener noreferrer">公式資料 ↗</a></article>`).join('')}<h3>あなたが指定した練習条件</h3><p>${esc(PRESIDENT_PROFILE.training)}</p><h3>問答への落とし込み</h3><p>${esc(PRESIDENT_PROFILE.inference)}</p><p class="muted">資料確認日：${PRESIDENT_PROFILE.checkedAt} · 本人登録の模範解答は優先して表示します。</p>`;
 $('openProfile').onclick=()=>(speech.stop(),$('profile').showModal());$('closeProfile').onclick=()=>$('profile').close();
-function move(step){if(practice)return;if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();if(voicePreferences.auto)speech.play(pool[index].q,voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
+function move(step){if(practice)return;if(step<0&&index===0)return;index=(index+step+pool.length)%pool.length;render();if(voicePreferences.auto&&shell.inSession&&shell.view==='practice'&&!$('sessionOptions').open)speech.play(pool[index].q,voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
 function filtered(){const term=$('search').value.trim().toLocaleLowerCase(),cat=$('categoryFilter').value;return scopedQuestions(Q,studyScope,state).filter(q=>(interviewFilter==='all'||(interviewFilter==='president'?q.m==='pres':q.m!=='pres'))&&(!cat||q.category===cat)&&(!term||(q.q+' '+modelText(q)+' '+q.core).toLocaleLowerCase().includes(term)))}
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{interviewFilter=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===b)));renderList()});
 function renderList(){const weak=weakQuestions(Q,state);$('weakCount').textContent='苦手 '+weak.length+'問';$('startReview').disabled=!weak.length;const list=filtered();$('resultCount').textContent=`${list.length}問`;$('questionList').innerHTML=list.length?list.map(q=>`<button class="question-row" data-id="${q.id}" aria-current="${q.id===pool[index].id}"><span class="index">${(q.id.startsWith('u-')?'追加':q.id.slice(1))}</span><span>${esc(q.q)}<small>${esc(q.category)} · ${esc(q.askedOn||'日付不明')}${models.entries[q.id]?' · 本人登録':''}${state.records[q.id]?.grade==='weak'?' · 要復習':''}</small></span></button>`).join(''):'<p class="muted">一致する質問がありません。</p>';$('questionList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{endPractice();pool=list;index=pool.findIndex(q=>q.id===b.dataset.id);render();$('navigation').close();window.scrollTo({top:0,behavior:'instant'})})}
-function history(){$('storageDetail').textContent=`登録・編集した質問 ${Object.keys(questionLibrary.entries).length}件 · 本人回答 ${Object.keys(models.entries).length}件 · 過去の回答履歴 ${state.history.length}件。バックアップには編集した模範解答も含まれます。`;$('history').innerHTML=state.history.length?state.history.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))}</small><h3>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h3><p>${r.answer?esc(r.answer):'口頭練習 · 自己評価：'+(r.grade==='good'?'できた':esc((r.weaknesses||[]).join('・')))+' · '+r.seconds+'秒（手動計測）'}</p></article>`).join(''):'<p class="muted">保存された回答履歴はありません。</p>'}
+function history(){shell.refresh();$('storageDetail').textContent=`登録・編集した質問 ${Object.keys(questionLibrary.entries).length}件 · 本人回答 ${Object.keys(models.entries).length}件 · 過去の回答履歴 ${state.history.length}件。バックアップには編集した模範解答も含まれます。`;$('history').innerHTML=state.history.length?state.history.slice(-100).reverse().map(r=>`<article class="history-entry"><small>${esc(new Date(r.updatedAt).toLocaleString('ja-JP'))}</small><h3>${esc(r.prompt||Q.find(q=>q.id===r.questionId)?.q)}</h3><p>${r.answer?esc(r.answer):'口頭練習 · 自己評価：'+(r.grade==='good'?'できた':esc((r.weaknesses||[]).join('・')))+' · '+r.seconds+'秒（手動計測）'}</p></article>`).join(''):'<p class="muted">保存された回答履歴はありません。</p>'}
 function snapshot(key,value){return new Promise((resolve,reject)=>{if(!idb){resolve();return}const tx=idb.transaction('snapshots','readwrite');tx.objectStore('snapshots').put(structuredClone(value),key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
 function readSnapshot(key){return new Promise((resolve,reject)=>{const r=idb.transaction('snapshots','readonly').objectStore('snapshots').get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function init(){
@@ -88,7 +97,8 @@ async function init(){
  paintAnswer();history();
  try{idb=await new Promise((resolve,reject)=>{const r=indexedDB.open('team-architect-interview',1);r.onupgradeneeded=()=>r.result.createObjectStore('snapshots');r.onerror=()=>reject(r.error);r.onsuccess=()=>resolve(r.result)});const copies=await Promise.allSettled([readSnapshot('current'),readSnapshot('modelAnswers'),readSnapshot('questionLibrary')]);try{if(copies[2].status==='fulfilled'&&copies[2].value){questionLibrary=mergeLibraries(questionLibrary,validateLibrary(copies[2].value,BASE_QUESTIONS));reloadQuestions();const savedState=get(KEY),savedModels=get(MODEL_KEY);if(savedState)state=mergeBackup(state,validateBackup(JSON.parse(savedState),Q));if(savedModels)models=mergeModels(models,validateModels(JSON.parse(savedModels),Q))}}catch{}try{if(copies[0].status==='fulfilled'&&copies[0].value)state=mergeBackup(state,validateBackup(copies[0].value,Q))}catch{}try{if(copies[1].status==='fulfilled'&&copies[1].value)models=mergeModels(models,validateModels(copies[1].value,Q))}catch{}}catch{}
  if(libraryDamaged)toast('追加質問の保存データを読み取れません。元のデータは保持しています。');
- ready=true;$('saveModel').disabled=false;paintAnswer();history();
+ if(savedSession){try{const restored=resolveSession(savedSession,Q,state,scopedQuestions);preferredMethod=restored.method;studyScope=restored.scope;lastImportedIds=restored.scope.ids;if(studyScope.type==='selection')$('importedScope').hidden=false;pool=scopedQuestions(Q,studyScope,state,restored.role);index=Math.max(0,pool.findIndex(q=>q.id===restored.questionId));hadPrevious=true;render()}catch{}}
+ ready=true;shell.refresh();$('saveModel').disabled=false;paintAnswer();history();
 }
 function openEditor(n=null){
  if(!ready){toast('保存データを読み込み中です。少しお待ちください。');return}
@@ -113,6 +123,7 @@ $('navigation').addEventListener('click',e=>{if(e.target===$('navigation')){cons
 $('categoryFilter').innerHTML+=[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');['search','categoryFilter'].forEach(id=>$(id).oninput=renderList);
 window.addEventListener('keydown',e=>{
  if(e.isComposing||e.altKey)return;
+ if(!shell.inSession||shell.view!=='practice'||document.querySelector('dialog[open]')&&!$('editor').open)return;
  if($('editor').open){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('saveModel').click()}return}
  if($('questionBank')?.open||$('navigation').open||$('aiInterview').open||$('voiceSettings').open||$('profile').open||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName))return;
  if(practice){if(e.code==='Space'&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();advancePractice()}return}
@@ -121,14 +132,14 @@ window.addEventListener('keydown',e=>{
 });
 function practicePrompt(){const q=pool[index];return practice.stage===0?q.q:q.followups[practice.stage-1].q}
 function clockText(seconds){const s=Math.max(0,Math.floor(seconds));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-function paintPracticeClock(){if(!practice)return;const seconds=practice.phase==='feedback'?practice.steps.reduce((sum,s)=>sum+s.seconds,0):practice.started===null?0:(performance.now()-practice.started)/1000;$('practiceClock').textContent=clockText(seconds);$('practiceClock').classList.toggle('over-goal',seconds>(pool[index].m==='pres'?30:60))}
+function paintPracticeClock(){if(!practice)return;const seconds=practice.phase==='feedback'?practice.steps.reduce((sum,s)=>sum+s.seconds,0):practice.started===null?0:((practice.pausedAt??performance.now())-practice.started)/1000;$('practiceClock').textContent=clockText(seconds);$('practiceClock').classList.toggle('over-goal',seconds>(pool[index].m==='pres'?appPreferences.presidentSeconds:appPreferences.departmentSeconds))}
 function practiceAction(label,english){$('reveal').removeAttribute('aria-controls');$('reveal').removeAttribute('aria-expanded');$('reveal').innerHTML=`<span class="action-label">${label}<small aria-hidden="true">${english}</small></span><span aria-hidden="true">→</span>`}
 function paintPractice(){
  if(!practice)return;
  speech.stop();$('practicePanel').hidden=practice.phase==='complete';$('practiceSummary').hidden=practice.phase!=='complete';$('practiceFeedback').hidden=practice.phase!=='feedback';
  $('stageLabel').innerHTML=practice.stage===0?'QUESTION <span id="questionId">'+(pool[index].id.startsWith('u-')?'追加':pool[index].id.slice(1))+'</span>':'FOLLOW-UP <span id="questionId">'+practice.stage+' / '+pool[index].followups.length+'</span>';
  $('question').textContent=practicePrompt();$('position').textContent=(practice.done+1)+' / '+practice.target+'問';$('progressBar').style.width=(practice.done/practice.target*100)+'%';
- $('practiceStep').textContent=practice.stage===0?'本質問':('想定追撃 '+practice.stage+' / '+pool[index].followups.length);$('practiceGoal').textContent=practice.phase==='feedback'?(1+pool[index].followups.length)+'回答の合計':'目安 '+(pool[index].m==='pres'?30:60)+'秒';
+ $('practiceStep').textContent=practice.stage===0?'本質問':('想定追撃 '+practice.stage+' / '+pool[index].followups.length);$('practiceGoal').textContent=practice.phase==='feedback'?(1+pool[index].followups.length)+'回答の合計':'目安 '+(pool[index].m==='pres'?appPreferences.presidentSeconds:appPreferences.departmentSeconds)+'秒';
  $('practiceInstruction').textContent=practice.phase==='ready'?'解答を見ず、声に出して答える。':practice.phase==='speaking'?'回答が終わったら、下のボタンで進む。':'本質問と追撃を振り返る。録音・回答本文の保存はしません。';
  if(practice.phase==='ready')practiceAction('回答を始める','START ANSWER');
  if(practice.phase==='speaking')practiceAction(practice.stage<pool[index].followups.length?'追撃へ':'振り返る',practice.stage<pool[index].followups.length?'FOLLOW-UP':'REVIEW');
@@ -138,15 +149,16 @@ function paintPractice(){
  }
  paintPracticeClock();
 }
-function resetPracticeQuestion(){practice.phase='ready';practice.stage=0;practice.started=null;practice.steps=[];practice.tags=[];$('weaknessChoices').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'));render();paintPractice();if(voicePreferences.auto)speech.play(practicePrompt(),voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
+function resetPracticeQuestion(){practice.phase='ready';practice.stage=0;practice.started=null;practice.steps=[];practice.tags=[];$('weaknessChoices').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'));render();paintPractice();if(voicePreferences.auto&&shell.inSession&&shell.view==='practice'&&!$('sessionOptions').open)speech.play(practicePrompt(),voiceOptions('question'));window.scrollTo({top:0,behavior:'instant'})}
 function startPractice(review=false){
+ preferredMethod='oral';shell.openSession();
  if(!ready){toast('保存データを読み込み中です。');return}
  const mode=pool[index].m==='pres'?'pres':'take';let candidates=scopedQuestions(Q,studyScope,state,mode);
  if(review)candidates=weakQuestions(candidates,state);if(!candidates.length){toast('この面接官の苦手問題はありません。');return}
  endPractice();pool=candidates;if(review)index=pool.findIndex(q=>q.id===selectPracticeQuestion(pool,state,[],()=>.2).id);
  // Preserve the currently displayed question on a normal start.
  if(!review){const saved=get(POSITION);index=Math.max(0,pool.findIndex(q=>q.id===saved))}
- practice={phase:'ready',stage:0,done:0,target:Math.min(5,pool.length),started:null,steps:[],tags:[],recent:[],weak:0,totalSeconds:0};
+ practice={phase:'ready',stage:0,done:0,target:Math.min(appPreferences.questionCount,pool.length),started:null,steps:[],tags:[],recent:[],weak:0,totalSeconds:0};
  $('restartPractice').textContent='もう'+practice.target+'問';studyMode='oral';document.body.dataset.practice='true';document.querySelector('.keyhint').textContent='SPACE 次の操作へ';$('startPractice').hidden=false;$('startPractice').disabled=true;$('endPractice').hidden=false;$('openProfile').hidden=true;$('navigation').close();practiceTimer=setInterval(paintPracticeClock,250);resetPracticeQuestion();
 }
 function endPractice(){
@@ -157,8 +169,8 @@ async function advancePractice(){
  if(practice.phase==='complete'){endPractice();return}
  if(practice.phase==='ready'){speech.stop();practice.phase='speaking';practice.started=performance.now();paintPractice();return}
  if(practice.phase==='speaking'){
-  practice.steps.push({prompt:practicePrompt(),seconds:(performance.now()-practice.started)/1000});practice.started=null;
-  if(practice.stage<pool[index].followups.length){practice.stage++;practice.phase='ready';toggleAnswer(false);paintPractice();if(voicePreferences.auto)speech.play(practicePrompt(),voiceOptions('question'))}
+  practice.steps.push({prompt:practicePrompt(),seconds:((practice.pausedAt??performance.now())-practice.started)/1000});practice.started=null;
+  if(practice.stage<pool[index].followups.length){practice.stage++;practice.phase='ready';toggleAnswer(false);paintPractice();if(voicePreferences.auto&&shell.inSession&&shell.view==='practice'&&!$('sessionOptions').open)speech.play(practicePrompt(),voiceOptions('question'))}
   else{practice.phase='feedback';paintPractice();$('practicePanel').scrollIntoView({block:'start',behavior:'instant'})}
   return;
  }
@@ -177,13 +189,13 @@ async function advancePractice(){
 }
 $('weaknessChoices').innerHTML=WEAKNESSES.map(w=>`<button type="button" aria-pressed="false" data-weakness="${esc(w)}">${esc(w)}</button>`).join('');
 $('weaknessChoices').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!practice||savingPractice)return;const w=b.dataset.weakness;practice.tags=practice.tags.includes(w)?practice.tags.filter(t=>t!==w):[...practice.tags,w];b.setAttribute('aria-pressed',String(practice.tags.includes(w)));paintPractice()});
-$('startPractice').onclick=()=>{if(!practice)startPractice()};$('readMode').onclick=()=>{if(savingPractice)return;endPractice();studyMode='read';paintStudyMode()};$('endPractice').onclick=()=>{if(!savingPractice)endPractice()};$('retryPractice').onclick=()=>{if(!savingPractice)resetPracticeQuestion()};$('practiceModel').onclick=()=>{toggleAnswer();paintPractice()};$('startReview').onclick=()=>startPractice(true);$('restartPractice').onclick=()=>startPractice();$('reviewPractice').onclick=()=>startPractice(true);
+$('startPractice').onclick=()=>{if(!practice)startPractice()};$('readMode').onclick=()=>{if(savingPractice)return;endPractice();studyMode='read';preferredMethod='read';checkpoint();paintStudyMode()};$('endPractice').onclick=()=>{if(!savingPractice)endPractice()};$('retryPractice').onclick=()=>{if(!savingPractice)resetPracticeQuestion()};$('practiceModel').onclick=()=>{toggleAnswer();paintPractice()};$('startReview').onclick=()=>startPractice(true);$('restartPractice').onclick=()=>startPractice();$('reviewPractice').onclick=()=>startPractice(true);
 window.addEventListener('storage',e=>{
  try{if(e.key===QUESTION_KEY&&e.newValue){questionLibrary=mergeLibraries(questionLibrary,validateLibrary(JSON.parse(e.newValue),BASE_QUESTIONS));reloadQuestions();bank.refresh()}
  if(e.key===KEY&&e.newValue){state=mergeBackup(state,validateBackup(JSON.parse(e.newValue),Q));paintAnswer();history()}
  if(e.key===MODEL_KEY&&e.newValue){models=mergeModels(models,validateModels(JSON.parse(e.newValue),Q));paintAnswer();history();if($('editor').open)toast('別タブの更新を反映しました。編集中の文章は保持しています。')}}catch{}
 });
-$('export').onclick=()=>{if(!ready){toast('保存データの読み込み中です。');return}const url=URL.createObjectURL(new Blob([JSON.stringify({...state,modelAnswers:models,questionLibrary},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`team-architect-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('追加質問・模範解答を含むバックアップを書き出しました。')};
+$('export').onclick=()=>{if(!ready){toast('保存データの読み込み中です。');return}const url=URL.createObjectURL(new Blob([JSON.stringify({...state,modelAnswers:models,questionLibrary},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`team-architect-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);try{localStorage.setItem(BACKUP_DATE_KEY,new Date().toISOString())}catch{}shell.refresh();toast('追加質問・模範解答を含むバックアップを書き出しました。')};
 $('import').onchange=async e=>{
  const file=e.target.files[0];if(!file)return;if(!ready){toast('保存データの読み込み中です。');e.target.value='';return}
  try{
@@ -209,7 +221,7 @@ function reloadQuestions(preferredId=pool[index]?.id){
  const category=$('categoryFilter').value;$('categoryFilter').innerHTML='<option value="">すべてのカテゴリー</option>'+[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('categoryFilter').value=category;
  render();renderList();history();
 }
-const bank=mountQuestionLibrary({getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:q=>modelText(q),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;endPractice();speech.stop();$('navigation').close();return true},select:id=>{reloadQuestions(id);window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
+bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:q=>modelText(q),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
  if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const next=putQuestion(latest,BASE_QUESTIONS,id,fields);localStorage.setItem(QUESTION_KEY,JSON.stringify(next));questionLibrary=next;reloadQuestions(id);
@@ -217,7 +229,7 @@ const bank=mountQuestionLibrary({getDefaultRole:()=>pool[index].m==='pres'?'pres
 }});
 $('openQuestionBank').onclick=()=>bank.open();$('editQuestion').onclick=()=>bank.open(pool[index].id);
 function paintStudyMode(){
- for(const [id,mode]of [['readMode','read'],['startPractice','oral'],['openAiInterview','ai']])$(id).setAttribute('aria-pressed',String(studyMode===mode));
+ for(const [id,mode]of [['readMode','read'],['startPractice','oral'],['openAiInterview','ai']])$(id).setAttribute('aria-pressed',String(($('sessionOptions').open?preferredMethod:studyMode)===mode));
  $('questionScope').value=studyScope.type;$('studyScopeCount').textContent=scopedQuestions(Q,studyScope,state,pool[index]?.m==='pres'?'president':'department').length+'問';
  $('studyHint').textContent=studyMode==='oral'?'解答を見ずに声で回答。終わったら振り返り、次の質問へ。':studyMode==='ai'?'ログイン後、回答を確認してからAI評価に送れます。':'質問と回答を確認し、自分の言葉に編集できます。';
 }
@@ -231,17 +243,21 @@ const importer=mountQuestionImport({getDefaultRole:()=>pool[index].m==='pres'?'p
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const result=applyQuestionImport(latest,BASE_QUESTIONS,materializeQuestions(BASE_QUESTIONS,latest),entries);localStorage.setItem(QUESTION_KEY,JSON.stringify(result.library));questionLibrary=result.library;reloadQuestions(result.ids[0]);
  let warning='';try{await snapshot('questionLibrary',questionLibrary)}catch{warning='この端末に保存済みです。追加保存に失敗したためバックアップを推奨します。'}return {ids:result.ids,warning};
-},useImported:(ids,mode)=>{lastImportedIds=[...ids];const option=$('importedScope');option.hidden=false;option.textContent='今回取り込んだ'+ids.length+'問';if(!chooseScope({type:'selection',ids}))return false;if(mode==='oral')startPractice();window.scrollTo({top:0,behavior:'instant'});return true}});
-$('openImportQuestions').onclick=()=>importer.open();$('addQuestionDirect').onclick=()=>bank.open(null,'add');$('browseQuestionsDirect').onclick=()=>bank.open();
+},useImported:(ids,mode)=>{lastImportedIds=[...ids];const option=$('importedScope');option.hidden=false;option.textContent='今回取り込んだ'+ids.length+'問';if(!chooseScope({type:'selection',ids}))return false;preferredMethod=mode==='oral'?'oral':'read';shell.openSession();if(mode==='oral')startPractice();checkpoint();window.scrollTo({top:0,behavior:'instant'});return true}});
+$('openImportQuestions').onclick=()=>importer.open();$('addQuestionDirect').onclick=()=>bank.open(null,'add');$('homeImport').onclick=()=>importer.open();$('homeReview').onclick=()=>{if(chooseScope({type:'weak',ids:[]})){preferredMethod='oral';startPractice()}};
+for(const [id,mode]of [['readMode','read'],['startPractice','oral'],['openAiInterview','ai']])$(id).addEventListener('click',e=>{if(!$('sessionOptions').open)return;e.preventDefault();e.stopImmediatePropagation();preferredMethod=mode;checkpoint();paintStudyMode()},{capture:true});
+$('sessionOptions').addEventListener('close',paintStudyMode);$('sessionOptions').addEventListener('toggle',paintStudyMode);
 $('aiInterview').addEventListener('close',()=>{studyMode=practice?'oral':'read';paintStudyMode()});
 const saved=get(POSITION);interviewFilter=Q.find(q=>q.id===saved)?.m==='pres'?'president':'department';pool=scopedQuestions(Q,studyScope,state,interviewFilter);index=Math.max(0,pool.findIndex(q=>q.id===saved));document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===interviewFilter)));render();init();
 
 function aiSupported(q){const original=BASE_QUESTIONS.find(b=>b.id===q.id);return !!original&&original.q===q.q&&original.m===q.m}
 function nextAiQuestion(){for(let step=1;step<=pool.length;step++){const candidate=(index+step)%pool.length;if(aiSupported(pool[candidate])){index=candidate;render();return}}}
-mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{if(!aiSupported(pool[index])){toast('追加・編集した質問は実戦練習で使えます。AI面接は元の質問でご利用ください。');return false}if(savingPractice)return false;endPractice();speech.stop();studyMode='ai';paintStudyMode();return true},nextQuestion:nextAiQuestion,startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
+mountAiInterview({getQuestion:()=>pool[index],getModel:q=>modelText(q),getFacts:()=>state.facts,beforeOpen:()=>{if(!aiSupported(pool[index])){toast('追加・編集した質問は実戦練習で使えます。AI面接は元の質問でご利用ください。');return false}if(savingPractice)return false;endPractice();speech.stop();studyMode='ai';preferredMethod='ai';shell.openSession();checkpoint();paintStudyMode();return true},nextQuestion:nextAiQuestion,startOral:()=>startPractice(),speak:text=>speech.play(text,voiceOptions('aiQuestion')),stopSpeech:()=>speech.stop(),saveAttempt:async({question,prompt,answer,seconds,feedback,followup})=>{
  if(!ready)throw new Error('保存データを読み込み中です。回答は保持しています。');
  let current=state;const raw=get(KEY);if(raw){try{current=mergeBackup(state,validateBackup(JSON.parse(raw),Q))}catch{localStorage.setItem(KEY+'_recovery_'+Date.now(),raw)}}
  const next=structuredClone(current),now=new Date().toISOString(),weaknesses=feedback.weaknesses.filter(w=>WEAKNESSES.includes(w));
  next.records[question.id]={answer,weaknesses,grade:weaknesses.length?'weak':'good',updatedAt:now};next.history.push({id:crypto.randomUUID(),questionId:question.id,prompt,answer,seconds,weaknesses,grade:weaknesses.length?'weak':'good',updatedAt:now,kind:followup?'followup':'answer',mode:question.m==='pres'?'pres':'take'});next.history=next.history.slice(-5000);next.savedAt=now;
  localStorage.setItem(KEY,JSON.stringify(next));state=next;try{await snapshot('current',state)}catch{toast('回答は端末に保存済みです。バックアップを推奨します。')}history();
 }});
+
+shell.addDialogHomeButtons();
