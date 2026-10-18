@@ -485,3 +485,13 @@ html[data-text-size="large"] #question { font-size:38px; }html[data-text-size="l
 #reveal>.action-label { color:#1b1b18; }
 #editQuestion { display:inline-flex; padding:7px 10px; }
 @media(max-width:600px){.question-copy { display:block; }.practice-switch button { align-items:center; justify-content:center; }.question-stage h1 { margin-top:9px; }}
+/* Keep both interviewer characters visible on phones as well. */
+@media(max-width:600px){
+ .question-stage,body:not([data-practice="true"]) .question-stage { grid-template-columns:minmax(0,1fr) 76px; align-items:start; gap:12px; }
+ .question-copy { grid-column:1; grid-row:1; }
+ .coach,body:not([data-practice="true"]) .coach { display:block; grid-column:2; grid-row:1; position:relative; align-self:start; height:auto; margin:14px 0 0; }
+ .coach-portrait,body:not([data-practice="true"]) .coach-portrait { height:112px; }
+ .coach-orbit,body:not([data-practice="true"]) .coach-orbit { width:66px; height:76px; left:5px; top:10px; }
+ .coach-identity { position:static; padding-top:7px; border-top:1px solid #d6bd8625; gap:5px; }
+ .coach-role { display:none; }.coach-name { font-size:10px; letter-spacing:0; }.coach-motto { display:none; }
+}
