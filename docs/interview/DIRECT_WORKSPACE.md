@@ -28,7 +28,7 @@
 
 ## 公開
 
-版指定：`/interview/?v=20261018-direct1`。
+版指定：`/interview/?v=20261018-characters1`。
 公開後の検証結果は末尾へ追記する。
 
 ## 次の担当者へ
@@ -43,3 +43,13 @@
 - GitHub Actions： https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/39082181174 — 全128件のブラウザーテストとビルド・Pages公開が成功。
 - 公開URLで390px／1440pxを実操作し、初期表示で3モードと質問が見えること、声→面接官変更→質問確認→AI画面→声／質問への直接切り替え、質問と回答の追加・保存・最初に戻る・再読み込み復元、範囲変更時の練習モード維持、1問目への移動を確認。JavaScriptエラー0、横はみ出しなし。
 - 公開確認ではテスト専用ブラウザーにデータを保存した。所有者の端末データには触れていない。AI接続は代替応答で、実際の回答送信や有料推論は行っていない。
+
+
+## キャラクター表示の復元（2026-10-18 JST）
+
+本人から社長などのキャラが消えたとの指摘を受け、スマホでキャラを非表示にした判断を訂正。部長・社長とも質問の右に表示する。練習中も表示し、面接官を切り替えると画像も切り替わる。UI改善でキャラを省かず、画面幅に応じて配置と大きさを調整する。
+
+- 公開ソース：`5cc382efcd4ebead7aab3312fb8454d0fe054610`。
+- 公開URL： https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/interview/?v=20261018-characters1
+- GitHub Actions： https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/39082639835 — 全128件のブラウザーテストとPages公開が成功。
+- 公開URLを390px／1440pxで開き、両方の画像の読み込み・表示、面接官変更時の画像切り替え、声の練習中の表示、横はみ出しがないこと、JavaScriptエラー0を確認。
