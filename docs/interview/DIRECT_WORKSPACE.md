@@ -35,3 +35,11 @@
 
 練習前の大きなヒーロー・再開専用トップ・モード設定ダイアログを再導入しない。操作数と質問が見える位置を優先する。
 同居するTEAM ARCHITECT本体は変更しない。未完了の実AI・Android実機音声確認は従来の引き継ぎを参照。AppDeployへ戻さない。
+
+## 公開後の確認結果
+
+- 公開ソース：`5f5498ad5bc659c82e00ee9528ba28da816d16e2`。
+- 公開URL： https://kenkonitteki777-lab.github.io/TEAM-ARCHITECT/interview/?v=20261018-direct1
+- GitHub Actions： https://github.com/kenkonitteki777-lab/TEAM-ARCHITECT/actions/runs/39082181174 — 全128件のブラウザーテストとビルド・Pages公開が成功。
+- 公開URLで390px／1440pxを実操作し、初期表示で3モードと質問が見えること、声→面接官変更→質問確認→AI画面→声／質問への直接切り替え、質問と回答の追加・保存・最初に戻る・再読み込み復元、範囲変更時の練習モード維持、1問目への移動を確認。JavaScriptエラー0、横はみ出しなし。
+- 公開確認ではテスト専用ブラウザーにデータを保存した。所有者の端末データには触れていない。AI接続は代替応答で、実際の回答送信や有料推論は行っていない。
