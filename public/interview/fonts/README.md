@@ -9,3 +9,5 @@ Latin: unmodified Manrope variable font, converted to WOFF2. Source: https://git
 Both licenses are included alongside the fonts. No external font request is needed.
 
 Luxury headings: Interview Serif JP (Noto Serif JP, static weight 500, subset to app text) and Interview Display (Cormorant Garamond, static weight 500, Latin subset). Retrieved from official Google Fonts repository 2026-10-10. Modified fonts renamed; original copyright notices and SIL OFL retained. Self-hosted; no runtime third-party font requests. Questions use the serif family; answer text remains sans-serif for reading speed.
+
+2026-10-25: Added Interview UI, a renamed IBM Plex Sans JP Regular subset covering current UI and question text. Official Google Fonts source: https://github.com/google/fonts/blob/main/ofl/ibmplexsansjp/IBMPlexSansJP-Regular.ttf . Existing IBM SIL OFL notice applies. This fallback retains glyphs missing from the older app-text subset; it is self-hosted.

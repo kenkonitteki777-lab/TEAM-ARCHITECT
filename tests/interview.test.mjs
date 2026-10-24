@@ -57,7 +57,7 @@ test('oral practice preserves existing written answers and backup history',()=>{
 });
 test('practice avoids repeating a question within a session and only reviews marked weaknesses',()=>{
  let state=emptyState();state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:20}],['結論が遅い']);assert.deepEqual(weakQuestions(QUESTIONS,state).map(q=>q.id),['q001']);assert.notEqual(selectPracticeQuestion(QUESTIONS,state,['q001'],()=>0).id,'q001');assert.equal(selectPracticeQuestion([QUESTIONS[0]],state,['q001']),null);assert.deepEqual(weaknessSummary(state,QUESTIONS),[['結論が遅い',1]]);
- state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:12}],[]);assert.equal(weakQuestions(QUESTIONS,state).length,0);assert.equal(state.history.length,2);
+ state=recordOralPractice(state,QUESTIONS[0],[{prompt:'質問',seconds:12}],[],new Date().toISOString(),'explicit-good','good');assert.equal(weakQuestions(QUESTIONS,state).length,0);assert.equal(state.history.length,2);
 });
 test('oral practice rejects broken timing data instead of saving a fabricated attempt',()=>{assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[],[]));assert.throws(()=>recordOralPractice(emptyState(),QUESTIONS[0],[{prompt:'質問',seconds:NaN}],[]))});
 
@@ -84,4 +84,13 @@ test('AI dialog wires login, consent, grounded feedback, saved answer and next f
   node('aiAnswer').value='利益を残す店長になります。';node('aiAnswer').oninput();node('aiConsent').checked=true;node('aiConsent').onchange();await node('aiEvaluate').onclick();assert.equal(saved.length,1);assert.equal(saved[0].answer,'利益を残す店長になります。');assert.equal(node('aiQuote').textContent,'「利益を残す」');assert.equal(node('aiFeedback').hidden,false);
   node('aiFollow').onclick();assert.equal(node('aiPrompt').textContent,'具体的に何を変えましたか？');assert.equal(node('aiAnswer').value,'');assert.ok([...storage.values()].every(v=>!v.includes('synthetic-password')&&!v.includes('test-access')));assert.equal(network.filter(r=>r.options.method==='POST').length,3);
  }finally{node('aiInterview').close();Object.assign(globalThis,previous)}
+});
+
+test('unrated oral practice does not become success or clear an earlier weakness',()=>{
+ const q=QUESTIONS[0],steps=[{prompt:q.q,seconds:2}];let state=recordOralPractice(emptyState(),q,steps,[],'2026-10-25T00:00:00Z','unrated');
+ assert.equal(state.records[q.id].grade,null);assert.equal(state.history[0].grade,null);
+ state=recordOralPractice(state,q,steps,[],'2026-10-25T00:01:00Z','weak','weak');assert.equal(state.records[q.id].grade,'weak');
+ state=recordOralPractice(state,q,steps,[],'2026-10-25T00:02:00Z','still-unrated',null);assert.equal(state.records[q.id].grade,'weak');assert.equal(state.history.at(-1).grade,null);
+ const restored=validateBackup(JSON.parse(JSON.stringify(state)),QUESTIONS);assert.equal(restored.records[q.id].grade,'weak');assert.equal(restored.history.at(-1).grade,null);
+ assert.throws(()=>recordOralPractice(state,q,steps,[],undefined,undefined,'automatic'));
 });

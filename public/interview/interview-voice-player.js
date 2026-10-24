@@ -15,5 +15,5 @@ export function createInterviewVoicePlayer({Audio=globalThis.Audio,assetBase=new
   try{const playing=player.play();playing?.catch(fail)}catch(e){fail(e)}
   return true;
  }
- return {supported:Boolean(Audio)||device.supported,voices:device.voices,play,stop,toggle(text,settings){if(activeKey===settings.key){stop();return false}return play(text,settings)}};
+ return {deviceSupported:device.supported,playDevice(text,settings){stop();return device.play(text,settings)},supported:Boolean(Audio)||device.supported,voices:device.voices,play,stop,toggle(text,settings){if(activeKey===settings.key){stop();return false}return play(text,settings)}};
 }

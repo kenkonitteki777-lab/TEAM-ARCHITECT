@@ -40,6 +40,6 @@ test('interviewer voice presets are distinct and can be previewed and retained',
  });
  await page.goto('/interview/');await resume(page);await page.locator('#openVoice').click();await page.locator('#previewDepartment').click();await page.locator('#previewPresident').click();
  const spoken=await page.evaluate(()=>(window as any).testSpoken);expect(spoken[0].pitch).toBeLessThan(spoken[1].pitch);expect(spoken[0].rate).toBeLessThan(spoken[1].rate);
- await page.locator('#departmentPitch').selectOption('0.96');await page.reload();await resume(page);await page.locator('#openVoice').click();await expect(page.locator('#departmentPitch')).toHaveValue('0.96');
+ await page.locator('#deviceVoiceSettings>summary').click();await page.locator('#departmentPitch').selectOption('0.96');await page.reload();await resume(page);await page.locator('#openVoice').click();await page.locator('#deviceVoiceSettings>summary').click();await expect(page.locator('#departmentPitch')).toHaveValue('0.96');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

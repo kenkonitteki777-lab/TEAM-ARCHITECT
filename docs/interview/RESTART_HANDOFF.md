@@ -1,3 +1,5 @@
+> 最新改善（2026-10-25）：操作・自己評価・音声設定の修正は [QUALITY_UPGRADE.md](QUALITY_UPGRADE.md) を参照。以下は過去の作業記録を含みます。
+
 > 最新UI修正（2026-10-18）：モードを常設して1タップ切り替えへ。現在の正本は [DIRECT_WORKSPACE.md](DIRECT_WORKSPACE.md)。練習トップ＋設定ダイアログ方式は廃止。
 
 > 最新UI（2026-10-18）：3画面・再開・最初に戻るは [APP_SHELL.md](APP_SHELL.md) を参照。以下は過去の作業記録です。

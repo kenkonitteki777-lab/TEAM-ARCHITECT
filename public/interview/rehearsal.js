@@ -14,11 +14,12 @@ export function weakQuestions(questions,state){return questions.filter(q=>state.
 export function selectPracticeQuestion(questions,state,recent=[],random=Math.random){
  const unseen=questions.filter(q=>!recent.includes(q.id));return weightedNext(unseen,state,[],random);
 }
-export function recordOralPractice(current,q,steps,weaknesses,now=new Date().toISOString(),id=crypto.randomUUID()){
+export function recordOralPractice(current,q,steps,weaknesses,now=new Date().toISOString(),id=crypto.randomUUID(),assessment=weaknesses.some(w=>WEAKNESSES.includes(w))?'weak':null){
  if(!steps.length||steps.some(s=>typeof s.prompt!=='string'||!Number.isFinite(s.seconds)||s.seconds<0))throw new Error('練習の計測結果を確認できません。');
- const out=structuredClone(current),tags=[...new Set(weaknesses)].filter(w=>WEAKNESSES.includes(w)),grade=tags.length?'weak':'good';
+ if(![null,'good','weak'].includes(assessment))throw new Error('自己評価を確認してください。');
+ const out=structuredClone(current),grade=assessment,tags=grade==='weak'?[...new Set(weaknesses)].filter(w=>WEAKNESSES.includes(w)):[];
  // Oral practice has no transcript. Keep earlier written answers intact.
- out.records[q.id]={...out.records[q.id],answer:out.records[q.id]?.answer||'',grade,weaknesses:tags,updatedAt:now};
+ out.records[q.id]={...out.records[q.id],answer:out.records[q.id]?.answer||'',grade:grade??out.records[q.id]?.grade??null,weaknesses:grade===null?(out.records[q.id]?.weaknesses||[]):tags,updatedAt:now};
  out.history.push(...steps.map((s,i)=>({id:id+'-'+i,questionId:q.id,prompt:s.prompt,answer:'',grade,weaknesses:tags,updatedAt:now,mode:q.m==='pres'?'pres':'take',seconds:Math.min(3600,Math.round(s.seconds)),kind:i?'followup':'answer'})));
  out.history=out.history.slice(-5000);out.savedAt=now;return out;
 }
