@@ -1,4 +1,4 @@
-export function mountInterviewShell({getInfo,onHome,onFirst,onLibrary,onReview,onAiQuestion,onPause,canLeave,onSettings,onPreferences}){
+export function mountInterviewShell({getInfo,onHome,onFirst,onLibrary,onReview,onPending,onAiQuestion,onPause,canLeave,onSettings,onPreferences}){
  const $=id=>document.getElementById(id),main=$('reader');let view='practice';
  const entry=main.querySelector('.question-entry'),role=main.querySelector('.practice-switch'),setup=main.querySelector('.study-setup');
  entry.remove();role.remove();setup.remove();
@@ -9,7 +9,7 @@ export function mountInterviewShell({getInfo,onHome,onFirst,onLibrary,onReview,o
  controls.append(setup);setup.querySelector('.setup-label').remove();setup.querySelector('.study-range').before(role);
  const heading=controls.querySelector('.workspace-heading'),modes=setup.querySelector('#studyModes');
  content.prepend(heading,modes,controls);
- controls.insertAdjacentHTML('beforeend','<div class="practice-overview"><span id="practiceStatus" role="status"></span><button id="reviewNow" class="text-link">要復習へ</button></div><div id="aiScopeNote" class="scope-note" hidden>追加・本文を変更した質問は「声で練習」で使えます。<button id="gotoAiQuestion" class="text-link">AI対応の質問へ →</button></div>');
+ controls.insertAdjacentHTML('beforeend','<div class="practice-overview"><span id="practiceStatus" role="status"></span><button id="reviewNow" class="text-link">要復習へ</button></div><div class="answer-readiness" aria-label="回答の記入状況"><div class="readiness-top"><span class="readiness-name">回答準備 <strong id="readyAnswerCount">0</strong><small> / <span id="allAnswerCount">0</span>問 記入済・要確認なし</small></span><button id="pendingAnswers" class="text-link">未完成を確認 <span id="pendingAnswerCount">0</span>問 →</button></div><div class="readiness-track" aria-hidden="true"><span id="readinessFill"></span></div></div><div id="aiScopeNote" class="scope-note" hidden>現在AI面接は利用できません。無料の声で練習をご利用ください。<button id="gotoAiQuestion" class="text-link" hidden>AI対応の質問へ →</button></div>');
  const toolbar=document.createElement('div');toolbar.className='session-toolbar';toolbar.innerHTML='<button id="firstQuestion" class="text-link">1問目へ戻る</button>';
  toolbar.prepend(content.querySelector('#endPractice'));content.querySelector('.eyebrow').before(toolbar);
  const questionNav=document.createElement('div');questionNav.className='question-navigation';const position=content.querySelector('#position');position.before(questionNav);questionNav.append(toolbar.querySelector('#firstQuestion'),position);controls.querySelector('.practice-overview').append(toolbar.querySelector('#endPractice'));toolbar.remove();
@@ -55,13 +55,19 @@ export function mountInterviewShell({getInfo,onHome,onFirst,onLibrary,onReview,o
  }
  function refresh(){
   const info=getInfo();$('startPractice').querySelector('small').textContent='今回'+info.target+'問・自己評価';
+  $('readyAnswerCount').textContent=info.readiness.filled;$('allAnswerCount').textContent=info.readiness.total;$('pendingAnswerCount').textContent=info.readiness.pending;
+  $('readinessFill').style.width=(info.readiness.total?Math.round(info.readiness.filled/info.readiness.total*100):0)+'%';
+  $('pendingAnswers').disabled=!info.ready||!info.readiness.pending;
   $('practiceStatus').textContent='全'+info.rangeCount+'問 · 今日'+info.today+'問練習';$('reviewNow').textContent='要復習 '+info.weak+'問 →';$('reviewNow').disabled=!info.ready||!info.weak;
-  $('aiScopeNote').hidden=info.aiAvailable;$('openAiInterview').disabled=!info.aiAvailable||info.busy;$('openAiInterview').setAttribute('aria-describedby','aiScopeNote');
+  $('aiScopeNote').hidden=info.aiAvailable;
+  $('aiScopeNote').firstChild.textContent=info.aiReason==='disabled'?'AI面接は現在停止中です。課金なしの声で練習が使えます。':'追加・本文を変更した質問は「声で練習」で使えます。';
+  $('gotoAiQuestion').hidden=info.aiReason!=='edited';$('openAiInterview').disabled=!info.aiAvailable||info.busy;
+  $('openAiInterview').setAttribute('aria-describedby','aiScopeNote');
   $('lastBackup').textContent=info.lastBackup?'最終書き出し：'+new Date(info.lastBackup).toLocaleString('ja-JP'):'バックアップはまだ書き出していません。';
   for(const [id,key]of [['settingCount','questionCount'],['settingText','textSize'],['settingDepartment','departmentSeconds'],['settingPresident','presidentSeconds']])$(id).value=String(info.preferences[key]);
   for(const id of ['readMode','startPractice'])$(id).disabled=!info.ready||info.busy;
  }
- $('reviewNow').onclick=onReview;$('gotoAiQuestion').onclick=onAiQuestion;
+ $('reviewNow').onclick=onReview;$('pendingAnswers').onclick=onPending;$('gotoAiQuestion').onclick=onAiQuestion;
  $('firstQuestion').onclick=onFirst;$('practiceLibrary').onclick=onLibrary;$('settingsProfile').onclick=()=>$('openProfile').click();
  document.querySelectorAll('#appNav [data-view]').forEach(b=>b.onclick=()=>b.dataset.view==='library'?onLibrary():show(b.dataset.view));
  for(const id of ['settingCount','settingText','settingDepartment','settingPresident'])$(id).onchange=()=>onPreferences({version:1,questionCount:Number($('settingCount').value),textSize:$('settingText').value,departmentSeconds:Number($('settingDepartment').value),presidentSeconds:Number($('settingPresident').value)});

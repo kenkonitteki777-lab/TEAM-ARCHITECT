@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emptyLibrary,putQuestion,validateLibrary,mergeLibraries,materializeQuestions,filterQuestions,validQuestionDate} from '../public/interview/question-library.js';
+import {emptyLibrary,putQuestion,validateLibrary,mergeLibraries,materializeQuestions,filterQuestions,validQuestionDate,answerReadiness,questionReadiness,summarizeAnswerReadiness} from '../public/interview/question-library.js';
 import {validateBackup,emptyState} from '../public/interview/engine.js';
 import {validateModels,emptyModels,setModel} from '../public/interview/model-store.js';
 const base=[{id:'q001',q:'元の質問',answer:'元回答',m:'take',category:'人材',followups:[],priority:1}];
@@ -28,4 +28,18 @@ test('backups restore custom questions before validating associated answers and 
  const models=setModel(emptyModels(),id,'編集回答');const backup=JSON.parse(JSON.stringify({...state,modelAnswers:models,questionLibrary:library}));
  const restored=materializeQuestions(base,validateLibrary(backup.questionLibrary,base));assert.equal(validateBackup(backup,restored).history[0].answer,'練習回答');assert.equal(validateModels(backup.modelAnswers,restored).entries[id].text,'編集回答');
  const newer=putQuestion(library,base,id,{...entry,answer:'更新回答'},'2026-10-16T02:00:00Z');assert.equal(mergeLibraries(newer,library).entries[id].answer,'更新回答');assert.equal(mergeLibraries(library,newer).entries[id].answer,'更新回答');
+});
+
+test('readiness is a non-AI input-status classification and never guesses achievements',()=>{
+ assert.equal(answerReadiness(''),'empty');
+ assert.equal(answerReadiness('   '),'empty');
+ assert.equal(answerReadiness('実績は【要確認：改善額】です。'),'review');
+ assert.equal(answerReadiness('要修正：数値を入れる'),'review');
+ assert.equal(answerReadiness('結論、根拠、具体的な行動で説明します。'),'filled');
+ const questions=[{answer:''},{answer:'本人要確認'},{answer:'回答を書いた'}];
+ assert.deepEqual(summarizeAnswerReadiness(questions),{total:3,empty:1,review:1,filled:1,pending:2});
+ assert.deepEqual(summarizeAnswerReadiness(questions,q=>q.answer==='回答を書いた'?'【要確認：根拠】':q.answer),{total:3,empty:1,review:2,filled:0,pending:3});
+ assert.equal(questionReadiness({answer:'主回答',followups:[{answer:'【要確認：事実】'}]}),'review');
+ assert.equal(questionReadiness({answer:'主回答',followups:[{answer:'追撃も記入済'}]}),'filled');
+ assert.deepEqual(summarizeAnswerReadiness([{answer:'主回答',followups:[{answer:'【要確認：数値】'}]}]),{total:1,empty:0,review:1,filled:0,pending:1});
 });

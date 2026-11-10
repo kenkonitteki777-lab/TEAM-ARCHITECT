@@ -25,3 +25,33 @@ test('AI next skips edited question text while retaining it for normal practice'
  await page.addInitScript(()=>{localStorage.setItem('team_architect_reader_question','q001');localStorage.setItem('team_architect_question_library_v1',JSON.stringify({version:1,entries:{q002:{q:'本人が編集した別の質問',answer:'本人回答',m:'take',kind:'past',askedOn:'',category:'その他',src:'本人登録',updatedAt:'2026-10-16T00:00:00Z'}}}))});
  await page.route('**/functions/v1/interview-coach',route=>route.fulfill({json:{aiConfigured:false}}));await page.goto('/interview/');await resume(page);await expect(page.locator('#saveModel')).toBeEnabled();await method(page,'openAiInterview');await expect(page.locator('#aiUnavailable')).toBeVisible();await page.locator('#aiNext').evaluate((el:HTMLButtonElement)=>el.click());expect(await page.locator('#questionId').textContent()).toBe('003');
 });
+
+test('answer-readiness shortcuts support editing and remain correct after reload',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/interview/');await resume(page);
+ await expect(page.locator('#pendingAnswerCount')).not.toHaveText('0');
+ await expect(page.locator('#readinessFill')).toHaveAttribute('style',/width:/);
+ await page.locator('#pendingAnswers').click();
+ await expect(page.locator('#libraryView')).toBeVisible();
+ await expect(page.locator('[data-bank-quick="pending"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('[data-bank-stat="total"]')).toHaveText('74');
+ await page.locator('#addQuestionDirect').click();
+ await page.locator('#bankQuestion').fill('新しく登録した面接質問ですか？');
+ await page.locator('#bankAnswer').fill('成果は【要確認：数字】です。');
+ await page.locator('#bankSave').click();
+ await expect(page.locator('#bankStatus')).toContainText('保存しました');
+ const item=page.locator('.bank-row').filter({hasText:'新しく登録した面接質問ですか？'});
+ await expect(item).toBeVisible();
+ await expect(item.locator('.bank-state')).toHaveText('要確認あり');
+ await item.locator('[data-edit]').click();
+ await page.locator('#bankAnswer').fill('成果の根拠を確認した後、具体例と行動で答えます。');
+ await page.locator('#bankSave').click();
+ await expect(item).toHaveCount(0);
+ await page.locator('[data-bank-quick="filled"]').click();
+ await expect(item).toBeVisible();
+ await expect(item.locator('.bank-state')).toHaveText('記入済');
+ await page.reload();await resume(page);await library(page);
+ await expect(page.locator('[data-bank-stat="total"]')).toHaveText('75');
+ await expect(page.locator('.bank-row').filter({hasText:'新しく登録した面接質問ですか？'})).toBeVisible();
+ expect(errors).toEqual([]);
+});
