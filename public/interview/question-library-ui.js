@@ -1,4 +1,4 @@
-import {filterQuestions,validQuestionDate,questionReadiness,summarizeAnswerReadiness} from './question-library.js?v=20261110-readiness1';
+import {filterQuestions,validQuestionDate,questionReadiness,summarizeAnswerReadiness} from './question-library.js?v=20261110-roles1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={past:'過去問',assumed:'想定質問',unconfirmed:'出題状況未確認'};
 export function mountQuestionLibrary({getQuestions,getAnswer,save,select,beforeOpen,onClose=()=>{},getDefaultRole=()=> 'take'}){
