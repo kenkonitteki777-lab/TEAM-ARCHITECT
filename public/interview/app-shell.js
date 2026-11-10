@@ -59,9 +59,12 @@ export function mountInterviewShell({getInfo,onHome,onFirst,onLibrary,onReview,o
   $('readinessFill').style.width=(info.readiness.total?Math.round(info.readiness.filled/info.readiness.total*100):0)+'%';
   $('pendingAnswers').disabled=!info.ready||!info.readiness.pending;
   $('practiceStatus').textContent='全'+info.rangeCount+'問 · 今日'+info.today+'問練習';$('reviewNow').textContent='要復習 '+info.weak+'問 →';$('reviewNow').disabled=!info.ready||!info.weak;
-  $('aiScopeNote').hidden=info.aiAvailable;
+  $('aiScopeNote').hidden=info.aiReason==='available';
   $('aiScopeNote').firstChild.textContent=info.aiReason==='disabled'?'AI面接は現在停止中です。課金なしの声で練習が使えます。':'追加・本文を変更した質問は「声で練習」で使えます。';
   $('gotoAiQuestion').hidden=info.aiReason!=='edited';$('openAiInterview').disabled=!info.aiAvailable||info.busy;
+  // A disabled backend still allows the owner to inspect connection status.
+  $('openAiInterview').querySelector('strong').textContent=info.aiReason==='disabled'?'AI接続確認':'AI面接';
+  $('openAiInterview').querySelector('small').textContent=info.aiReason==='disabled'?'準備中・利用状況を確認':'評価・追加質問';
   $('openAiInterview').setAttribute('aria-describedby','aiScopeNote');
   $('lastBackup').textContent=info.lastBackup?'最終書き出し：'+new Date(info.lastBackup).toLocaleString('ja-JP'):'バックアップはまだ書き出していません。';
   for(const [id,key]of [['settingCount','questionCount'],['settingText','textSize'],['settingDepartment','departmentSeconds'],['settingPresident','presidentSeconds']])$(id).value=String(info.preferences[key]);

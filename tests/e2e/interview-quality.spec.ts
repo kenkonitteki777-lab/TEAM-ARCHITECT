@@ -7,7 +7,7 @@ test('explicit self assessment keeps unrated separate and retains previous weakn
  await page.locator('#startPractice').click();await feedback(page);await expect(page.locator('#reveal')).toBeDisabled();await page.locator('[data-assessment=weak]').click();await page.locator('#reveal').click();await expect(page.locator('#practiceResult')).toContainText('要復習 1問');
  await page.locator('#restartPractice').click();await feedback(page);await page.locator('[data-assessment=unrated]').click();await page.locator('#reveal').click();await expect(page.locator('#practiceResult')).toContainText('未評価 1問');
  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('team_architect_interview_v3')!));expect(state.history.at(-1).grade).toBeNull();expect(Object.values(state.records).map((r:any)=>r.grade)).toContain('weak');
- await page.locator('#readMode').click();await page.locator('#reveal').click();await expect(page.locator('#answer')).toHaveText('本人の回答を保持します。');await page.locator('#gotoAiQuestion').click();await expect(page.locator('#openAiInterview')).toBeEnabled();await expect(page.locator('#aiScopeNote')).toBeHidden();
+ await page.locator('#readMode').click();await page.locator('#reveal').click();await expect(page.locator('#answer')).toHaveText('本人の回答を保持します。');await page.locator('#gotoAiQuestion').click();await expect(page.locator('#openAiInterview')).toBeEnabled();await expect(page.locator('#aiScopeNote')).toBeVisible();await expect(page.locator('#openAiInterview')).toContainText('AI接続確認');
 });
 test('retry without a rating works and timing settings apply to the next session',async({page})=>{
  await page.goto('/interview/');await resume(page);await personal(page);await page.locator('#startPractice').click();await feedback(page);await page.locator('#retryPractice').click();await expect(page.locator('#reveal')).toBeEnabled();await expect(page.locator('#practiceGoal')).toHaveText('目安 60秒');
@@ -23,6 +23,22 @@ test('questions and characters fit narrow screens and mode switching stays avail
  for(const [width,height] of [[320,740],[390,844],[844,390],[1440,1000]]){await page.setViewportSize({width,height});await page.evaluate(()=>scrollTo(0,0));await expect(page.locator('#coach')).toBeInViewport();await expect(page.locator('#question')).toBeInViewport();const q=await page.locator('#question').boundingBox(),dock=await page.locator('.dock').boundingBox();expect(q!.y+q!.height).toBeLessThanOrEqual(dock!.y);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
  await page.setViewportSize({width:390,height:844});await page.locator('#reveal').click();await page.locator('#answer').scrollIntoViewIfNeeded();await expect(page.locator('#readMode')).toBeInViewport();await page.locator('#startPractice').click();await expect(page.locator('#practicePanel')).toBeVisible();await settings(page);await page.locator('#settingCount').selectOption('1');await page.locator('#appNav [data-view=practice]').click();await expect(page.locator('#startPractice small')).toHaveText('今回5問・自己評価');await page.locator('#readMode').click();await expect(page.locator('#startPractice small')).toHaveText('今回1問・自己評価');
 });
-test('question library previews answers and locates answers needing personal facts',async({page})=>{
- await page.goto('/interview/');await resume(page);await library(page);await page.locator('[data-bank-quick=confirm]').click();const before=Number((await page.locator('#bankCount').textContent())!.replace('問',''));expect(before).toBeGreaterThan(0);await page.locator('#bankList [data-edit]').first().click();await page.locator('#bankAnswer').fill('本人が確認した実績と根拠のある回答です。');await page.locator('#bankSave').click();await expect(page.locator('#bankCount')).toHaveText((before-1)+'問');await page.locator('#bankClear').click();await page.locator('#bankSearch').fill('本人が確認した実績');await expect(page.locator('#bankCount')).toHaveText('1問');await page.locator('.bank-answer>summary').click();await expect(page.locator('.bank-answer')).toContainText('根拠のある回答');
+test('question library previews answers and makes a completed response searchable',async({page})=>{
+ await page.goto('/interview/');await resume(page);await library(page);
+ await page.locator('#addQuestionDirect').click();
+ await page.locator('#bankQuestion').fill('収益改善の実績は何ですか？');
+ await page.locator('#bankAnswer').fill('利益は【要確認：金額】です。');
+ await page.locator('#bankSave').click();
+ await page.locator('[data-bank-quick=pending]').click();
+ const item=page.locator('.bank-row').filter({hasText:'収益改善の実績は何ですか？'});
+ await expect(item).toBeVisible();
+ await item.locator('[data-edit]').click();
+ await page.locator('#bankAnswer').fill('確認済みの実績と根拠を簡潔に説明します。');
+ await page.locator('#bankSave').click();
+ await expect(item).toHaveCount(0);
+ await page.locator('#bankClear').click();
+ await page.locator('#bankSearch').fill('確認済みの実績');
+ await expect(page.locator('#bankCount')).toHaveText('1問');
+ await page.locator('.bank-answer>summary').click();
+ await expect(page.locator('.bank-answer')).toContainText('根拠を簡潔に説明');
 });

@@ -34,4 +34,4 @@ jobs:
       - name: Browser test setup
         run: npx playwright install --with-deps chromium
       - name: Questions, editing and navigation (desktop + mobile)
-        run: npx playwright test tests/e2e/interview-question-bank.spec.ts tests/e2e/interview-shell.spec.ts --workers=2
+        run: npm run test:e2e -- --workers=2
