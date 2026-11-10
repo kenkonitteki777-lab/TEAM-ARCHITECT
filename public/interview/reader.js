@@ -33,7 +33,7 @@ function viewInfo(){
  const role=pool[index]?.m==='pres'?'president':'department',rangeCount=scopedQuestions(Q,studyScope,state,role).length;
  const dateKey=d=>localDay.format(new Date(d));
  const todayKey=dateKey(Date.now()),today=new Set(state.history.filter(h=>h.kind!=='followup'&&dateKey(h.updatedAt)===todayKey).map(h=>h.questionId)).size;
- return {ready,busy:savingPractice,preferences:appPreferences,lastBackup:get(BACKUP_DATE_KEY),rangeCount,target:practice?.target??Math.min(appPreferences.questionCount,rangeCount),today,weak:weakQuestions(Q,state).length,readiness:summarizeAnswerReadiness(Q,modelText),aiAvailable:CLOUD.aiEnabled===true&&aiSupported(pool[index]),aiReason:CLOUD.aiEnabled!==true?'disabled':aiSupported(pool[index])?'available':'edited'};
+ return {ready,busy:savingPractice,preferences:appPreferences,lastBackup:get(BACKUP_DATE_KEY),rangeCount,target:practice?.target??Math.min(appPreferences.questionCount,rangeCount),today,weak:weakQuestions(Q,state).length,readiness:summarizeAnswerReadiness(Q,modelText),aiAvailable:aiSupported(pool[index]),aiReason:!aiSupported(pool[index])?'edited':CLOUD.aiEnabled===true?'available':'disabled'};
 }
 function pausePractice(paused){speech.stop();if(!practice||practice.started===null)return;if(paused&&!practice.pausedAt)practice.pausedAt=performance.now();if(!paused&&practice.pausedAt){practice.started+=performance.now()-practice.pausedAt;delete practice.pausedAt}}
 const shell=mountInterviewShell({getInfo:viewInfo,canLeave:()=>!savingPractice&&(shell?.view!=='library'||!bank||bank.canLeave()),onPause:pausePractice,onSettings:()=>{updateVoices();$('voiceRate').value=String(voicePreferences.rate);for(const role of ['department','president'])$(role+'Pitch').value=String(voicePreferences[role+'Pitch'])},onHome:()=>{endPractice();studyMode='read';preferredMethod='read';speech.stop();paintStudyMode();checkpoint()},onFirst:()=>{const oral=!!practice;endPractice();index=0;render();shell.openSession();if(oral)startPractice()},onLibrary:()=>bank.open(),onReview:()=>chooseScope({type:'weak',ids:[]}),onPending:()=>bank.openPending(),onAiQuestion:()=>{if(savingPractice)return;const role=pool[index].m==='pres',chosen=Q.find(q=>(q.m==='pres')===role&&aiSupported(q))||Q.find(aiSupported);if(!chosen){toast('現在の質問集にAI対応の質問がありません。声で練習できます。');return}endPractice();studyScope={type:'all',ids:[]};pool=Q.filter(q=>(q.m==='pres')===(chosen.m==='pres'));index=pool.findIndex(q=>q.id===chosen.id);studyMode='read';preferredMethod='read';render()},onPreferences:next=>{try{const checked=validateAppPreferences(next);localStorage.setItem(APP_PREF_KEY,JSON.stringify(checked));appPreferences=checked;paintStudyMode();document.documentElement.dataset.textSize=checked.textSize;$('settingsStatus').textContent='設定を保存しました。出題数・回答時間は次の練習から適用します。'}catch{$('settingsStatus').textContent='保存できませんでした。以前の設定を保持しています。'}shell.refresh()}});
@@ -240,14 +240,21 @@ bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=
  if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const next=putQuestion(latest,BASE_QUESTIONS,id,fields);
- // Synchronize the question-bank answer with the separate model-answer store.
- let updatedModels=models;
- const answerText=fields.answer.trim();
- if(answerText)updatedModels=setModel(models,id,answerText);
- else if(models.entries[id]){updatedModels=structuredClone(models);delete updatedModels.entries[id]}
- if(updatedModels!==models)persistModels(localStorage,updatedModels);
- localStorage.setItem(QUESTION_KEY,JSON.stringify(next));models=updatedModels;questionLibrary=next;reloadQuestions(id);
- try{await snapshot('modelAnswers',models)}catch{}
+ // Save the question first: a quota error must not partially overwrite its model answer.
+ localStorage.setItem(QUESTION_KEY,JSON.stringify(next));
+ questionLibrary=next;
+ let modelSyncOK=true;
+ try{
+  const stored=get(MODEL_KEY);
+  const current=stored?mergeModels(models,validateModels(JSON.parse(stored),Q)):models;
+  let updated=current;
+  if(fields.answer.trim())updated=setModel(current,id,fields.answer.trim());
+  else if(current.entries[id]){updated=structuredClone(current);delete updated.entries[id]}
+  if(updated!==models)persistModels(localStorage,updated);
+  models=updated;
+ }catch{modelSyncOK=false}
+ reloadQuestions(id);
+ try{await snapshot('modelAnswers',models)}catch{modelSyncOK=false}
  try{await snapshot('questionLibrary',questionLibrary)}catch{return 'この端末に保存しました。追加保存に失敗したためバックアップを推奨します。'}return '質問と回答を保存しました。';
 }});
 $('openQuestionBank').onclick=()=>bank.open();$('editQuestion').onclick=()=>bank.open(pool[index].id);
