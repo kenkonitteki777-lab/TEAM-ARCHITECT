@@ -235,7 +235,7 @@ function reloadQuestions(preferredId=pool[index]?.id){
  const category=$('categoryFilter').value;$('categoryFilter').innerHTML='<option value="">すべてのカテゴリー</option>'+[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('categoryFilter').value=category;
  render();renderList();history();
 }
-bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:q=>modelText(q),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
+bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:(q,n=null)=>modelText(q,n),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
  if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const next=putQuestion(latest,BASE_QUESTIONS,id,fields);localStorage.setItem(QUESTION_KEY,JSON.stringify(next));questionLibrary=next;reloadQuestions(id);
