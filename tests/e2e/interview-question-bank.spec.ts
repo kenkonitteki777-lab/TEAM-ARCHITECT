@@ -55,3 +55,24 @@ test('answer-readiness shortcuts support editing and remain correct after reload
  await expect(page.locator('.bank-row').filter({hasText:'新しく登録した面接質問ですか？'})).toBeVisible();
  expect(errors).toEqual([]);
 });
+
+test('editing a west company question does not silently change its grouping',async({page})=>{
+ await page.goto('/interview/');await resume(page);await openBank(page);
+ await filters(page);await page.locator('#bankRole').selectOption('west');
+ await expect(page.locator('#bankCount')).toHaveText('4問');
+ const row=page.locator('.bank-row').filter({hasText:'MIRACLE WORLDを成功させるには？'});
+ await expect(row).toBeVisible();await row.locator('[data-edit]').click();
+ await expect(page.locator('#bankEditRole')).toHaveValue('west');
+ await page.locator('#bankAnswer').fill('本人の回答を更新しました。');
+ await page.locator('#bankSave').click();
+ await expect(page.locator('#bankCount')).toHaveText('4問');
+ const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('team_architect_question_library_v1')||'null'));
+ expect(stored.entries.q020.m).toBe('west');
+ await page.reload();await resume(page);await openBank(page);
+ await filters(page);await page.locator('#bankRole').selectOption('west');
+ const persisted=page.locator('.bank-row').filter({hasText:'MIRACLE WORLDを成功させるには？'});
+ await expect(persisted).toContainText('西日本');
+ await persisted.locator('[data-edit]').click();
+ await expect(page.locator('#bankEditRole')).toHaveValue('west');
+ await expect(page.locator('#bankAnswer')).toHaveValue('本人の回答を更新しました。');
+});

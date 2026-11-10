@@ -43,3 +43,17 @@ test('readiness is a non-AI input-status classification and never guesses achiev
  assert.equal(questionReadiness({answer:'主回答',followups:[{answer:'追撃も記入済'}]}),'filled');
  assert.deepEqual(summarizeAnswerReadiness([{answer:'主回答',followups:[{answer:'【要確認：数値】'}]}]),{total:1,empty:0,review:1,filled:0,pending:1});
 });
+
+test('editing specialized category questions preserves west/today types',()=>{
+ const specialized=[
+  {id:'q020',q:'西日本の重点質問',m:'west',answer:'初期回答',category:'西日本',followups:[]},
+  {id:'q028',q:'当日の重点質問',m:'today',answer:'初期回答',category:'当日',followups:[]}
+ ];
+ let store=putQuestion(emptyLibrary(),specialized,'q020',{q:'西日本の重点質問',m:'west',answer:'編集回答',category:'西日本',src:'本人',kind:'assumed',askedOn:''},'2026-11-10T01:00:00Z');
+ store=putQuestion(store,specialized,'q028',{q:'当日の重点質問',m:'today',answer:'編集回答',category:'当日',src:'本人',kind:'assumed',askedOn:''},'2026-11-10T01:00:01Z');
+ assert.equal(store.entries.q020.m,'west');assert.equal(store.entries.q028.m,'today');
+ const questions=materializeQuestions(specialized,store);
+ assert.deepEqual(questions.map(q=>q.m),['west','today']);
+ assert.equal(filterQuestions(questions,{role:'west'}).length,1);
+ assert.equal(filterQuestions(questions,{role:'today'}).length,1);
+});

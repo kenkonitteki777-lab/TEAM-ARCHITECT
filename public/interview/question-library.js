@@ -5,7 +5,7 @@ const stamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 export function validQuestionDate(v){if(v==='')return true;if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)||v<'1900-01-01'||v>'2199-12-31')return false;const time=Date.parse(v+'T00:00:00Z');return Number.isFinite(time)&&new Date(time).toISOString().slice(0,10)===v}
 function clean(entry){
  const text=(key,max,required=false)=>{const v=entry[key];if(typeof v!=='string'||v.length>max||(required&&!v.trim()))throw new Error('質問・回答・分類の入力内容を確認してください。');return v.trim()};
- if(!validQuestionDate(entry.askedOn)||!['past','assumed','unconfirmed'].includes(entry.kind)||!['take','pres'].includes(entry.m)||!stamp(entry.updatedAt))throw new Error('出題日・面接官・質問の区分を確認してください。');
+ if(!validQuestionDate(entry.askedOn)||!['past','assumed','unconfirmed'].includes(entry.kind)||!['take','pres','west','today'].includes(entry.m)||!stamp(entry.updatedAt))throw new Error('出題日・面接官・質問の区分を確認してください。');
  return {q:text('q',2000,true),answer:text('answer',12000),category:text('category',80,true),src:text('src',300),askedOn:entry.askedOn,kind:entry.kind,m:entry.m,updatedAt:entry.updatedAt};
 }
 export function validateLibrary(raw,base){

@@ -3,8 +3,8 @@ import {APP_PREF_KEY,SESSION_KEY,BACKUP_DATE_KEY,defaultAppPreferences,validateA
 import {mountQuestionImport} from './question-import-ui.js?v=20261016-ux1';
 import {applyQuestionImport} from './question-import.js?v=20261016-ux1';
 import {scopedQuestions} from './study-scope.js?v=20261016-ux1';
-import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions,summarizeAnswerReadiness} from './question-library.js?v=20261110-readiness1';
-import {mountQuestionLibrary} from './question-library-ui.js?v=20261110-readiness1';
+import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions,summarizeAnswerReadiness} from './question-library.js?v=20261110-roles1';
+import {mountQuestionLibrary} from './question-library-ui.js?v=20261110-roles1';
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261025-quality1';
 import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261025-quality1';
@@ -76,8 +76,8 @@ function toggleAnswer(value=!revealed){if(!value)speech.stop();revealed=value;$(
 function render(){
  speech.stop();paintStudyMode();$('stageLabel').innerHTML='QUESTION <span id="questionId"></span>';
  const q=pool[index];$('category').textContent=q.category;$('position').textContent=String(index+1).padStart(2,'0')+' / '+String(pool.length).padStart(2,'0');$('questionId').textContent=(q.id.startsWith('u-')?'追加':q.id.slice(1));$('question').textContent=q.q;$('progressBar').style.width=((index+1)/pool.length*100)+'%';
- const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
- $('interviewerLabel').textContent=president?'社長面接':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長面接のシルエット');
+ const president=q.m==='pres';document.querySelectorAll('button[data-interviewer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.interviewer===(president?'president':'department'))));$('practiceHint').textContent=president?'社長面接 · 結論 → 根拠 → 行動':q.m==='west'?'西日本重点 · 変革の根拠 → 行動':q.m==='today'?'当日確認 · 結論 → 具体例 → 行動':'部長面接 · 経験 → 学び → 店長としての行動';document.body.dataset.interviewer=president?'president':'department';
+ $('interviewerLabel').textContent=president?'社長面接':q.m==='west'?'西日本重点':q.m==='today'?'当日確認':'部長面接';$('coach').setAttribute('aria-label',president?'社長をイメージした面接キャラクター':'部長面接のシルエット');
  const source=president?'./assets/president-koh-han-v1.webp':'./assets/department-noir-v1.webp';if($('coachImage').getAttribute('src')!==source)$('coachImage').src=source;
  $('coachImage').alt=president?'社長を参考にしたイメージイラスト':'部長面接のシルエット';
  $('coachRole').textContent=president?'PRESIDENT':'DIRECTOR';$('coachName').textContent=president?'社長':'部長';$('coachMotto').textContent=president?'結論から、短く、強く。':'ひよらない強さ。';$('coach').title=president?'公開プロフィール写真を参考にした練習用イラスト':'部長面接の練習用シルエット';
@@ -235,7 +235,7 @@ function reloadQuestions(preferredId=pool[index]?.id){
  const category=$('categoryFilter').value;$('categoryFilter').innerHTML='<option value="">すべてのカテゴリー</option>'+[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('categoryFilter').value=category;
  render();renderList();history();
 }
-bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:(q,n=null)=>modelText(q,n),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
+bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m,getQuestions:()=>Q,getAnswer:(q,n=null)=>modelText(q,n),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
  if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const next=putQuestion(latest,BASE_QUESTIONS,id,fields);localStorage.setItem(QUESTION_KEY,JSON.stringify(next));questionLibrary=next;reloadQuestions(id);
