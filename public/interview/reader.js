@@ -255,7 +255,7 @@ bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=
  }catch{modelSyncOK=false}
  reloadQuestions(id);
  try{await snapshot('modelAnswers',models)}catch{modelSyncOK=false}
- try{await snapshot('questionLibrary',questionLibrary)}catch{return 'この端末に保存しました。追加保存に失敗したためバックアップを推奨します。'}return '質問と回答を保存しました。';
+ try{await snapshot('questionLibrary',questionLibrary)}catch{return '質問と回答は端末に保存済みですが、追加保存に失敗しました。バックアップを推奨します。'}return modelSyncOK?'質問と回答を保存しました。':'質問は端末に保存しましたが、回答の追加保存に失敗しました。バックアップを推奨します。';
 }});
 $('openQuestionBank').onclick=()=>bank.open();$('editQuestion').onclick=()=>bank.open(pool[index].id);
 function paintStudyMode(){
