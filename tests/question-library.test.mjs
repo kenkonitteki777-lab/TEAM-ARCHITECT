@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emptyLibrary,putQuestion,validateLibrary,mergeLibraries,materializeQuestions,filterQuestions,validQuestionDate,answerReadiness,summarizeAnswerReadiness} from '../public/interview/question-library.js';
+import {emptyLibrary,putQuestion,validateLibrary,mergeLibraries,materializeQuestions,filterQuestions,validQuestionDate,answerReadiness,questionReadiness,summarizeAnswerReadiness} from '../public/interview/question-library.js';
 import {validateBackup,emptyState} from '../public/interview/engine.js';
 import {validateModels,emptyModels,setModel} from '../public/interview/model-store.js';
 const base=[{id:'q001',q:'元の質問',answer:'元回答',m:'take',category:'人材',followups:[],priority:1}];
@@ -39,4 +39,7 @@ test('readiness is a non-AI input-status classification and never guesses achiev
  const questions=[{answer:''},{answer:'本人要確認'},{answer:'回答を書いた'}];
  assert.deepEqual(summarizeAnswerReadiness(questions),{total:3,empty:1,review:1,filled:1,pending:2});
  assert.deepEqual(summarizeAnswerReadiness(questions,q=>q.answer==='回答を書いた'?'【要確認：根拠】':q.answer),{total:3,empty:1,review:2,filled:0,pending:3});
+ assert.equal(questionReadiness({answer:'主回答',followups:[{answer:'【要確認：事実】'}]}),'review');
+ assert.equal(questionReadiness({answer:'主回答',followups:[{answer:'追撃も記入済'}]}),'filled');
+ assert.deepEqual(summarizeAnswerReadiness([{answer:'主回答',followups:[{answer:'【要確認：数値】'}]}]),{total:1,empty:0,review:1,filled:0,pending:1});
 });
