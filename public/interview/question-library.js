@@ -39,10 +39,17 @@ export function answerReadiness(value){
  if(/【要確認(?::|：)|要確認|要修正|TODO|ＴＯＤＯ/i.test(answer))return 'review';
  return 'filled';
 }
-export function summarizeAnswerReadiness(questions,getAnswer=q=>q.answer){
+export function questionReadiness(q,getAnswer=(question,i)=>i===null?question.answer:question.followups[i].answer){
+ const primary=answerReadiness(getAnswer(q,null));
+ if(primary==='empty')return 'empty';
+ if(primary==='review')return 'review';
+ for(let i=0;i<(q.followups?.length??0);i++)if(answerReadiness(getAnswer(q,i))!=='filled')return 'review';
+ return 'filled';
+}
+export function summarizeAnswerReadiness(questions,getAnswer=(q,i)=>i===null?q.answer:q.followups[i].answer){
  const result={total:0,empty:0,review:0,filled:0,pending:0};
  for(const q of questions){
-  const key=answerReadiness(getAnswer(q));
+  const key=questionReadiness(q,getAnswer);
   result.total++;result[key]++;if(key!=='filled')result.pending++;
  }
  return result;
