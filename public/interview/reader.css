@@ -699,3 +699,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Goth
  #bankForm textarea,#modelText{font-size:16px;}
 }
 @media(prefers-reduced-motion:reduce){#practiceControls .readiness-track>span{transition:none;}}
+
+/* Keep the question fully visible above the dock on compact phones. */
+@media(max-width:600px){
+ #practiceControls .answer-readiness{padding:9px 12px;margin:6px 0 0;border-radius:12px;}
+ #practiceControls .readiness-top{gap:2px 8px;flex-wrap:wrap;}
+ #practiceControls .readiness-name{font-size:11px;line-height:1.4;}
+ #practiceControls .readiness-name strong{font-size:16px;}
+ #practiceControls #pendingAnswers{min-height:32px;padding:3px 0;text-align:left;font-size:11px;}
+ #practiceControls .readiness-track{height:4px;margin-top:4px;}
+ #practiceControls .scope-note{margin-top:5px;padding:6px 9px;font-size:10px;line-height:1.55;}
+ #practiceControls{padding-bottom:6px;margin-bottom:3px;}
+}
+@media(max-width:360px){
+ body:not([data-practice=true]) .question-stage{padding-top:12px;}
+ #question{font-size:23px;line-height:1.55;}
+}
