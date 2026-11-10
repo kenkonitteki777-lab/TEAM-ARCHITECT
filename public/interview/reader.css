@@ -676,3 +676,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Goth
  #pendingAnswers{min-height:29px;padding:3px}
  .readiness-track{margin-top:4px;height:4px}
 }
+
+/* Interview usability polish: consistent depth, readable answers, mobile-first tap targets. */
+#practiceControls .answer-readiness{position:relative;overflow:hidden;border:1px solid rgba(214,189,134,.28);background:linear-gradient(125deg,rgba(214,189,134,.11),rgba(255,255,255,.025) 68%);box-shadow:0 16px 42px rgba(0,0,0,.14);border-radius:18px;padding:20px;}
+#practiceControls .readiness-track{overflow:hidden;border-radius:99px;background:rgba(255,255,255,.11);height:7px;}
+#practiceControls .readiness-track>span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#a98c55,#e8d7ae);transition:width .28s ease;}
+#practiceControls .readiness-top{gap:12px;align-items:center;}
+#practiceControls .readiness-name strong{font-variant-numeric:tabular-nums;font-size:1.55em;color:#f5dfb5;}
+#practiceControls #pendingAnswers{min-height:44px;text-align:right;}
+#bankList .bank-row{border:1px solid rgba(255,255,255,.11);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.015));padding:18px;margin-block:12px;box-shadow:0 10px 26px rgba(0,0,0,.1);}
+#bankList .bank-row>p{line-height:1.8;overflow-wrap:anywhere;}
+#bankList .bank-row .practice-feedback-actions{display:flex;flex-wrap:wrap;gap:10px;}
+#bankForm textarea,#modelText{line-height:1.85;min-height:120px;resize:vertical;}
+#bankForm textarea:focus,#modelText:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(214,189,134,.12);}
+#appNav button[aria-current="page"]{color:#f5dfb5;}
+@media(max-width:640px){
+ #practiceControls .answer-readiness{padding:16px;border-radius:14px;}
+ #practiceControls .readiness-top{flex-wrap:wrap;}
+ #practiceControls #pendingAnswers{text-align:left;}
+ #bankList .bank-row{padding:15px;}
+ #bankList .bank-row .practice-feedback-actions button{flex:1 1 135px;min-height:46px;}
+ #bankForm textarea,#modelText{font-size:16px;}
+}
+@media(prefers-reduced-motion:reduce){#practiceControls .readiness-track>span{transition:none;}}
