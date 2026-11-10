@@ -5,9 +5,6 @@ on:
       - 'public/interview/**'
       - 'tests/**'
       - '.github/workflows/interview-pr-qa.yml'
-  push:
-    branches:
-      - 'improve-interview-ux-20261111'
   workflow_dispatch:
 permissions:
   contents: read
