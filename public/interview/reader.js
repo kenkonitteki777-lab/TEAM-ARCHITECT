@@ -3,8 +3,8 @@ import {APP_PREF_KEY,SESSION_KEY,BACKUP_DATE_KEY,defaultAppPreferences,validateA
 import {mountQuestionImport} from './question-import-ui.js?v=20261016-ux1';
 import {applyQuestionImport} from './question-import.js?v=20261016-ux1';
 import {scopedQuestions} from './study-scope.js?v=20261016-ux1';
-import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions,summarizeAnswerReadiness} from './question-library.js?v=20261110-readiness1';
-import {mountQuestionLibrary} from './question-library-ui.js?v=20261110-readiness1';
+import {QUESTION_KEY,emptyLibrary,validateLibrary,mergeLibraries,putQuestion,materializeQuestions,summarizeAnswerReadiness} from './question-library.js?v=20261110-roles1';
+import {mountQuestionLibrary} from './question-library-ui.js?v=20261110-roles1';
 import {mountAiInterview} from './ai-interview.js?v=20261014-auth1';
 import {FIXES,weakQuestions,selectPracticeQuestion,recordOralPractice,weaknessSummary} from './rehearsal.js?v=20261025-quality1';
 import {createInterviewVoicePlayer as createVoicePlayer} from './interview-voice-player.js?v=20261025-quality1';
