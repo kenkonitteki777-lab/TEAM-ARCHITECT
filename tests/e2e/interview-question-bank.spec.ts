@@ -55,3 +55,62 @@ test('answer-readiness shortcuts support editing and remain correct after reload
  await expect(page.locator('.bank-row').filter({hasText:'新しく登録した面接質問ですか？'})).toBeVisible();
  expect(errors).toEqual([]);
 });
+
+
+test('bank edits keep the visible answer and the answer editor in sync across reloads',async({page})=>{
+ await page.goto('/interview/');await resume(page);await openBank(page);await addQuestion(page,'');
+ const item=page.locator('.bank-row').filter({hasText:'部下の成長をどう支援しましたか？'});
+ await item.locator('[data-edit]').click();
+ await page.locator('#bankAnswer').fill('結果・根拠・行動を端的に説明します。');
+ await page.locator('#bankSave').click();
+ await expect(page.locator('#bankStatus')).toContainText('保存しました');
+ await item.locator('[data-use]').click();
+ await page.locator('#reveal').click();
+ await expect(page.locator('#answer')).toHaveText('結果・根拠・行動を端的に説明します。');
+ await page.locator('#editAnswer').click();
+ await expect(page.locator('#modelText')).toHaveValue('結果・根拠・行動を端的に説明します。');
+ await page.locator('#closeEditor').click();
+ const before=await page.evaluate(()=>{
+  const store=JSON.parse(localStorage.getItem('team_architect_model_answers_v1')||'{}');
+  const entry=Object.values(store.entries||{}).find((item:any)=>item.text==='結果・根拠・行動を端的に説明します。') as any;
+  return {current:entry?.text,older:entry?.revisions?.some((r:any)=>r.text.includes('対話で課題'))};
+ });
+ expect(before).toEqual({current:'結果・根拠・行動を端的に説明します。',older:true});
+ await page.reload();await resume(page);await page.locator('#reveal').click();
+ await expect(page.locator('#answer')).toHaveText('結果・根拠・行動を端的に説明します。');
+});
+
+test('failed question write does not silently overwrite an existing model answer',async({page})=>{
+ await page.goto('/interview/');await resume(page);await openBank(page);await addQuestion(page,'');
+ const item=page.locator('.bank-row').filter({hasText:'部下の成長をどう支援しましたか？'});
+ await item.locator('[data-edit]').click();
+ await page.locator('#bankAnswer').fill('不意の保存エラー後も元の回答を守る。');
+ await page.evaluate(()=>{
+  const original=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+   if(key==='team_architect_question_library_v1')throw new DOMException('quota','QuotaExceededError');
+   return original.call(this,key,value);
+  };
+ });
+ await page.locator('#bankSave').click();
+ await expect(page.locator('#bankStatus')).toContainText('保存できません');
+ const values=await page.evaluate(()=>{
+  const models=JSON.parse(localStorage.getItem('team_architect_model_answers_v1')||'{}');
+  return Object.values(models.entries||{}).map((entry:any)=>entry.text);
+ });
+ expect(values).toContain('対話で課題を確かめ、実践と振り返りを支援しました。');
+ expect(values).not.toContain('不意の保存エラー後も元の回答を守る。');
+});
+
+test('clearing a custom answer persists as empty after refresh',async({page})=>{
+ await page.goto('/interview/');await resume(page);await openBank(page);await addQuestion(page,'');
+ const item=page.locator('.bank-row').filter({hasText:'部下の成長をどう支援しましたか？'});
+ await item.locator('[data-edit]').click();
+ await page.locator('#bankAnswer').fill('');
+ await page.locator('#bankSave').click();
+ await item.locator('[data-use]').click();
+ await page.locator('#reveal').click();
+ await expect(page.locator('#answer')).toContainText('回答はまだ登録されていません');
+ await page.reload();await resume(page);await page.locator('#reveal').click();
+ await expect(page.locator('#answer')).toContainText('回答はまだ登録されていません');
+});
