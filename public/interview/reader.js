@@ -235,7 +235,7 @@ function reloadQuestions(preferredId=pool[index]?.id){
  const category=$('categoryFilter').value;$('categoryFilter').innerHTML='<option value="">すべてのカテゴリー</option>'+[...new Set(Q.map(q=>q.category))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('categoryFilter').value=category;
  render();renderList();history();
 }
-bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,getAnswer:(q,n=null)=>modelText(q,n),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
+bank=mountQuestionLibrary({onClose:()=>shell.show('practice'),getDefaultRole:()=>pool[index].m,getQuestions:()=>Q,getAnswer:(q,n=null)=>modelText(q,n),beforeOpen:()=>{if(!ready){toast('保存データを読み込み中です。');return false}if(savingPractice)return false;if(!shell.show('library'))return false;speech.stop();$('navigation').close();return true},select:id=>{preferredMethod='read';studyMode='read';reloadQuestions(id);shell.openSession();window.scrollTo({top:0,behavior:'instant'})},save:async(id,fields)=>{
  if(libraryDamaged)throw new Error('元の保存データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const next=putQuestion(latest,BASE_QUESTIONS,id,fields);localStorage.setItem(QUESTION_KEY,JSON.stringify(next));questionLibrary=next;reloadQuestions(id);
@@ -253,7 +253,7 @@ function chooseScope(next){
  const continuing=!!practice;endPractice();studyScope=next;const current=pool[index];const sameRole=candidates.filter(q=>current.m==='pres'?q.m==='pres':q.m!=='pres');pool=sameRole.length?sameRole:candidates.filter(q=>candidates[0].m==='pres'?q.m==='pres':q.m!=='pres');index=Math.max(0,pool.findIndex(q=>q.id===current.id));interviewFilter=pool[index].m==='pres'?'president':'department';studyMode='read';render();renderList();if(continuing)startPractice();else{preferredMethod='read';checkpoint()}return true;
 }
 $('questionScope').onchange=()=>chooseScope({type:$('questionScope').value,ids:lastImportedIds});
-const importer=mountQuestionImport({getDefaultRole:()=>pool[index].m==='pres'?'pres':'take',getQuestions:()=>Q,beforeOpen:()=>{if(!ready||savingPractice){toast('保存データを読み込み中です。少しお待ちください。');return false}if(shell.view==='library'&&!bank.canLeave())return false;endPractice();speech.stop();$('navigation').close();return true},saveBatch:async entries=>{
+const importer=mountQuestionImport({getDefaultRole:()=>pool[index].m,getQuestions:()=>Q,beforeOpen:()=>{if(!ready||savingPractice){toast('保存データを読み込み中です。少しお待ちください。');return false}if(shell.view==='library'&&!bank.canLeave())return false;endPractice();speech.stop();$('navigation').close();return true},saveBatch:async entries=>{
  if(libraryDamaged)throw new Error('元の質問データを保持しています。バックアップを確保してから復旧してください。');
  let latest=questionLibrary;const raw=get(QUESTION_KEY);if(raw)latest=mergeLibraries(latest,validateLibrary(JSON.parse(raw),BASE_QUESTIONS));
  const result=applyQuestionImport(latest,BASE_QUESTIONS,materializeQuestions(BASE_QUESTIONS,latest),entries);localStorage.setItem(QUESTION_KEY,JSON.stringify(result.library));questionLibrary=result.library;reloadQuestions(result.ids[0]);
