@@ -1,0 +1,37 @@
+name: Interview changes - pre-release QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "public/interview/**"
+      - "tests/**"
+      - ".github/workflows/interview-pr-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interview-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Interview and compatibility unit tests
+        run: npm run test:interview && npm run typecheck && npm test
+      - name: Build
+        run: npm run build
+      - name: Browser test setup
+        run: npx playwright install --with-deps chromium
+      - name: Questions, editing and navigation (desktop + mobile)
+        run: npx playwright test tests/e2e/interview-question-bank.spec.ts tests/e2e/interview-shell.spec.ts --workers=2
