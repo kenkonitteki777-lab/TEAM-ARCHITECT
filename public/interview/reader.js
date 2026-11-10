@@ -1,5 +1,5 @@
 import {CLOUD} from './config.js';
-import {mountInterviewShell} from './app-shell.js?v=20261110-readiness1';
+import {mountInterviewShell} from './app-shell.js?v=20261111-ux3';
 import {APP_PREF_KEY,SESSION_KEY,BACKUP_DATE_KEY,defaultAppPreferences,validateAppPreferences,resolveSession} from './app-preferences.js?v=20261018-direct1';
 import {mountQuestionImport} from './question-import-ui.js?v=20261016-ux1';
 import {applyQuestionImport} from './question-import.js?v=20261016-ux1';
